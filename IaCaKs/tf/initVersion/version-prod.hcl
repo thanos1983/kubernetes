@@ -1,4 +1,4 @@
-resource_group_name  = "sharedKITNRG"
-storage_account_name = "saiacprojektkitn"
-container_name       = "kitn-portal-aks-prod"
-key                  = "terraformKITN.tfstate"
+resource_group_name  = "toBeUpdated"
+storage_account_name = "toBeUpdated"
+container_name       = "toBeUpdated"
+key                  = "terraform.tfstate"
