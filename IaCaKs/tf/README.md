@@ -1,4 +1,4 @@
-# Project KITN
+# Project demo
 
 ## Caution, if this is first deployment and the user has not being created prerequisites yet, the user must first navigate to prerequisites directory and apply the code there first.
 
@@ -11,7 +11,7 @@ use. Sample:
 $ az account list --output table --all
 Name                           CloudName    SubscriptionId                        TenantId                              State    IsDefault
 ---------------------------- ---------- ----------------------------------- ----------------------------------- ------ -----------
-LSAC-Digital-Solutions         AzureCloud   5dd4eb6a-9fc8-4def-82e8-625f1852e5de  8a70a03e-1cc9-4c92-9ec6-6c584cb69a31  Enabled  True
+<Subscription-Name>          AzureCloud <SubscriptionId>                    <TenantId>                          Enabled  True
 ````
 
 ### Change the active subscription
@@ -21,7 +21,7 @@ Sample:
 
 ````bash
 # change the active subscription using the subscription name
-$ az account set --subscription "LSAC-Digital-Solutions"
+$ az account set --subscription "Subscription-Name"
 
 # change the active subscription using the subscription ID
 $ az account set --subscription "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -35,11 +35,11 @@ $ az account list --query "[?isDefault]"
     "id": "<id>",
     "isDefault": true,
     "managedByTenants": [],
-    "name": "LSAC-Digital-Solutions",
+    "name": "Subscription-Name",
     "state": "Enabled",
     "tenantId": "<tenantId>",
     "user": {
-      "name": "<user>@NNIT.COM",
+      "name": "<user>@<email>.COM",
       "type": "user"
     }
   }
@@ -78,6 +78,13 @@ az login --use-device-code --tenant <TenantId>
 
 Either the user or service connection needs to have ``Azure Kubernetes Service RBAC Cluster Admin`` RBAC role enabled
 before deployment. On this deployment we have enabled RBAC on the cluster that is why.
+
+The user also needs to activate the following Azure RBAC roles if desired to sync AKS with AAD:
+- Global Administrator
+- Directory Writers
+- Groups Administrator
+
+In order to guide through the UI the user can go to Home -> Privileged Identity Management -> Microsoft Entra roles
 
 #### Azure-Cli
 
@@ -144,12 +151,12 @@ Sample of error:
 ````bash
 $ tofu -chdir=IaCaKs/tf apply "planOutput"
 Acquiring state lock. This may take a few moments...
-module.kitn_projekt_resource_group.azurerm_resource_group.resource_group: Creating...
+module.aks_projekt_resource_group.azurerm_resource_group.resource_group: Creating...
 ╷
-│ Error: A resource with the ID "/subscriptions/<subscription-id>/resourceGroups/devkitnrg" already exists to be managed via Terraform this resource needs to be imported numbero the State. Please see the resource documentation for "azurerm_resource_group" for more information.
+│ Error: A resource with the ID "/subscriptions/<subscription-id>/resourceGroups/devdemorg" already exists to be managed via Terraform this resource needs to be imported numbero the State. Please see the resource documentation for "azurerm_resource_group" for more information.
 │
-│   with module.kitn_projekt_resource_group.azurerm_resource_group.resource_group,
-│   on .terraform/modules/kitn_projekt_resource_group/tf/modules/ResourceGroup/main.tf line 1, in resource "azurerm_resource_group" "resource_group":
+│   with module.aks_projekt_resource_group.azurerm_resource_group.resource_group,
+│   on .terraform/modules/aks_projekt_resource_group/tf/modules/ResourceGroup/main.tf line 1, in resource "azurerm_resource_group" "resource_group":
 │    1: resource "azurerm_resource_group" "resource_group" {
 │
 ╵
@@ -157,21 +164,21 @@ Releasing state lock. This may take a few moments...
 ````
 
 On this example the error is coming from module (
-resource) `module.kitn_projekt_resource_group.azurerm_resource_group.resource_group`
+resource) `module.aks_projekt_resource_group.azurerm_resource_group.resource_group`
 
-So the user needs to import the resource(s) at this ponumber. For every resource the user needs to read the official
+So the user needs to import the resource(s) at this point. For every resource the user needs to read the official
 documentation. On this
 example [azurerm_resource_group](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group).
 
 Sample of process:
 
 ````bash
-$ tofu -chdir=IaCaKs/tf import -var-file=tfvars/test.tfvars module.kitn_projekt_resource_group.azurerm_resource_group.resource_group "/subscriptions/5dd4eb6a-9fc8-4def-82e8-625f1852e5de/resourceGroups/devkitnrg"
+$ tofu -chdir=IaCaKs/tf import -var-file=tfvars/test.tfvars module.aks_projekt_resource_group.azurerm_resource_group.resource_group "/subscriptions/5dd4eb6a-9fc8-4def-82e8-625f1852e5de/resourceGroups/devdemorg"
 Acquiring state lock. This may take a few moments...
-module.kitn_projekt_resource_group.azurerm_resource_group.resource_group: Importing from ID "/subscriptions/<subscription-id>/resourceGroups/devkitnrg"...
-module.kitn_projekt_resource_group.azurerm_resource_group.resource_group: Import prepared!
+module.aks_projekt_resource_group.azurerm_resource_group.resource_group: Importing from ID "/subscriptions/<subscription-id>/resourceGroups/devdemorg"...
+module.aks_projekt_resource_group.azurerm_resource_group.resource_group: Import prepared!
   Prepared azurerm_resource_group for import
-module.kitn_projekt_resource_group.azurerm_resource_group.resource_group: Refreshing state... [id=/subscriptions/<subscription-id>/resourceGroups/devkitnrg]
+module.aks_projekt_resource_group.azurerm_resource_group.resource_group: Refreshing state... [id=/subscriptions/<subscription-id>/resourceGroups/devdemorg]
 
 Import successful!
 
@@ -343,11 +350,6 @@ Get API-Key:
 $ kubectl get secret qdrant-apikey --namespace qdrant -o jsonpath="{.data.api-key}" --kubeconfig IaCaKs/tf/kube/config | base64 --decode ; echo
 ````
 
-<<<<<<< HEAD
-<<<<<<< HEAD
-<<<<<<< HEAD
-=======
->>>>>>> 99d2b97 (testing-aks-kitn-chat-istio Updating locals.tf file.)
 #### OpenFaaS CE
 
 What is OpenFaaS, with one word ``OpenFaaS - Serverless Functions Made Simple``. More information the user can find on
@@ -589,7 +591,7 @@ $ docker buildx build -t "<my acr repo>.azurecr.io/func" --push .
  => => exporting layers                                                                                                                                                                                                                0.0s
  => => writing image sha256:f3950472e76ee4d093505406638e817ddc0dc2bce640dbbb05d7a1d1923bba07                                                                                                                                           0.0s
  => => naming to <my acr repo>.azurecr.io/func                                                                                                                                                                                       0.0s
- => pushing devkitnregistry.azurecr.io/func with docker                                                                                                                                                                               87.8s
+ => pushing devdemoregistry.azurecr.io/func with docker                                                                                                                                                                               87.8s
  => => pushing layer bde8b3d8937b                                                                                                                                                                                                     19.7s
  => => pushing layer 7006b1475b77                                                                                                                                                                                                      3.2s
  => => pushing layer e335097c3f5e                                                                                                                                                                                                      2.9s
@@ -1080,7 +1082,7 @@ Example of command and output:
 
 `````bash
 $ kubectl config view --minify -o 'jsonpath={.clusters[0].cluster.server}' ; echo
-https://kitn-prod-aks-ms6y9f2t.hcp.westeurope.azmk8s.io:443
+https://demo-prod-aks-ms6y9f2t.hcp.westeurope.azmk8s.io:443
 `````
 
 *Caution*: the user needs to apply the `githubActionsPrerequicites.yaml` file under the deploymentSamples dir. The file
@@ -1341,17 +1343,6 @@ Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
 Server Version: v1.29.7
 ````
 
-| Owner  | Maintainer | Classification |
-|:------:|:----------:|:--------------:|
-| `KHMD` |   `ATGA`   | `Internal Use` |
-
-=======
->>>>>>> b85548e (testing-aks-kitn-chat-istio Updating README file.)
-<<<<<<< HEAD
-=======
->>>>>>> f2eff71 (testing-aks-kitn-chat-istio Updating locals.tf file.)
-=======
->>>>>>> 99d2b97 (testing-aks-kitn-chat-istio Updating locals.tf file.)
 #### Important Requirements
 
 The requirements are the following:
