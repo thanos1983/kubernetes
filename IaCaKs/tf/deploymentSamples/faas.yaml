@@ -19,7 +19,7 @@ spec:
   template:
     spec:
       containers:
-        - image: devkitnregistry.azurecr.io/func:latest
+        - image: demoacr.azurecr.io/func:latest
           imagePullPolicy: Always
           securityContext:
             allowPrivilegeEscalation: false

@@ -147,7 +147,7 @@ locals {
   network = {
     virtual_network = {
       address_space = ["192.0.0.0/8"]
-      name = "${var.environment}kitnvnet"
+      name = "${var.environment}vnet"
       subnets = {
         aks = {
           address_prefixes = ["192.168.0.0/16"]
@@ -855,6 +855,6 @@ data "kubectl_file_documents" "knative_eventing" {
 }
 
 data "azurerm_cognitive_account" "openai" {
-  name                = "devkitnOpenAI"
-  resource_group_name = "devKITNRG"
+  name                = "devDemoOpenAI"
+  resource_group_name = "devDemoRG"
 }

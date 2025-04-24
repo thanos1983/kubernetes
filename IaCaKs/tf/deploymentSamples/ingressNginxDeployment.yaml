@@ -10,7 +10,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: Gateway
 metadata:
   name: istio-ingressgateway-nginx
-  namespace: kitn-dev
+  namespace: demo-dev
 spec:
   selector:
     istio: ingressgateway
@@ -42,7 +42,7 @@ metadata:
     app.kubernetes.io/component: "frontend"
     app.kubernetes.io/instance: "nginxLabel-dev"
   name: nginx-deployment
-  namespace: kitn-dev
+  namespace: demo-dev
 spec:
   replicas: 1
   strategy:
@@ -92,7 +92,7 @@ apiVersion: autoscaling/v2
 kind: HorizontalPodAutoscaler
 metadata:
   name: nginx-hpa
-  namespace: kitn-dev
+  namespace: demo-dev
 spec:
   scaleTargetRef:
     apiVersion: apps/v1
@@ -134,7 +134,7 @@ metadata:
     app.kubernetes.io/component: "frontend"
     app.kubernetes.io/instance: "nginxLabel-dev"
   name: nginx-service
-  namespace: kitn-dev
+  namespace: demo-dev
 spec:
   internalTrafficPolicy: Cluster
   ipFamilies:
@@ -157,7 +157,7 @@ apiVersion: networking.istio.io/v1beta1
 kind: VirtualService
 metadata:
   name: nginx-ingress
-  namespace: kitn-dev
+  namespace: demo-dev
   labels:
     app.kubernetes.io/version: "0.0.1"
     app.kubernetes.io/name: "nginxLabel"
@@ -167,14 +167,14 @@ spec:
   hosts:
     - 'nginx.k8sdemocluster.com'
   gateways:
-    - kitn-dev/istio-ingressgateway-nginx
+    - demo-dev/istio-ingressgateway-nginx
   http:
     - match:
         - uri:
             prefix: '/'
       route:
         - destination:
-            host: 'nginx-service.kitn-dev.svc.cluster.local'
+            host: 'nginx-service.demo-dev.svc.cluster.local'
             port:
               number: 80
 ---
@@ -195,8 +195,8 @@ spec:
 apiVersion: security.istio.io/v1
 kind: PeerAuthentication
 metadata:
-  name: peer-authentication-kitn-chat
-  namespace: kitn-dev
+  name: peer-authentication-demo-chat
+  namespace: demo-dev
 spec:
   mtls:
     mode: PERMISSIVE
