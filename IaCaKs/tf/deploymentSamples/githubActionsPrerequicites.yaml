@@ -1,0 +1,122 @@
+apiVersion: v1
+kind: ServiceAccount
+metadata:
+<<<<<<< HEAD
+<<<<<<< HEAD
+  name: github-action-access-dev
+  namespace: kitn-dev
+=======
+=======
+>>>>>>> f09b6dd (testing-aks-kitn-chat-istio Updating locals.tf file.)
+  name: github-actions
+  namespace: kitn
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRole
+metadata:
+  name: cicd
+rules:
+  - apiGroups:
+      - '' # core API group
+      - apps
+      - networking.k8s.io
+    resources:
+      - namespaces
+      - deployments
+      - replicasets
+      - ingresses
+      - services
+      - secrets
+    verbs:
+      - create
+      - delete
+      - deletecollection
+      - get
+      - list
+      - patch
+      - update
+      - watch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: ClusterRoleBinding
+metadata:
+  name: cicd-getactions
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: cicd
+subjects:
+  - kind: ServiceAccount
+    name: github-actions
+    namespace: kitn
+<<<<<<< HEAD
+>>>>>>> 833a967 (testing-aks-kitn-chat-istio Updating locals.tf file.)
+=======
+>>>>>>> f09b6dd (testing-aks-kitn-chat-istio Updating locals.tf file.)
+---
+apiVersion: v1
+kind: Secret
+type: kubernetes.io/service-account-token
+metadata:
+  name: github-actions-token
+<<<<<<< HEAD
+<<<<<<< HEAD
+  namespace: kitn-dev
+  annotations:
+    kubernetes.io/service-account.name: github-action-access-dev
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: github-action-role-dev
+rules:
+  - apiGroups: [ "*" ]
+    resources: [ "*" ]
+    verbs: [ "*" ]
+---
+kind: ClusterRole
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: github-action-istio-role-dev
+rules:
+  - apiGroups: [ "*" ]
+    resources: [ "*" ]
+    verbs: [ "*" ]
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kitn-cicd-githubactions-dev
+  namespace: kitn-dev
+subjects:
+  - kind: ServiceAccount
+    name: github-action-access-dev
+    namespace: kitn-dev
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: github-action-role-dev
+---
+kind: RoleBinding
+apiVersion: rbac.authorization.k8s.io/v1
+metadata:
+  name: kitn-cicd-istio-githubactions-dev
+  namespace: istio-system
+subjects:
+  - kind: ServiceAccount
+    name: github-action-access-dev
+    namespace: kitn-dev
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: ClusterRole
+  name: github-action-istio-role-dev
+=======
+  namespace: kitn
+  annotations:
+    kubernetes.io/service-account.name: github-actions
+>>>>>>> 833a967 (testing-aks-kitn-chat-istio Updating locals.tf file.)
+=======
+  namespace: kitn
+  annotations:
+    kubernetes.io/service-account.name: github-actions
+>>>>>>> f09b6dd (testing-aks-kitn-chat-istio Updating locals.tf file.)

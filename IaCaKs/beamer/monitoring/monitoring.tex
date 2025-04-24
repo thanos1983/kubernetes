@@ -1,0 +1,48 @@
+\section{Monitoring}\label{sec:monitoring}
+\subsection{Monitoring and Visualizing}\label{subsec:monitoring-and-visualizing}
+ \begin{frame}{Monitoring and Visualizing}
+ \setbeamercovered{dynamic}%Makes the text appear before it presents nice!!!!
+	\begin{columns}[T] % contents are top vertically aligned
+		\begin{column}{5cm} % alternative top-align that's better for graphics
+			\begin{figure}
+				\centering
+				\includegraphics<1>[width=\textwidth]{./png/metricsGraphLogo}%
+				\includegraphics<2>[width=\textwidth]{./png/serverLogo}%
+				\includegraphics<3>[width=\textwidth]{./png/podLogo}%
+				\includegraphics<4>[width=\textwidth]{./png/trafficFlowK8sLogo}%
+				\includegraphics<5>[width=\textwidth]{./png/swissKnifeToolProgrammingLogo}%
+				\includegraphics<6>[width=\textwidth]{./png/monitoringLogo}%
+				\includegraphics<7>[width=\textwidth]{./png/logginLogo}%
+				\includegraphics<8>[width=\textwidth]{./png/visualizingLogo}%
+				\includegraphics<9>[width=\textwidth]{./png/grafanaLogo}%
+
+				\only<1>{{\usebeamercolor[fg]{caption name}Image:} Metrics}%
+				\only<2>{{\usebeamercolor[fg]{caption name}Image:} One to Many}%
+				\only<3>{{\usebeamercolor[fg]{caption name}Image:} Pod Structure}%
+				\only<4>{{\usebeamercolor[fg]{caption name}Image:} Network Traffic}%
+				\only<5>{{\usebeamercolor[fg]{caption name}Image:} Multi Tool}%
+				\only<6>{{\usebeamercolor[fg]{caption name}Image:} Monitoring Metrics}%
+				\only<7>{{\usebeamercolor[fg]{caption name}Image:} Filtering Logs}%
+				\only<8>{{\usebeamercolor[fg]{caption name}Image:} Visualizing Data}%
+				\only<9>{{\usebeamercolor[fg]{caption name}Image:} Grafana}%
+			\end{figure}
+		\end{column}
+		\begin{column}{5cm} % alternative top-align that's better for graphics
+			\begin{itemize}
+				\item<+-| alert@+> Metrics from \alert{everything}?
+				\begin{itemize}
+						\item<+-| alert@+> Server(s)
+						\item<+-| alert@+> Pods
+						\item<+-| alert@+> Network
+				\end{itemize}
+				\item<+-| alert@+> Mix all \alert{requirements}?
+				\begin{itemize}
+						\item<+-| alert@+> Monitoring
+						\item<+-| alert@+> Filter Logs
+						\item<+-| alert@+> Visualizing
+				\end{itemize}
+				\item<+-| alert@+> There can be only one! (Ref. Highlander)
+			\end{itemize}
+		\end{column}
+	\end{columns}
+ \end{frame}

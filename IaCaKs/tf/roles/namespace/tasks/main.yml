@@ -1,0 +1,18 @@
+---
+# tasks file for IaCaKs/tf/roles/namespace
+- name: Create Cert Files, Namespaces and always delete Cert Files
+  block:
+    - name: Create Cert Files
+      ansible.builtin.include_role:
+        name: common
+        tasks_from: cert
+
+    - name: Create Namespace to the Cluster
+      ansible.builtin.include_role:
+        name: k8s
+        tasks_from: namespace
+  always:
+    - name: Delete Cert Files
+      ansible.builtin.include_role:
+        name: common
+        tasks_from: removeFile

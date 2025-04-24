@@ -1,0 +1,15 @@
+---
+- name: Prerequisite Deployment
+#  hosts: localhost
+  hosts: all
+  environment:
+    ENABLE_TURBO_MODE: 1
+  any_errors_fatal: true
+
+  roles:
+    - role: ping
+      tags: [ ping ]
+    - role: knative
+      tags: [ knative ]
+    - role: namespace
+      tags: [ namespace ]

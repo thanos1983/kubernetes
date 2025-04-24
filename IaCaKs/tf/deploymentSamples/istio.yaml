@@ -1,0 +1,102 @@
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    istio-injection: enabled
+  name: test
+---
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: istio-ingressgateway-nginx
+  namespace: test
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+    - port:
+        number: 80
+        name: http
+        protocol: HTTP
+      hosts:
+        - 'bar.k8sdemocluster.com'
+      tls:
+        httpsRedirect: true
+    - port:
+        number: 443
+        name: https
+        protocol: HTTPS
+      tls:
+        mode: SIMPLE
+        credentialName: ingress-cert-nginx # This should match the Certificate secretName
+      hosts:
+        - 'bar.k8sdemocluster.com' # This should match a DNS name in the Certificate
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: nginx
+  namespace: test
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: nginx
+  template:
+    metadata:
+      labels:
+        app: nginx
+    spec:
+      containers:
+        - name: nginx
+          image: nginx
+          ports:
+            - containerPort: 80
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: nginx
+  namespace: test
+spec:
+  ports:
+    - port: 80
+      protocol: TCP
+      targetPort: 80
+  selector:
+    app: nginx
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: nginx-ingress
+  namespace: test
+spec:
+  hosts:
+    - 'bar.k8sdemocluster.com'
+  gateways:
+    - test/istio-ingressgateway-nginx
+  http:
+    - match:
+        - uri:
+            prefix: '/'
+      route:
+        - destination:
+            host: 'nginx.test.svc.cluster.local'
+            port:
+              number: 80
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: ingress-cert-nginx
+  namespace: istio-system
+spec:
+  secretName: ingress-cert-nginx
+  commonName: 'bar.k8sdemocluster.com'
+  dnsNames:
+    - 'bar.k8sdemocluster.com'
+  issuerRef:
+    kind: Issuer
+    name: letsencrypt-prod

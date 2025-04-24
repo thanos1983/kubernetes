@@ -1,0 +1,40 @@
+\section{Certificate}\label{sec:certificate}
+\subsection{Certificate Automation}\label{subsec:certificate-automation-how-to-automate}
+ \begin{frame}{Certificate Automation}
+ \setbeamercovered{dynamic}%Makes the text appear before it presents nice!!!!
+	\begin{columns}[T] % contents are top vertically aligned
+		\begin{column}{5cm} % alternative top-align that's better for graphics
+			\begin{figure}
+				\centering
+				\includegraphics<1>[width=\textwidth]{./png/questionMarkLogo}%
+				\includegraphics<2>[width=\textwidth]{./png/questionMarkLogo}%
+				\includegraphics<3>[width=\textwidth]{./png/ninteeDaysLogo}%
+				\includegraphics<4>[width=\textwidth]{./png/autoRenewLogo}%
+				\includegraphics<5>[width=\textwidth]{./png/sslCertificateAuthorityLogo}%
+				\includegraphics<6>[width=\textwidth]{./png/certManagerLogo}%
+				\includegraphics<7>[width=\textwidth]{./png/letsEncryptLogo}%
+
+				\only<1>{{\usebeamercolor[fg]{caption name}Image:} Is it possible?}%
+				\only<2>{{\usebeamercolor[fg]{caption name}Image:} Is it possible?}%
+				\only<3>{{\usebeamercolor[fg]{caption name}Image:} 90 days}%
+				\only<4>{{\usebeamercolor[fg]{caption name}Image:} Auto Renew}%
+				\only<5>{{\usebeamercolor[fg]{caption name}Image:} Official Authority}%
+				\only<6>{{\usebeamercolor[fg]{caption name}Image:} Cert Manager}%
+				\only<7>{{\usebeamercolor[fg]{caption name}Image:} Let's Encrypt}%
+			\end{figure}
+		\end{column}
+		\begin{column}{5cm} % alternative top-align that's better for graphics
+			\begin{itemize}
+				\item<+-| alert@+> Can we \alert{accommodate all} requirements?
+				\item<+-| alert@+> Can it be \alert{also} automated and \alert{self} renewed?
+				\begin{itemize}
+						\item<+-| alert@+> 90 days expiration
+						\item<+-| alert@+> Auto Renew
+						\item<+-| alert@+> Official Authority
+				\end{itemize}
+				\item<+-| alert@+> The answer is yes!
+				\item<+-| alert@+> Official Authority
+			\end{itemize}	
+		\end{column}
+	\end{columns}
+ \end{frame}

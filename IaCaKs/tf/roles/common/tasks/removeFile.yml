@@ -1,0 +1,7 @@
+---
+# tasks file for IaCaKs/tf/roles/common removeFile
+- name: Remove file(s)
+  ansible.builtin.file:
+    state: absent
+    path: "{{ item.value.dest }}"
+  loop: "{{ lookup('ansible.builtin.dict', cert) }}"

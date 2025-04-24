@@ -1,0 +1,7 @@
+---
+# tasks file for IaCaKs/tf/roles/common cert
+- name: Create Cert file(s)
+  ansible.builtin.copy:
+    dest: "{{ item.value.dest }}"
+    content: "{{ item.value.content }}"
+  loop: "{{ lookup('ansible.builtin.dict', cert) }}"

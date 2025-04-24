@@ -1,0 +1,12 @@
+---
+# vars file for IaCaKs/tf/roles/knative
+cert:
+  ca_cert:
+    content: "{{ ca_cert }}"
+    dest: "{{ ansible_parent_role_paths[0] }}/files/ca_cert.ca"
+  client_key:
+    content: "{{ client_key }}"
+    dest: "{{ ansible_parent_role_paths[0] }}/files/client_key.key"
+  client_cert:
+    content: "{{ client_cert }}"
+    dest: "{{ ansible_parent_role_paths[0] }}/files/client_cert.crt"

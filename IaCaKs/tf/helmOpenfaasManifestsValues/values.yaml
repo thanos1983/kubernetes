@@ -1,0 +1,4 @@
+clusterRole: true
+basic_auth: true
+serviceType: ClusterIP
+generateBasicAuth: false

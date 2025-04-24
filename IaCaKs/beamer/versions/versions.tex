@@ -1,0 +1,70 @@
+\section{Versions}\label{sec:versions}
+\subsection{Features Development}\label{subsec:versions-features-development}
+ \begin{frame}{Features Development}
+ \setbeamercovered{dynamic}%Makes the text appear before it presents nice!!!!
+	\begin{columns}[T] % contents are top vertically aligned
+		\begin{column}{5cm} % alternative top-align that's better for graphics
+			\begin{figure}
+				\centering
+				\includegraphics<1>[width=\textwidth]{./png/faas}%
+				\includegraphics<2>[width=\textwidth]{./png/openFaas}%
+				\includegraphics<3>[width=\textwidth]{./png/openFaaSNotOpenLogo}%
+				\includegraphics<4>[width=\textwidth]{./png/knative}%
+				\includegraphics<5>[width=\textwidth]{./png/istio}%
+				\includegraphics<6>[width=\textwidth]{./png/istioKnative.png}%
+
+				\only<1>{{\usebeamercolor[fg]{caption name}Image:} FAAS}%
+				\only<2>{{\usebeamercolor[fg]{caption name}Image:} OPEN FAAS}%
+				\only<3>{{\usebeamercolor[fg]{caption name}Image:} OPEN FAAS}%
+				\only<4>{{\usebeamercolor[fg]{caption name}Image:} KNATIVE}%
+				\only<5>{{\usebeamercolor[fg]{caption name}Image:} ISTIO}%
+				\only<6>{{\usebeamercolor[fg]{caption name}Image:} istioKnative}%
+			\end{figure}
+		\end{column}
+		\begin{column}{5cm} % alternative top-align that's better for graphics
+			\begin{itemize}
+				\item<+-| alert@+> Why to use Function As A Service?
+				\begin{itemize}
+						\item<+-| alert@+> Open FAAS
+						\item<+-| alert@+> NOT OPEN
+						\item<+-| alert@+> KNATIVE
+				\end{itemize}
+				\item<+-| alert@+> ISTIO Service Mesh
+				\item<+-| alert@+> KNATIVE Service Mesh
+			\end{itemize}	
+		\end{column}
+	\end{columns}
+ \end{frame}
+
+\subsection{Versions and Features Development}\label{subsec:versions-and-features-development}
+\begin{frame}{Versions and Features Development}
+	\setbeamercovered{dynamic} %Makes the text appear before it presents nice!!!!
+	\centering
+	% You can see how the table I have made looks in Table \ref{tab:table}
+	\begin{table}
+		\caption{Features / Versions table}\label{tab:table}
+% \resizebox{8cm}{3cm}
+\resizebox{!}{2.8cm}
+{ % Resize table to fit within \linewidth horizontally
+		\setlength{\arrayrulewidth}{.28em}
+		\begin{tabular}{ ? c ? c ? c ? }
+		\hline
+			\rowcolor{LightBlue} \textbf{Features} & \textbf{Version 1} & \textbf{Version 2} \\ \hline
+						\textbf{Grafana} & $\ballotcheck$ & $\ballotcheck$ \\ \hline
+			\rowcolor{LightBlue} \textbf{Prometheus} & $\ballotcheck$ & $\ballotcheck$ \\ \hline
+						\textbf{Loki} & $\ballotcheck$ & $\ballotcheck$ \\ \hline
+			\rowcolor{LightBlue} \textbf{Promtail} & $\ballotcheck$ & $\ballotcheck$ \\ \hline
+						\textbf{ArgoCD} & $\ballotcheck$ & $\ballotcheck$ \\ \hline
+			\rowcolor{LightBlue} \textbf{Cert Manager} & $\ballotcheck$ & $\ballotcheck$ \\ \hline
+						\textbf{Let's Encrypt} & $\ballotcheck$ & $\ballotcheck$ \\ \hline
+			\rowcolor{LightBlue} \textbf{External DNS} & $\ballotcheck$ & $\ballotcheck$ \\ \hline
+						\textbf{Knative (FAAS)} & $\ballotcheck$ & $\ballotcheck$ \\ \hline
+			\rowcolor{LightBlue} \textbf{Ingress NGINX} & $\ballotcheck$ & $\ballotx$ \\ \hline
+						\textbf{Gateway ISTIO} & $\ballotx$ & $\ballotcheck$ \\ \hline
+			\rowcolor{LightBlue} \textbf{Service Mesh} & $\ballotx$ & $\ballotcheck$ \\ \hline
+						\textbf{Service Mesh (FAAS)} & $\ballotx$ & $\ballotcheck$ \\
+		 \hline
+		\end{tabular}
+}
+	\end{table}
+\end{frame}
