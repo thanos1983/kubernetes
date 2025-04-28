@@ -1,0 +1,64 @@
+\documentclass[12pt,a4paper,oneside]{report}   % list options between brackets
+\usepackage{amsfonts} % for the \checkmark command
+\usepackage{fontawesome5}
+\usepackage{graphicx}
+\usepackage{hyperref}
+\usepackage{url}
+
+\begin{document}
+
+\title{Custom k8s Implementation on the Cloud} % type title between braces
+\author{Athanasios Garyfalos} % type author(s) between braces
+\date{\today} % type date between braces
+\maketitle
+
+\begin{abstract}
+	Phase 1 implementation includes the following steps:
+	\begin{itemize}
+		\item Custom k8s fully automated deployment on Azure:
+		\begin{itemize}
+			\item Deploy Private Virtual Network with Private Virtual Subnets
+			\item Deploy Linux Virtual Machines (VM) (LB, k8s nodes)
+			\item Configure High Availability (HA) Load Balancer (LB)
+			\item Start Prime Master k8s node
+			\item Once Prime Master k8s node reach Ready state deploy rest of nodes (Masters, Workers)
+		\end{itemize}
+		\item Custom k8s fully automated deplpoyment on AWS (TODO)
+		\item Custom k8s fully automated deplpoyment on Google (TODO)
+	  \end{itemize}
+\end{abstract}
+
+\chapter{Phase 1 Implementation}
+\section{Two different possible scenarios:}
+\begin{itemize}
+    \item[\checkmark] Local ETCD Infrastructure~\protect\ref{fig:hldLocalEtcdInfra}
+    \item[\checkmark] External ETCD Infrastructure~\protect\ref{fig:hldExternalEtcdInfra}
+\end{itemize}
+
+\begin{figure}[h]
+    \caption{\label{fig:hldLocalEtcdInfra}High Level Design Local ETCD} % ~\protect\cite{sysdig}
+    \centering
+    \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../HLD/localETCD/hldLocalEtcdInfra.png}
+\end{figure}
+
+\begin{figure}[h]
+    \caption{\label{fig:hldExternalEtcdInfra}High Level Design External ETCD} % ~\protect\cite{sysdig}
+    \centering
+    \includegraphics[width=\textwidth,height=\textheight,keepaspectratio]{../HLD/externalETCD/hldExternalEtcdInfra.png}
+\end{figure}
+
+\section{Fundamentals Benefits of a custom k8s cluster on the Cloud}
+\begin{itemize}
+    \item[\checkmark] Reducing Cost: \faIcon{money-check-alt}
+    \item[\checkmark] Being able to customise the Operating System: \faIcon{linux}
+    \item[\checkmark] Being able to customise the nodes: \faIcon{laptop-code}
+\end{itemize}
+
+% \subsection{Usage} % subsection 2.1.1
+
+% \begin{thebibliography}{9}
+%     \bibitem{sysdig}
+%     Sysdig, \href{https://sysdig.com/blog/how-to-monitor-openshift/}{How to monitor OpenShift with Sysdig Monitor}, 14 03 2025.
+% \end{thebibliography}
+
+\end{document}

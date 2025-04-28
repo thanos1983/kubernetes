@@ -1,0 +1,32 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s calico
+- name: Download and Install Calico Helm Reposítory
+  block:
+    - name: Add Stable Calico Helm Repo
+      kubernetes.core.helm_repository:
+        repo_url: "{{ calico.helm.repo_url }}"
+        name: "{{ calicoHelmChartName | default('projectcalico') }}"
+        kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+
+    - name: Prepare Helm template file for Calico
+      ansible.builtin.template:
+        dest: "{{ role_path }}/files/calico.yaml"
+        src: "{{ role_path }}/templates/calico.yaml.j2"
+
+    - name: Deploy Calico Helm chart Version '{{ calico.helm.chart_version }}'
+      kubernetes.core.helm:
+        wait: "{{ calico.helm.wait }}"
+        name: "{{ calico.helm.name }}"
+        chart_version: "{{ calico.helm.chart_version }}"
+        values_files: "{{ role_path }}/files/calico.yaml"
+        create_namespace: "{{ calico.helm.create_namespace }}"
+        kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+        release_namespace: "{{ calicoReleaseNamespace | default('tigera-operator') }}"
+        chart_ref: "{{ calicoHelmChartRef | default('projectcalico/tigera-operator') }}"
+
+    - name: Remove Helm file for Calico (delete file)
+      ansible.builtin.file:
+        state: absent
+        path: "{{ role_path }}/files/calico.yaml"
+  connection: local
+  delegate_to: localhost

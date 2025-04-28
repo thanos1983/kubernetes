@@ -1,0 +1,22 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s kubeadmJoin
+- name: Generate Token and Certs
+  block:
+    - name: Wait until the file kube config is present before continuing
+      ansible.builtin.wait_for:
+        timeout: "{{ kube.config.timeout }}"
+        path: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+
+    - name: Load Cert Key from File
+      ansible.builtin.include_tasks: customCertKeyExtract.yml
+
+    - name: Create a Bootstrap Token
+      ansible.builtin.shell: |
+        kubeadm token create --print-join-command --kubeconfig {{ kubeConfigDestination | default('~/.kube/config') }}
+      register: kubeadm_token_join
+
+    - name: Set Variables for Join Command
+      ansible.builtin.set_fact:
+        kubeadm_token: "{{ kubeadm_token_join.stdout }}"
+  delegate_to: localhost
+  connection: local

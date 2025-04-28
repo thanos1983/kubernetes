@@ -1,0 +1,23 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s kubeadmCerts
+- name: Generate Cert Key, configure, and start Apache
+  block:
+    - name: Generate Custom Cert Key
+      ansible.builtin.shell:
+        cmd: kubeadm certs certificate-key
+      register: certificateCustomKey
+
+    - name: Copy Cert Key to File
+      ansible.builtin.copy:
+        mode: "0644"
+        content: "{{ certificateCustomKey.stdout }}"
+        dest: "{{ role_path }}/files/{{ kubeadm.certCustomKeyFile }}"
+
+    - name: Encrypt Cert Key File
+      ansible.builtin.shell:
+        cmd: "ansible-vault encrypt {{ role_path }}/files/{{ kubeadm.certCustomKeyFile }}"
+
+    - name: Load Cert Key from File
+      ansible.builtin.include_tasks: customCertKeyExtract.yml
+  delegate_to: localhost
+  connection: local

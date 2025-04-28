@@ -1,0 +1,7 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s labelNode
+- name: Encrypt Cert Key File
+  ansible.builtin.shell:
+    cmd: "kubectl label node {{ ansible_hostname | lower }} kubernetes.io/role=worker"
+  connection: local
+  delegate_to: localhost

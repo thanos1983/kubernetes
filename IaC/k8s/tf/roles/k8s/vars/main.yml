@@ -1,0 +1,73 @@
+---
+# vars file for IaC/k8s/tf/roles/k8s
+crio:
+  metrics:
+    metricsYamlFile: "{{ role_path }}/files/cluster.yaml"
+    url: "https://raw.githubusercontent.com/cri-o/cri-o/refs/heads/main/contrib/metrics-exporter/cluster.yaml"
+
+secrets:
+  certManager:
+    name: "{{ secretName }}"
+    namespace: "{{ certManagerNamespace }}"
+    data:
+      secretValue: "{{ secretValue }}"
+  istio:
+    name: "{{ secretName }}"
+    namespace: "{{ istioNamespace }}"
+    data:
+      secretValue: "{{ secretValue }}"
+
+namespaces:
+  faas:
+    labels:
+      istio-injection: enabled
+    name: "{{ faasNamespace }}"
+  istio:
+    name: "{{ istioNamespace }}"
+  certManager:
+    name: "{{ certManagerNamespace }}"
+
+calico:
+  helm:
+    wait: true
+    name: "projectcalico"
+    create_namespace: true
+    chart_version: "3.29.3"
+    systemNamespace: "calico-system"
+    apiserverNamespace: "calico-apiserver"
+    repo_url: "https://docs.tigera.io/calico/charts"
+
+cilium:
+  helm:
+    name: "cilium"
+    chart_version: "1.16.6"
+    create_namespace: false
+    repo_url: "https://helm.cilium.io/"
+
+metricsServer:
+  helm:
+    name: "metrics-server"
+    chart_version: "3.12.2"
+    create_namespace: false
+    repo_url: "https://kubernetes-sigs.github.io/metrics-server/"
+    values_files: "{{ role_path }}/files/metricsServerHelmValues.yml"
+  url: "https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml"
+
+kube:
+  config:
+    timeout: 1500 # 25 minutes
+
+kubeadm:
+  dir: "/tmp"
+  crioUnixSocket: "unix:///var/run/crio/crio.sock"
+  certCustomKeyFile: "certificate-custom-key.yml"
+
+kubeadmFiles:
+  kubeadmScript:
+    mode: '0644'
+    src: 'kubeadm.sh.j2'
+    dest: '{{ kubeadm.dir }}/kubeadm.sh'
+  kubeadmConfFile:
+    mode: '0644'
+    src: 'kubelet-config.yaml.j2'
+    dest: '{{ kubeadm.dir }}/kubelet-config.yaml'

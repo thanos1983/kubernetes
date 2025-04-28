@@ -1,0 +1,20 @@
+replicas: 2
+containerPort: 4443
+hostNetwork:
+  enabled: true
+podDisruptionBudget:
+  enabled: true
+  minAvailable: 1
+serviceMonitor:
+  enabled: true
+args:
+  - --kubelet-insecure-tls
+affinity:
+  podAntiAffinity:
+    requiredDuringSchedulingIgnoredDuringExecution:
+      - labelSelector:
+          matchLabels:
+            k8s-app: metrics-server
+        namespaces:
+          - kube-system
+        topologyKey: kubernetes.io/hostname

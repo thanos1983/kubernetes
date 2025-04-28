@@ -1,0 +1,220 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  labels:
+    kubernetes.io/metadata.name: demo
+  name: demo
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: regcred
+  namespace: demo
+data:
+  .dockerconfigjson: ewoJImF1dGhzIjogewoJCSJjb250YWluZXJzZXJ2aWNlc2NvbnRhaW5lcnJlZ2lzdHJ5LmF6dXJlY3IuaW8iOiB7CgkJCSJhdXRoIjogIlkyOXVkR0ZwYm1WeVUyVnlkbWxqWlhORGIyNTBZV2x1WlhKU1pXZHBjM1J5ZVRwSGVtMU5MMUZJTjFOU1VuUnNTVVJGTTFaRGFYRmxSMnhqU25SU1pYUjZZa3BCWTFKeWFWZGxZM01yUVVOU1JHNVJUa2RIIgoJCX0KCX0KfQ==
+type: kubernetes.io/dockerconfigjson
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  labels:
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/name: "nginxLabel"
+    app.kubernetes.io/component: "frontend"
+    app.kubernetes.io/instance: "nginxLabel-dev"
+  name: nginx-deployment
+  namespace: demo
+spec:
+  replicas: 1
+  strategy:
+    type: Recreate
+  selector:
+    matchLabels:
+      app.kubernetes.io/version: "0.0.1"
+      app.kubernetes.io/name: "nginxLabel"
+      app.kubernetes.io/component: "frontend"
+      app.kubernetes.io/instance: "nginxLabel-dev"
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/version: "0.0.1"
+        app.kubernetes.io/name: "nginxLabel"
+        app.kubernetes.io/component: "frontend"
+        app.kubernetes.io/instance: "nginxLabel-dev"
+    spec:
+      #      securityContext:
+      #        runAsUser: 101
+      #        runAsGroup: 101
+      #        runAsNonRoot: true
+      restartPolicy: Always
+      containers:
+        - name: nginx
+          image: containerservicescontainerregistry.azurecr.io/ubuntu/custom-nginx:0.0.1
+          resources:
+            limits:
+              memory: 20Mi
+              cpu: 200m
+            requests:
+              cpu: 100m
+              memory: 10Mi
+          ports:
+            - containerPort: 80
+              name: nginx-web-port
+          livenessProbe:
+            httpGet:
+              path: /
+              port: nginx-web-port
+            initialDelaySeconds: 5
+            periodSeconds: 5
+      imagePullSecrets:
+        - name: regcred
+---
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: nginx-hpa
+  namespace: demo
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: nginx-deployment
+  minReplicas: 1
+  maxReplicas: 2
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 300
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+    scaleUp:
+      stabilizationWindowSeconds: 0
+      policies:
+        - type: Percent
+          value: 100
+          periodSeconds: 15
+        - type: Pods
+          value: 4
+          periodSeconds: 15
+      selectPolicy: Max
+  metrics:
+    - type: Resource
+      resource:
+        name: memory
+        target:
+          type: Utilization
+          averageUtilization: 60
+---
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/name: "nginxLabel"
+    app.kubernetes.io/component: "frontend"
+    app.kubernetes.io/instance: "nginxLabel-dev"
+  name: nginx-service
+  namespace: demo
+spec:
+  internalTrafficPolicy: Cluster
+  ipFamilies:
+    - IPv4
+  ipFamilyPolicy: SingleStack
+  ports:
+    - name: http
+      port: 80
+      protocol: TCP
+      targetPort: nginx-web-port
+  selector:
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/name: "nginxLabel"
+    app.kubernetes.io/component: "frontend"
+    app.kubernetes.io/instance: "nginxLabel-dev"
+  sessionAffinity: None
+  type: ClusterIP
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: nginx-ingress
+  namespace: demo
+  labels:
+    app.kubernetes.io/version: "0.0.1"
+    app.kubernetes.io/name: "nginxLabel"
+    app.kubernetes.io/component: "frontend"
+    app.kubernetes.io/instance: "nginxLabel-dev"
+  annotations:
+    ingress.kubernetes.io/ssl-redirect: "false"
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - bar.k8sdemocluster.com
+      secretName: tls-secret
+  rules:
+    - host: bar.k8sdemocluster.com
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: nginx-service
+                port:
+                  number: 80
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: tls-secret
+  namespace: demo
+  annotations:
+    kubectl.kubernetes.io/last-applied-configuration: ""
+spec:
+  issuerRef:
+    kind: ClusterIssuer
+    name: letsencrypt-prod
+  secretName: letsencrypt-prod
+  commonName: k8sdemocluster.com
+  dnsNames:
+    - bar.k8sdemocluster.com
+
+#apiVersion: apps/v1
+#kind: Deployment
+#metadata:
+#  name: ubuntu-deployment
+#  labels:
+#    app.kubernetes.io/name: proxy
+#spec:
+#  replicas: 1
+#  selector:
+#    matchLabels:
+#      app.kubernetes.io/name: proxy
+#  template:
+#    metadata:
+#      labels:
+#        app.kubernetes.io/name: proxy
+#    spec:
+#      containers:
+#        - name: ubuntu
+#          image: ubuntu/nginx:1.18-22.04_beta
+#          ports:
+#            - containerPort: 80
+#              name: http-web-svc
+#---
+#apiVersion: v1
+#kind: Service
+#metadata:
+#  name: ubuntu-service
+#spec:
+#  selector:
+#    app.kubernetes.io/name: proxy
+#  ports:
+#  - name: name-of-service-port
+#    protocol: TCP
+#    port: 80
+#    targetPort: http-web-svc

@@ -1,0 +1,15 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s kubernetesNamespaces
+- name: Create required k8s namespace(s)
+  connection: local
+  delegate_to: localhost
+  kubernetes.core.k8s:
+    state: present
+    kind: Namespace
+    api_version: v1
+    name: "{{ item.value.name }}"
+    definition:
+      metadata:
+        labels: "{{ item.value.labels | default({}) }}"
+    kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+  loop: "{{ lookup('ansible.builtin.dict', namespaces) }}"

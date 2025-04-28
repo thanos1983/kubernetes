@@ -1,0 +1,11 @@
+---
+# tasks file for IaC/k8s/tf/roles/common validateLB
+- name: Pause play until LB URL is reachable from this host
+  ansible.builtin.uri:
+    url: "http://{{ lb_ip_address }}:{{ lb_stats_bind_port }}{{ lb_stats_uri_path }}"
+    follow_redirects: none
+    method: GET
+  register: _result
+  until: _result.status == 200
+  retries: 100 # 100 * 3 seconds = 5 minutes (100*3/60)
+  delay: 3 # Every 3 seconds

@@ -1,0 +1,17 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s kubeadmInit
+# - name: Wait for LB to become accessible
+#  ansible.builtin.include_tasks:
+#    file: waitLoadBalancer.yml
+
+- name: Instantiate Primary Master Node
+  block:
+    - name: Check if Primary Master Node has Being Previously Deployed
+      ansible.builtin.include_tasks:
+        file: kubeadmReset.yml
+
+    - name: Instantiate Prime Master Node
+      ansible.builtin.shell:
+        cmd: |
+          kubeadm init --skip-phases=addon/kube-proxy --upload-certs --control-plane-endpoint={{ lb_ip_address }} --apiserver-bind-port={{ kube_api_bind_port }} --certificate-key={{ kubeClusterCertKey }} --cri-socket={{ kubeadm.crioUnixSocket }} --pod-network-cidr={{ podNetworkCidr }}
+  become: true

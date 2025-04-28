@@ -1,0 +1,40 @@
+global_defs {
+  notification_email {
+  }
+  router_id ${ROUTER_ID}
+  vrrp_skip_check_adv_addr
+  vrrp_garp_interval 0
+  vrrp_gna_interval 0
+}
+
+vrrp_track_process haproxy {
+  process haproxy
+  quorum 1
+  delay 2
+}
+
+vrrp_instance haproxy-vip {
+  state ${STATE}
+  priority ${PRIORITY}
+  interface eth0 # Network card
+  virtual_router_id 101
+  advert_int 1
+  authentication {
+    auth_type PASS
+    auth_pass 1111
+  }
+  unicast_src_ip ${UNICAST_SRC_IP} # The IP address of this machine
+  unicast_peer {
+  %{~ for addr in ip_addrs_of_peers ~}
+    ${addr} # The IP address of peer machines
+  %{~ endfor ~}
+  }
+
+  virtual_ipaddress {
+    ${VIRTUAL_IPADDRESS}/24 dev eth0 # The VIP address
+  }
+
+  track_process {
+	haproxy
+  }
+}

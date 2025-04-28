@@ -1,0 +1,8 @@
+---
+# tasks file for IaC/k8s/tf/roles/common waitForSshConnection
+- name: Wait 5 seconds for port 22 to become open
+  ansible.builtin.wait_for:
+    port: 22
+    delay: 5
+    host: '{{ (ansible_ssh_host|default(ansible_host))|default(inventory_hostname) }}'
+  connection: local

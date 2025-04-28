@@ -1,0 +1,9 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s kubeadmInit
+- name: Instantiate Primary Master Node
+  block:
+    - name: Instantiate Prime Master Node
+      ansible.builtin.shell:
+        cmd: |
+          kubeadm init --upload-certs --control-plane-endpoint={{ lb_ip_address }} --apiserver-bind-port={{ kube_api_bind_port }} --certificate-key={{ kubeClusterCertKey }} --cri-socket={{ kubeadm.crioUnixSocket }} --pod-network-cidr={{ podNetworkCidr }} --service-cidr={{ serviceCidr }}
+  become: true

@@ -1,0 +1,40 @@
+---
+# tasks file for IaC/k8s/tf/roles/highAvailabilityProxy packages
+- name: Install, configure, and start HAProxy
+  block:
+    - name: Upgrade the OS (apt-get dist-upgrade)
+      ansible.builtin.apt:
+        upgrade: full
+
+    - name: Update all packages to their latest version
+      ansible.builtin.apt:
+        name: "*"
+        clean: yes
+        autoclean: yes
+        autoremove: yes
+        state: "latest"
+        update_cache: yes
+
+    - name: Install latest version of "software-properties-common" ignoring "install-recommends"
+      ansible.builtin.apt:
+        install_recommends: yes
+        name: software-properties-common
+
+    - name: Install necessary package(s)
+      ansible.builtin.apt:
+        state: "latest"
+        name: "{{ item }}"
+      loop: "{{ packages }}"
+
+    - name: Restart service(s), in all cases, also issue daemon-reload to pick up config changes
+      ansible.builtin.systemd_service:
+        enabled: true
+        state: started
+        name: "{{ item }}"
+        daemon_reload: true
+      loop:
+        - haproxy
+
+    - name: Unconditionally reboot the machine with all defaults
+      ansible.builtin.reboot:
+  become: true

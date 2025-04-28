@@ -1,0 +1,7 @@
+---
+# tasks file for IaC/k8s/tf/ansibleRoles/ping
+#- name: Gathers facts about remote hosts
+#  ansible.builtin.setup:
+
+- name: Example from an Ansible Playbook
+  ansible.builtin.ping:

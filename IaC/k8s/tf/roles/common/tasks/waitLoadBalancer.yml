@@ -1,0 +1,7 @@
+---
+# tasks file for IaC/k8s/tf/roles/common waitLoadBalancer
+- name: Wait for IP {{ lb_ip_address }} and PORT {{ kube_api_bind_port }} of the LB to become available.
+  ansible.builtin.wait_for:
+    host: "{{ lb_ip_address }}"
+    port: "{{ kube_api_bind_port }}"
+    timeout: "{{ timeout | default(300) }}"

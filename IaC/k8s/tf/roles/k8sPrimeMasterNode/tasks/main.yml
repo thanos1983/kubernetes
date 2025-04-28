@@ -1,0 +1,66 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8sPrimeMasterNode
+- name: Wait for SSH Connection until the node becomes accessible
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: waitForSshConnection
+
+- name: Gathers facts about remote host setup
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: setup
+
+- name: Remove Kube Config File
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: removeKubeConfig
+
+- name: Wait for Node to complete Cloud Init file deployment
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: cloudInit
+
+- name: Wait for SSH Connection until the node becomes accessible
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: waitForSshConnection
+
+- name: Create Cert Key for k8s Cluster
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: kubeadmCerts
+
+- name: Instantiate Prime Master Node for Calico CNI configurations
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: kubeadmInit
+
+- name: Extract Kube Config from Remote Prime Master
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: extractKubeConfig
+
+- name: Deploy Calico Helm Chart
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: calico
+
+- name: Deploy Metrics Server
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: metricsServer
+
+- name: Deploy CRI-O Metrics
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: crioMetrics
+
+- name: Create required namespace(s)
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: kubernetesNamespaces
+
+- name: Create desired secret(s)
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: kubernetesSecret

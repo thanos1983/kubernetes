@@ -1,2 +1,2 @@
 # kubernetes
-Deploying Kubernetes through IaC
+Deploying Kubernetes cluster on Azure not AKS

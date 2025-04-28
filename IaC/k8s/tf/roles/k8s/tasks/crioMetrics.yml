@@ -1,0 +1,19 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8sPrimeMasterNode crioMetrics
+- name: Download and Install CRI-O metrics
+  block:
+    - name: Download CRI-O Metrics yaml File
+      ansible.builtin.get_url:
+        url: "{{ crio.metrics.url }}"
+        dest: "{{ crio.metrics.metricsYamlFile }}"
+
+    - name: Deploy CRI-O Metrics yaml File
+      kubernetes.core.k8s:
+        src: "{{ crio.metrics.metricsYamlFile }}"
+
+    - name: Remove CRI-O Metrics yaml File (delete file)
+      ansible.builtin.file:
+        state: absent
+        path: "{{ crio.metrics.metricsYamlFile }}"
+  delegate_to: localhost
+  connection: local

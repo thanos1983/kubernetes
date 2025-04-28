@@ -1,0 +1,12 @@
+\beamer@slide {sec:reasons}{2}
+\beamer@slide {subsec:list-of-reasons-reasons}{3}
+\beamer@slide {sec:fundamentals}{10}
+\beamer@slide {subsec:hld-local-fundamentals}{11}
+\beamer@slide {subsec:hld-external-fundamentals}{13}
+\beamer@slide {sec:costs}{14}
+\beamer@slide {subsec:aks-costs-costs}{15}
+\beamer@slide {subsec:custom-k8s-costs}{22}
+\beamer@slide {sec:customization}{23}
+\beamer@slide {subsec:node-customization}{24}
+\beamer@slide {sec:scaling}{33}
+\beamer@slide {subsec:node-scaling-scaling}{34}

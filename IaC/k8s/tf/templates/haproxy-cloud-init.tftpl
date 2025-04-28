@@ -1,0 +1,51 @@
+#cloud-config
+package_update: true
+package_upgrade: true
+package_reboot_if_required: true
+
+runcmd:
+  - dpkg --configure -a
+  - apt-get install --no-install-recommends software-properties-common
+  - add-apt-repository -y ppa:vbernat/haproxy-3.0
+  - apt-get install -y haproxy=3.0.\*
+  - echo "" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "frontend stats" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        mode http" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        bind *:${HAPROXY_STATS_BIND_PORT}" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        stats enable" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        stats uri ${HAPROXY_STATS_URI_PATH}" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        stats refresh ${HAPROXY_STATS_WEB_PAGE_REFRESH_RATE}" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "frontend k8s-api-server" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        mode tcp" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        bind :${APISERVER_BIND_PORT}" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        option tcplog" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        default_backend kube-api-server" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "backend kube-api-server" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        mode tcp" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        option tcp-check" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        balance roundrobin" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+%{ for config_master_key, config_master_value in config_master }
+  - echo "        server ${config_master_key} ${config_master_value}:${APISERVER_BIND_PORT} check" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+%{ endfor }
+  - echo "" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "frontend k8s-http-server" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        mode tcp" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        bind :80" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        bind :443" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        option tcplog" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        http-request redirect scheme https code 301 unless { ssl_fc }" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        default_backend kube-http-server" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "backend kube-http-server" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        mode tcp" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        option ssl-hello-chk" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        balance roundrobin" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+%{ for config_worker_key, config_worker_value in config_worker }
+  - echo "        server ${config_worker_key} ${config_worker_value}:${NODE_PORT_HTTPS} check" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+%{ endfor }
+  - systemctl daemon-reload
+  - systemctl restart haproxy.service

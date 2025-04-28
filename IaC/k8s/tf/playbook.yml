@@ -1,0 +1,21 @@
+---
+- name: Prerequisite Deployment
+  hosts: all
+  environment:
+    ENABLE_TURBO_MODE: 1
+  any_errors_fatal: true
+  gather_facts: false
+
+  roles:
+    - role: ping
+      tags: [ ping ]
+    - role: k8sAnsible
+      tags: [ k8sAnsible ]
+    - role: k8sWorkerNodes
+      tags: [ k8sWorkerNodes ]
+    - role: k8sPrimeMasterNode
+      tags: [ k8sPrimeMasterNode ]
+    - role: highAvailabilityProxy
+      tags: [ highAvailabilityProxy ]
+    - role: k8sSecondaryMasterNodes
+      tags: [ k8sSecondaryMasterNodes ]

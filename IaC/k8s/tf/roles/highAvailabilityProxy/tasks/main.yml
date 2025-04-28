@@ -1,0 +1,21 @@
+---
+# tasks file for IaC/k8s/tf/roles/highAvailabilityProxy
+- name: Wait for SSH Connection until the node becomes accessible
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: waitForSshConnection
+
+- name: Gathers facts about remote host
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: setup
+
+- name: Wait for Node to complete Cloud Init file deployment
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: cloudInit
+
+- name: Wait for SSH Connection until the node becomes accessible
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: waitForSshConnection

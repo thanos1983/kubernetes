@@ -1,0 +1,18 @@
+devices: eth0
+routingMode: native
+kubeProxyReplacement: true
+enableIPv4Masquerade: false
+k8sServiceHost: {{ lb_ip_address }}
+k8sServicePort: {{ kube_api_bind_port }}
+ipam:
+  mode: azure
+loadBalancer:
+  mode: snat
+  acceleration: native
+azure:
+  enabled: true
+  tenantID: {{ AZURE_TENANT_ID }}
+  clientID: {{ AZURE_CLIENT_ID }}
+  clientSecret: {{ AZURE_CLIENT_SECRET }}
+  subscriptionID: {{ AZURE_SUBSCRIPTION_ID }}
+  resourceGroup: {{ AZURE_NODE_RESOURCE_GROUP }}

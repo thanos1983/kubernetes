@@ -1,0 +1,60 @@
+\section{Reasons}\label{sec:reasons}
+\subsection{List of Reasons}\label{subsec:list-of-reasons-reasons}
+ \begin{frame}{Reasons for Considering Alternative(s)}
+ \setbeamercovered{dynamic} % Makes the text appear before it presents nice!!!!
+	\begin{columns}[T] % contents are top vertically aligned
+		\begin{column}{5cm} % alternative top-align that's better for graphics
+			\begin{figure}
+				\centering
+				\includegraphics<1>[width=\textwidth, height=0.7\textheight]{./png/excessiveBill}%
+				\includegraphics<2>[width=\textwidth]{./png/customization}%
+				\includegraphics<3>[width=\textwidth]{./png/k8sNodes}%
+				\includegraphics<4>[width=\textwidth]{./png/troubleshooting}%
+				\includegraphics<5>[width=\textwidth]{./png/linuxOS}%
+				\includegraphics<6>[width=\textwidth]{./png/kubernetesScaling}%
+				\includegraphics<7>[width=\textwidth]{./png/k8sHaRegions}%
+
+				\only<1>{{\usebeamercolor[fg]{caption name}Figure:} Cost !!!}%
+				\only<2>{{\usebeamercolor[fg]{caption name}Figure:} Customization}%
+				\only<3>{{\usebeamercolor[fg]{caption name}Figure:} k8s Cluster}%
+				\only<4>{{\usebeamercolor[fg]{caption name}Figure:} Troubleshooting}%
+				\only<5>{{\usebeamercolor[fg]{caption name}Figure:} Operating System}%
+				\only<6>{{\usebeamercolor[fg]{caption name}Figure:} Node(s) Scaling}%
+				\only<7>{{\usebeamercolor[fg]{caption name}Figure:} k8s Region(s)}%
+			\end{figure}
+		\end{column}
+		\begin{column}{5cm} % alternative top-align that's better for graphics
+			\begin{itemize}
+				\item<+-| alert@+> The cost of an AKS cluster \alert{Super High}!
+				\item<+-| alert@+> Azure Kubernetes Service (\alert{AKS})
+				\begin{itemize}
+						\item<+-| alert@+> k8s Node(s)
+						\item<+-| alert@+> No SSH to Node(s)
+						\item<+-| alert@+> No Options for OS
+						\item<+-| alert@+> One choice for all
+						\item<+-| alert@+> Ability to split the node(s) to different region(s)
+				\end{itemize}
+			\end{itemize}
+		\end{column}
+	\end{columns}
+ \end{frame}
+
+% \begin{frame}{Cost}
+% 	\setbeamercovered{dynamic} %Makes the text appear before it presents nice!!!!
+% 	\begin{block}{Issues:}
+% 		\begin{itemize}
+% 			\item<1-| alert@1> We do not control \alert{Maste nodes}!
+% 			\item<2-| alert@2> Different size per node. \alert{Not possible}!
+% 			\item<3-| alert@3> Bonded to buy all services from \alert{Azure}!
+% 			\item<4-| alert@4> Deployment on different \alert{regions}!
+% 		\end{itemize}	
+% 	\end{block}
+% 	\begin{alertblock}{Problems that will be introduced:}
+% 		\begin{itemize}
+% 			\item<1-| alert@1> Standard version \alert{only} one Master node!
+% 			\item<2-| alert@2> Same resources on all node(s)? \alert{CPU / RAM}!
+% 			\item<3-| alert@3> Firewall, DDoS \alert{Security} Protection etc.
+% 			\item<4-| alert@4> \alert{Different} clusters need to be created!
+% 		\end{itemize}	
+% 	\end{alertblock}
+% \end{frame}

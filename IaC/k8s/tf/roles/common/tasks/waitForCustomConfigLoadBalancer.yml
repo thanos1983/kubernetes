@@ -1,0 +1,6 @@
+---
+# tasks file for IaC/k8s/tf/roles/common waitForCustomConfigLoadBalancer
+- name: Wait until the config file contains the new port "{{ kube_api_bind_port }}" is in the file "/etc/haproxy/haproxy.cfg"
+  ansible.builtin.wait_for:
+    path: "/etc/haproxy/haproxy.cfg"
+    search_regex: "{{ kube_api_bind_port }}"

@@ -1,0 +1,77 @@
+\headcommand {\slideentry {0}{0}{1}{1/1}{}{0}}
+\headcommand {\beamer@framepages {1}{1}}
+\headcommand {\beamer@sectionpages {1}{1}}
+\headcommand {\beamer@subsectionpages {1}{1}}
+\headcommand {\sectionentry {1}{Reasons}{2}{Reasons}{0}}
+\headcommand {\beamer@subsectionpages {2}{1}}
+\headcommand {\beamer@subsectionentry {0}{1}{1}{2}{List of Reasons}}
+\headcommand {\slideentry {1}{1}{1}{2/2}{List of Reasons}{0}}
+\headcommand {\beamer@framepages {2}{2}}
+\headcommand {\slideentry {1}{1}{2}{3/9}{List of Reasons}{0}}
+\headcommand {\beamer@framepages {3}{9}}
+\headcommand {\beamer@sectionpages {2}{9}}
+\headcommand {\beamer@subsectionpages {2}{9}}
+\headcommand {\sectionentry {2}{Fundamentals}{10}{Fundamentals}{0}}
+\headcommand {\beamer@subsectionpages {10}{9}}
+\headcommand {\beamer@subsectionentry {0}{2}{1}{10}{HLD Local ETCD}}
+\headcommand {\slideentry {2}{1}{1}{10/10}{HLD Local ETCD}{0}}
+\headcommand {\beamer@framepages {10}{10}}
+\headcommand {\slideentry {2}{1}{2}{11/11}{HLD Local ETCD}{0}}
+\headcommand {\beamer@framepages {11}{11}}
+\headcommand {\beamer@subsectionpages {10}{11}}
+\headcommand {\beamer@subsectionentry {0}{2}{2}{12}{HLD External ETCD}}
+\headcommand {\slideentry {2}{2}{1}{12/12}{HLD External ETCD}{0}}
+\headcommand {\beamer@framepages {12}{12}}
+\headcommand {\slideentry {2}{2}{2}{13/13}{HLD External ETCD}{0}}
+\headcommand {\beamer@framepages {13}{13}}
+\headcommand {\beamer@sectionpages {10}{13}}
+\headcommand {\beamer@subsectionpages {12}{13}}
+\headcommand {\sectionentry {3}{Costs}{14}{Costs}{0}}
+\headcommand {\beamer@subsectionpages {14}{13}}
+\headcommand {\beamer@subsectionentry {0}{3}{1}{14}{AKS Costs}}
+\headcommand {\slideentry {3}{1}{1}{14/14}{AKS Costs}{0}}
+\headcommand {\beamer@framepages {14}{14}}
+\headcommand {\slideentry {3}{1}{2}{15/20}{AKS Costs}{0}}
+\headcommand {\beamer@framepages {15}{20}}
+\headcommand {\beamer@subsectionpages {14}{20}}
+\headcommand {\beamer@subsectionentry {0}{3}{2}{21}{Custom k8s Costs}}
+\headcommand {\slideentry {3}{2}{1}{21/21}{Custom k8s Costs}{0}}
+\headcommand {\beamer@framepages {21}{21}}
+\headcommand {\slideentry {3}{2}{2}{22/22}{Custom k8s Costs}{0}}
+\headcommand {\beamer@framepages {22}{22}}
+\headcommand {\beamer@sectionpages {14}{22}}
+\headcommand {\beamer@subsectionpages {21}{22}}
+\headcommand {\sectionentry {4}{Customization}{23}{Customization}{0}}
+\headcommand {\beamer@subsectionpages {23}{22}}
+\headcommand {\beamer@subsectionentry {0}{4}{1}{23}{Node customization}}
+\headcommand {\slideentry {4}{1}{1}{23/23}{Node customization}{0}}
+\headcommand {\beamer@framepages {23}{23}}
+\headcommand {\slideentry {4}{1}{2}{24/32}{Node customization}{0}}
+\headcommand {\beamer@framepages {24}{32}}
+\headcommand {\beamer@sectionpages {23}{32}}
+\headcommand {\beamer@subsectionpages {23}{32}}
+\headcommand {\sectionentry {5}{Scaling}{33}{Scaling}{0}}
+\headcommand {\beamer@subsectionpages {33}{32}}
+\headcommand {\beamer@subsectionentry {0}{5}{1}{33}{Node(s) Scaling}}
+\headcommand {\slideentry {5}{1}{1}{33/33}{Node(s) Scaling}{0}}
+\headcommand {\beamer@framepages {33}{33}}
+\headcommand {\slideentry {5}{1}{2}{34/35}{Node(s) Scaling}{0}}
+\headcommand {\beamer@framepages {34}{35}}
+\headcommand {\beamer@sectionpages {33}{35}}
+\headcommand {\beamer@subsectionpages {33}{35}}
+\headcommand {\sectionentry {6}{Summary}{36}{Summary}{0}}
+\headcommand {\beamer@subsectionpages {36}{35}}
+\headcommand {\beamer@subsectionentry {0}{6}{1}{36}{Key points repetition}}
+\headcommand {\slideentry {6}{1}{1}{36/36}{Key points repetition}{0}}
+\headcommand {\beamer@framepages {36}{36}}
+\headcommand {\slideentry {6}{1}{2}{37/41}{Key points repetition}{0}}
+\headcommand {\beamer@framepages {37}{41}}
+\headcommand {\beamer@subsectionpages {36}{41}}
+\headcommand {\beamer@subsectionentry {0}{6}{2}{42}{Questions}}
+\headcommand {\slideentry {6}{2}{1}{42/42}{Questions}{0}}
+\headcommand {\beamer@framepages {42}{42}}
+\headcommand {\beamer@partpages {1}{42}}
+\headcommand {\beamer@subsectionpages {42}{42}}
+\headcommand {\beamer@sectionpages {36}{42}}
+\headcommand {\beamer@documentpages {42}}
+\headcommand {\gdef \inserttotalframenumber {17}}

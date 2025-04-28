@@ -1,0 +1,30 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s clusterIssuer
+- name: Create k8s CertManager ClusterIssuer(s)
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      kind: ClusterIssuer
+      apiVersion: cert-manager.io/v1
+      metadata:
+        name: "{{ item.value.name }}"
+      spec:
+        acme:
+          email: "{{ acme_email }}"
+          server: "{{ item.value.server }}"
+          privateKeySecretRef:
+            name: "{{ secretKeyRef }}"
+          solvers:
+            - dns01:
+                cloudflare:
+                  email: "{{ acme_email }}"
+                  apiTokenSecretRef:
+                    name: "{{ secretName }}"
+                    key: "{{ secretKeyRef }}"
+              selector:
+                dnsZones:
+                  - "{{ domain }}"
+    kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+  loop: "{{ lookup('ansible.builtin.dict', certManager) }}"
+  connection: local
+  delegate_to: localhost
