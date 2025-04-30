@@ -20,7 +20,7 @@ spec:
         name: http
         protocol: HTTP
       hosts:
-        - 'istio.k8sdemocluster.com'
+        - 'test.k8sdemocluster.com'
       tls:
         httpsRedirect: true
     - port:
@@ -31,7 +31,7 @@ spec:
         mode: SIMPLE
         credentialName: ingress-cert-nginx # This should match the Certificate secretName
       hosts:
-        - 'istio.k8sdemocluster.com' # This should match a DNS name in the Certificate
+        - 'test.k8sdemocluster.com' # This should match a DNS name in the Certificate
 ---
 apiVersion: apps/v1
 kind: Deployment
@@ -74,7 +74,7 @@ metadata:
   namespace: test
 spec:
   hosts:
-    - 'istio.k8sdemocluster.com'
+    - 'test.k8sdemocluster.com'
   gateways:
     - test/istio-ingressgateway-nginx
   http:
@@ -94,9 +94,9 @@ metadata:
   namespace: istio-system
 spec:
   secretName: ingress-cert-nginx
-  commonName: 'istio.k8sdemocluster.com'
+  commonName: 'test.k8sdemocluster.com'
   dnsNames:
-    - 'istio.k8sdemocluster.com'
+    - 'test.k8sdemocluster.com'
   issuerRef:
     kind: Issuer
     name: letsencrypt-prod

@@ -330,3 +330,9 @@ variable "reflection-allowed-namespaces" {
   type        = string
   default     = "demo-dev,demo-sit,demo-uat,demo-prod"
 }
+
+variable "kubernetes-gateway-api-version" {
+  description = "Kubernetes Gateway API version deployment."
+  type        = string
+  default     = "v1.3.0"
+}

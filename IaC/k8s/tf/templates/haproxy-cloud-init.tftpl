@@ -34,14 +34,27 @@ runcmd:
   - echo "frontend k8s-http-server" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
   - echo "        mode tcp" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
   - echo "        bind :80" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
-  - echo "        bind :443" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
   - echo "        option tcplog" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
-  - echo "        http-request redirect scheme https code 301 unless { ssl_fc }" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
   - echo "        default_backend kube-http-server" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
   - echo "" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
   - echo "backend kube-http-server" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
   - echo "        mode tcp" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
-  - echo "        option ssl-hello-chk" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        option tcp-check" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        balance roundrobin" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+%{ for config_worker_key, config_worker_value in config_worker }
+  - echo "        server ${config_worker_key} ${config_worker_value}:${NODE_PORT_HTTP} check" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+%{ endfor }
+  - echo "" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "frontend k8s-https-server" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        mode tcp" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        bind :443" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        option tcplog" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        default_backend kube-https-server" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "backend kube-https-server" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        mode tcp" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        option tcp-check" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
   - echo "        balance roundrobin" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
   - echo "        default-server inter 10s downinter 5s rise 2 fall 2 slowstart 60s maxconn 250 maxqueue 256 weight 100" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
 %{ for config_worker_key, config_worker_value in config_worker }

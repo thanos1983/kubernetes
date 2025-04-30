@@ -476,7 +476,109 @@ locals {
     }
   ]
 
-  helm_deployment_dependencies = {
+  istio-base = {
+    create_namespace = false
+    wait             = true
+    wait_for_jobs    = false
+    chart            = "base"
+    version          = "1.25.2"
+    name             = "istio-base"
+    namespace        = var.istioNamespace
+    repository       = "https://istio-release.storage.googleapis.com/charts"
+    set_blocks = [
+      {
+        name  = "defaultRevision"
+        value = "default"
+      }
+    ]
+    values = []
+  }
+
+  istio-discovery = {
+    create_namespace = false
+    wait             = true
+    wait_for_jobs    = true
+    chart            = "istiod"
+    version          = "1.25.2"
+    name             = "istio-discovery"
+    namespace        = var.istioNamespace
+    repository       = "https://istio-release.storage.googleapis.com/charts"
+    set_blocks = [
+      {
+        name  = "profile"
+        value = "ambient"
+      },
+      {
+        name  = "meshConfig.accessLogFile"
+        value = "/dev/stdout"
+      }
+    ]
+    values = []
+  }
+
+  istio-cni = {
+    create_namespace = false
+    wait             = true
+    wait_for_jobs    = false
+    chart            = "cni"
+    version          = "1.25.2"
+    name             = "istio-cni"
+    namespace        = var.istioNamespace
+    repository       = "https://istio-release.storage.googleapis.com/charts"
+    set_blocks = [
+      {
+        name  = "profile"
+        value = "ambient"
+      }
+    ]
+    values = []
+  }
+
+  istio-ztunnel = {
+    create_namespace = false
+    wait             = true
+    wait_for_jobs    = false
+    chart            = "ztunnel"
+    version          = "1.25.2"
+    name             = "istio-ztunnel"
+    namespace        = var.istioNamespace
+    repository       = "https://istio-release.storage.googleapis.com/charts"
+    set_blocks = []
+    values = []
+  }
+
+  istio-gateway = {
+    create_namespace = false
+    wait             = false
+    wait_for_jobs    = true
+    version          = "1.25.2"
+    chart            = "gateway"
+    namespace        = var.istioNamespace
+    name             = "istio-ingressgateway"
+    repository       = "https://istio-release.storage.googleapis.com/charts"
+    set_blocks = [
+      {
+        name  = "replicaCount"
+        value = var.ingressReplicaCount
+      },
+      {
+        name  = "service.autoscaling.minReplicas"
+        value = var.ingressReplicaCount
+      },
+      {
+        name  = "service.loadBalancerIP"
+        value = module.project_nodes_public_ips["haProxyLB"].ip_address
+      }
+    ]
+    values = [
+      templatefile("${path.module}/helmIngressIstioGatewayValues/values.yaml.tpl", {
+        zones = "www.${var.zone},${var.zone}"
+        externalIPs = [module.project_nodes_public_ips["haProxyLB"].ip_address]
+      })
+    ]
+  }
+
+  helm_deployment = {
     # argo-cd = {
     #   create_namespace = true
     #   wait             = true
@@ -556,52 +658,6 @@ locals {
     #     })
     #   ]
     # },
-    istio-base = {
-      create_namespace = false
-      wait             = true
-      wait_for_jobs    = false
-      chart            = "base"
-      version          = "1.25.2"
-      name             = "istio-base"
-      namespace        = var.istioNamespace
-      repository       = "https://istio-release.storage.googleapis.com/charts"
-      set_blocks = [
-        {
-          name  = "defaultRevision"
-          value = "default"
-        }
-      ]
-      values = []
-    },
-    istio-cni = {
-      create_namespace = false
-      wait             = true
-      wait_for_jobs    = false
-      chart            = "cni"
-      version          = "1.25.2"
-      name             = "istio-cni"
-      namespace        = var.istioNamespace
-      repository       = "https://istio-release.storage.googleapis.com/charts"
-      set_blocks = []
-      values = []
-    },
-    istio-discovery = {
-      create_namespace = false
-      wait             = true
-      wait_for_jobs    = true
-      chart            = "istiod"
-      version          = "1.25.2"
-      name             = "istio-discovery"
-      namespace        = var.istioNamespace
-      repository       = "https://istio-release.storage.googleapis.com/charts"
-      set_blocks = [
-        {
-          name  = "meshConfig.accessLogFile"
-          value = "/dev/stdout"
-        }
-      ]
-      values = []
-    }
     # loki = { # Do not uncomment
     #   create_namespace = true
     #   wait             = true
@@ -689,39 +745,6 @@ locals {
       repository       = "https://bitnami-labs.github.io/sealed-secrets"
       set_blocks = []
       values = []
-    }
-  }
-
-  helm_deployment = {
-    istio-gateway = {
-      create_namespace = false
-      wait             = false
-      wait_for_jobs    = true
-      version          = "1.25.2"
-      chart            = "gateway"
-      namespace        = var.istioNamespace
-      name             = "istio-ingressgateway"
-      repository       = "https://istio-release.storage.googleapis.com/charts"
-      set_blocks = [
-        {
-          name  = "replicaCount"
-          value = var.ingressReplicaCount
-        },
-        {
-          name  = "service.autoscaling.minReplicas"
-          value = var.ingressReplicaCount
-        },
-        {
-          name  = "service.loadBalancerIP"
-          value = module.project_nodes_public_ips["haProxyLB"].ip_address
-        }
-      ]
-      values = [
-        templatefile("${path.module}/helmIngressIstioGatewayValues/values.yaml.tpl", {
-          zones = "www.${var.zone},${var.zone}"
-          externalIPs = [module.project_nodes_public_ips["haProxyLB"].ip_address]
-        })
-      ]
     }
   }
 
