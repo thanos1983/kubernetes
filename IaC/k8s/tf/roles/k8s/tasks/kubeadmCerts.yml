@@ -3,7 +3,7 @@
 - name: Generate Cert Key, configure, and start Apache
   block:
     - name: Generate Custom Cert Key
-      ansible.builtin.shell:
+      ansible.builtin.command:
         cmd: kubeadm certs certificate-key
       register: certificateCustomKey
 
@@ -14,7 +14,7 @@
         dest: "{{ role_path }}/files/{{ kubeadm.certCustomKeyFile }}"
 
     - name: Encrypt Cert Key File
-      ansible.builtin.shell:
+      ansible.builtin.command:
         cmd: "ansible-vault encrypt {{ role_path }}/files/{{ kubeadm.certCustomKeyFile }}"
 
     - name: Load Cert Key from File

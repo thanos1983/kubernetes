@@ -11,7 +11,7 @@
       ansible.builtin.include_tasks: customCertKeyExtract.yml
 
     - name: Create a Bootstrap Token
-      ansible.builtin.shell: |
+      ansible.builtin.command: |
         kubeadm token create --print-join-command --kubeconfig {{ kubeConfigDestination | default('~/.kube/config') }}
       register: kubeadm_token_join
 
