@@ -476,114 +476,12 @@ locals {
     }
   ]
 
-  istio-base = {
-    create_namespace = false
-    wait             = true
-    wait_for_jobs    = false
-    chart            = "base"
-    version          = "1.25.2"
-    name             = "istio-base"
-    namespace        = var.istioNamespace
-    repository       = "https://istio-release.storage.googleapis.com/charts"
-    set_blocks = [
-      {
-        name  = "defaultRevision"
-        value = "default"
-      }
-    ]
-    values = []
-  }
-
-  istio-discovery = {
-    create_namespace = false
-    wait             = true
-    wait_for_jobs    = true
-    chart            = "istiod"
-    version          = "1.25.2"
-    name             = "istio-discovery"
-    namespace        = var.istioNamespace
-    repository       = "https://istio-release.storage.googleapis.com/charts"
-    set_blocks = [
-      {
-        name  = "profile"
-        value = "ambient"
-      },
-      {
-        name  = "meshConfig.accessLogFile"
-        value = "/dev/stdout"
-      }
-    ]
-    values = []
-  }
-
-  istio-cni = {
-    create_namespace = false
-    wait             = true
-    wait_for_jobs    = false
-    chart            = "cni"
-    version          = "1.25.2"
-    name             = "istio-cni"
-    namespace        = var.istioNamespace
-    repository       = "https://istio-release.storage.googleapis.com/charts"
-    set_blocks = [
-      {
-        name  = "profile"
-        value = "ambient"
-      }
-    ]
-    values = []
-  }
-
-  istio-ztunnel = {
-    create_namespace = false
-    wait             = true
-    wait_for_jobs    = false
-    chart            = "ztunnel"
-    version          = "1.25.2"
-    name             = "istio-ztunnel"
-    namespace        = var.istioNamespace
-    repository       = "https://istio-release.storage.googleapis.com/charts"
-    set_blocks = []
-    values = []
-  }
-
-  istio-gateway = {
-    create_namespace = false
-    wait             = false
-    wait_for_jobs    = true
-    version          = "1.25.2"
-    chart            = "gateway"
-    namespace        = var.istioNamespace
-    name             = "istio-ingressgateway"
-    repository       = "https://istio-release.storage.googleapis.com/charts"
-    set_blocks = [
-      {
-        name  = "replicaCount"
-        value = var.ingressReplicaCount
-      },
-      {
-        name  = "service.autoscaling.minReplicas"
-        value = var.ingressReplicaCount
-      },
-      {
-        name  = "service.loadBalancerIP"
-        value = module.project_nodes_public_ips["haProxyLB"].ip_address
-      }
-    ]
-    values = [
-      templatefile("${path.module}/helmIngressIstioGatewayValues/values.yaml.tpl", {
-        zones = "www.${var.zone},${var.zone}"
-        externalIPs = [module.project_nodes_public_ips["haProxyLB"].ip_address]
-      })
-    ]
-  }
-
-  helm_deployment = {
+  helm_deployment_dependencies = {
     # argo-cd = {
     #   create_namespace = true
     #   wait             = true
     #   wait_for_jobs    = false
-    #   version          = "7.8.28"
+    #   version          = "7.8.18"
     #   name             = "argo-cd"
     #   chart            = "argo-cd"
     #   namespace        = var.argoCdNamespace
@@ -603,7 +501,7 @@ locals {
       wait             = true
       wait_for_jobs    = true
       create_namespace = false
-      version          = "1.17.2"
+      version          = "1.17.1"
       name             = "cert-manager"
       chart            = "cert-manager"
       namespace        = var.certManagerNamespace
@@ -624,7 +522,7 @@ locals {
       create_namespace = false
       wait             = true
       wait_for_jobs    = false
-      version          = "1.16.1"
+      version          = "1.16.0"
       name             = "external-dns"
       chart            = "external-dns"
       namespace        = var.certManagerNamespace
@@ -633,8 +531,8 @@ locals {
       values = [
         templatefile("${path.module}/helmExternalDnsValues/cloudflare.yaml.tpl", {
           txtOwnerId                   = var.CLOUDFLARE_ZONE_ID
-          cloudflare_secretKeyRef_key  = var.cloudflare_secretKeyRef_key
           cloudflare_secretKeyRef_name = var.cloudflare_secretKeyRef_name
+          cloudflare_secretKeyRef_key  = var.cloudflare_secretKeyRef_key
         })
       ]
     },
@@ -642,7 +540,7 @@ locals {
     #   create_namespace = true
     #   wait             = true
     #   wait_for_jobs    = false
-    #   version          = "8.13.1"
+    #   version          = "8.11.0"
     #   name             = "grafana"
     #   chart            = "grafana"
     #   namespace        = var.monitoring_namespace
@@ -658,9 +556,50 @@ locals {
     #     })
     #   ]
     # },
+    ingress-nginx = {
+      create_namespace = true
+      wait             = false
+      wait_for_jobs    = false
+      version          = "4.12.1"
+      name             = "ingress-nginx"
+      namespace        = "ingress-nginx"
+      chart            = "ingress-nginx"
+      repository       = "https://kubernetes.github.io/ingress-nginx"
+      set_blocks = [
+        {
+          name  = "controller.service.nodePorts.http"
+          value = var.kubeServerNodePortHttp
+        },
+        {
+          name  = "controller.service.nodePorts.https"
+          value = var.kubeServerNodePortHttps
+        },
+        {
+          name  = "controller.replicaCount"
+          value = var.ingressReplicaCount
+        },
+        {
+          name  = "controller.service.loadBalancerIP"
+          value = module.project_nodes_public_ips["haProxyLB"].ip_address
+        },
+        {
+          name  = "controller.service.annotations.external-dns\\.alpha\\.kubernetes\\.io/ttl"
+          value = "120"
+        },
+        {
+          name  = "controller.service.annotations.service\\.beta\\.kubernetes\\.io/azure-load-balancer-health-probe-request-path"
+          value = "/healthz"
+        }
+      ]
+      values = [
+        templatefile("${path.module}/helmIngressNginxValues/values.yaml.tpl", {
+          externalIPs = [module.project_nodes_public_ips["haProxyLB"].ip_address]
+          zones = "www.${var.zone},${var.zone}"
+        })
+      ]
+    },
     # loki = { # Do not uncomment
     #   create_namespace = true
-    #   wait             = true
     #   wait_for_jobs    = false
     #   version          = "6.29.0"
     #   name             = "loki"
@@ -679,9 +618,8 @@ locals {
     # },
     # prometheus = {
     #   create_namespace = true
-    #   wait             = true
     #   wait_for_jobs    = false
-    #   version          = "27.11.0"
+    #   version          = "27.7.1"
     #   name             = "prometheus"
     #   chart            = "prometheus"
     #   namespace        = var.monitoring_namespace
@@ -693,7 +631,6 @@ locals {
     # },
     #   promtail = {
     #     create_namespace = true
-    #     wait             = true
     #     wait_for_jobs    = false
     #     version          = "6.16.6"
     #     name             = "promtail"
@@ -705,9 +642,8 @@ locals {
     #   },
     #   qdrant = {
     #     create_namespace = true
-    #     wait             = true
     #     wait_for_jobs    = false
-    #     version          = "1.14.0"
+    #     version          = "1.13.6"
     #     name             = "qdrant"
     #     chart            = "qdrant"
     #     namespace        = var.qdrant_namespace
@@ -726,7 +662,7 @@ locals {
       create_namespace = false
       wait             = true
       wait_for_jobs    = false
-      version          = "9.0.344"
+      version          = "9.0.322"
       chart            = "reflector"
       name             = "emberstack"
       namespace        = "kube-system"
@@ -747,52 +683,8 @@ locals {
       values = []
     }
   }
-
-  knative = {
-    operator = {
-      filename = "${path.module}/roles/knative/files/operator.yaml"
-      content = replace(data.http.knative_operator.response_body, "initialDelaySeconds: 120", "initialDelaySeconds: 180")
-    }
-    net_istio = {
-      filename = "${path.module}/roles/knative/files/net-istio.yaml"
-      content  = data.http.net_istio.response_body
-    }
-  }
-
-  secret_reflector = {
-    qdrant = {
-      api_version = "v1"
-      kind        = "Secret"
-      annotations = {
-        "reflector.v1.k8s.emberstack.com/reflection-allowed"            = "true"
-        "reflector.v1.k8s.emberstack.com/reflection-auto-enabled"       = "true"
-        "reflector.v1.k8s.emberstack.com/reflection-auto-namespaces"    = var.reflection-allowed-namespaces
-        "reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces" = var.reflection-allowed-namespaces
-      }
-      metadata = {
-        name      = "qdrant-apikey"
-        namespace = var.qdrant_namespace
-      }
-    }
-  }
 }
 
 # User permissions
 data "azurerm_client_config" "current" {}
 data "azurerm_subscription" "subscription" {}
-
-data "http" "knative_operator" {
-  url = "https://github.com/knative/operator/releases/download/knative-v${var.knativeOperatorVersion}/operator.yaml"
-}
-
-data "http" "net_istio" {
-  url = "https://github.com/knative/net-istio/releases/download/knative-v${var.knativeNetIstioVersion}/net-istio.yaml"
-}
-
-# data "kubectl_file_documents" "knative_operator" {
-#   content = replace(data.http.knative_operator.response_body, "initialDelaySeconds: 120", "initialDelaySeconds: 180")
-# }
-#
-# data "kubectl_file_documents" "net_istio" {
-#   content = data.http.net_istio.response_body
-# }

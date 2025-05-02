@@ -284,12 +284,6 @@ variable "accelerated_networking_enabled" {
   default     = true
 }
 
-variable "user_role_definition_names" {
-  description = "The following API permissions are required in order to use the AzureAD Application resource."
-  type = list(string)
-  default = ["Directory Writers"]
-}
-
 variable "type" {
   description = "The connection type."
   type        = string
@@ -323,16 +317,4 @@ variable "ttl" {
   description = "Time To Live (TTL) of the DNS record in seconds."
   type        = number
   default     = 1
-}
-
-variable "reflection-allowed-namespaces" {
-  description = "Control the namespaces we want to replicate a Secret(s) of the reflector. Add more by separating them by coma."
-  type        = string
-  default     = "demo-dev,demo-sit,demo-uat,demo-prod"
-}
-
-variable "kubernetes-gateway-api-version" {
-  description = "Kubernetes Gateway API version deployment."
-  type        = string
-  default     = "v1.3.0"
 }

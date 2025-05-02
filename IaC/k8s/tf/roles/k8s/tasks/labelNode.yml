@@ -3,5 +3,5 @@
 - name: Encrypt Cert Key File
   ansible.builtin.command:
     cmd: "kubectl label node {{ ansible_hostname | lower }} kubernetes.io/role=worker"
-  delegate_to: localhost
   connection: local
+  delegate_to: localhost

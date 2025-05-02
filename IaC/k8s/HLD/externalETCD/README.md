@@ -7,9 +7,9 @@ This documentation will provide a solution for Ubuntu (LinuxOS). Sample of code:
 $ sudo apt install graphviz python3-full pipenv -y
 $ pipenv install diagrams
 $ pipenv shell # activate virtual environment
-$  . /home/<user>/.local/share/virtualenvs/kitn-tGaP_Wzq/bin/activate
-(kitn) <user>@<hostname>:~/kitn$ # active virtual environment
-(kitn) <user>@<hostname>:~/kitn$ exit # exiting virtual environment
+$ . /home/<user>/.local/share/virtualenvs/kubernetes-gRhbhhHz/bin/activate
+(kubernetes) <user>@<hostname>:~/kubernetes$ # active virtual environment
+(kubernetes) <user>@<hostname>:~/kubernetes$ exit # exiting virtual environment
 exit
 ```
 

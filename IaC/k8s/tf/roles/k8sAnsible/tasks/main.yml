@@ -5,7 +5,7 @@
     name: common
     tasks_from: setup
 
-- name: Create desired CertManager Issuer(s)
+- name: Create desired CertManager Cluster Issuer(s)
   ansible.builtin.include_role:
     name: k8s
-    tasks_from: issuer
+    tasks_from: clusterIssuer

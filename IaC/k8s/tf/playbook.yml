@@ -17,5 +17,7 @@
       tags: [ k8sPrimeMasterNode ]
     - role: highAvailabilityProxy
       tags: [ highAvailabilityProxy ]
+    - role: k8sNodesPrerequisites
+      tags: [ k8sNodesPrerequisites ]
     - role: k8sSecondaryMasterNodes
       tags: [ k8sSecondaryMasterNodes ]

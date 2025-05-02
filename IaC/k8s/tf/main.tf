@@ -7,7 +7,7 @@ module "project_resource_group" {
 }
 
 # Create Cloudflare Api Token for External DNS
-module "projekt_cloudflare_api_token" {
+module "project_cloudflare_api_token" {
   source   = "git@github.com:thanos1983/terraform//Cloudflare/modules/ApiToken"
   status   = var.status
   policies = local.cloudflare_policies
@@ -73,7 +73,7 @@ module "project_nodes_public_ips" {
 }
 
 # Create DNS record for Knative domain(s)
-module "projekt_knative_dns_records" {
+module "project_knative_dns_records" {
   source   = "git@github.com:thanos1983/terraform//Cloudflare/modules/DnsRecord"
   for_each = local.cloudFlareTypeDnsRecord
   zone_id  = var.CLOUDFLARE_ZONE_ID
@@ -167,7 +167,7 @@ module "project_k8s_ansible_playbook" {
     kube_api_bind_port        = var.kubeServerApiServerBindPort
     secretName                = var.cloudflare_secretKeyRef_name
     AZURE_NODE_RESOURCE_GROUP = module.project_resource_group.name
-    secretValue               = module.projekt_cloudflare_api_token.value
+    secretValue               = module.project_cloudflare_api_token.value
     AZURE_TENANT_ID           = data.azurerm_client_config.current.tenant_id
     AZURE_SUBSCRIPTION_ID     = data.azurerm_client_config.current.subscription_id
     lb_ip_address             = module.project_nodes_public_ips["haProxyLB"].ip_address
@@ -177,125 +177,10 @@ module "project_k8s_ansible_playbook" {
   ]
 }
 
-# Applying helm istio base deployment
-module "projekt_k8s_cluster_helm_istio_base_deployment" {
-  source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  force_update      = var.force_update
-  dependency_update = var.dependency_update
-  wait              = local.istio-base.wait
-  name              = local.istio-base.name
-  chart             = local.istio-base.chart
-  values            = local.istio-base.values
-  helm_version      = local.istio-base.version
-  namespace         = local.istio-base.namespace
-  repository        = local.istio-base.repository
-  set_blocks        = local.istio-base.set_blocks
-  wait_for_jobs     = local.istio-base.wait_for_jobs
-  create_namespace  = local.istio-base.create_namespace
-  depends_on = [
-    module.project_k8s_ansible_playbook
-  ]
-}
-
-# Install or upgrade the Kubernetes Gateway API CRDs
-resource "terraform_data" "gateway_api_crds" {
-  provisioner "local-exec" {
-    command = "kubectl get crd gateways.gateway.networking.k8s.io &> /dev/null"
-  }
-
-  provisioner "local-exec" {
-    command = "kubectl apply -f https://github.com/kubernetes-sigs/gateway-api/releases/download/${var.kubernetes-gateway-api-version}/standard-install.yaml"
-  }
-
-  depends_on = [
-    module.projekt_k8s_cluster_helm_istio_base_deployment
-  ]
-}
-
-# Applying helm istio discovery deployment
-module "projekt_k8s_cluster_helm_istio_discovery_deployment" {
-  source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  force_update      = var.force_update
-  dependency_update = var.dependency_update
-  wait              = local.istio-discovery.wait
-  name              = local.istio-discovery.name
-  chart             = local.istio-discovery.chart
-  values            = local.istio-discovery.values
-  helm_version      = local.istio-discovery.version
-  namespace         = local.istio-discovery.namespace
-  repository        = local.istio-discovery.repository
-  set_blocks        = local.istio-discovery.set_blocks
-  wait_for_jobs     = local.istio-discovery.wait_for_jobs
-  create_namespace  = local.istio-discovery.create_namespace
-  depends_on = [
-    terraform_data.gateway_api_crds
-  ]
-}
-
-# Applying helm istio cni deployment
-module "projekt_k8s_cluster_helm_istio_cni_deployment" {
-  source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  force_update      = var.force_update
-  dependency_update = var.dependency_update
-  wait              = local.istio-cni.wait
-  name              = local.istio-cni.name
-  chart             = local.istio-cni.chart
-  values            = local.istio-cni.values
-  helm_version      = local.istio-cni.version
-  namespace         = local.istio-cni.namespace
-  repository        = local.istio-cni.repository
-  set_blocks        = local.istio-cni.set_blocks
-  wait_for_jobs     = local.istio-cni.wait_for_jobs
-  create_namespace  = local.istio-cni.create_namespace
-  depends_on = [
-    module.projekt_k8s_cluster_helm_istio_discovery_deployment
-  ]
-}
-
-# Applying helm istio ztunnel deployment
-module "projekt_k8s_cluster_helm_istio_ztunnel_deployment" {
-  source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  force_update      = var.force_update
-  dependency_update = var.dependency_update
-  wait              = local.istio-ztunnel.wait
-  name              = local.istio-ztunnel.name
-  chart             = local.istio-ztunnel.chart
-  values            = local.istio-ztunnel.values
-  helm_version      = local.istio-ztunnel.version
-  namespace         = local.istio-ztunnel.namespace
-  repository        = local.istio-ztunnel.repository
-  set_blocks        = local.istio-ztunnel.set_blocks
-  wait_for_jobs     = local.istio-ztunnel.wait_for_jobs
-  create_namespace  = local.istio-ztunnel.create_namespace
-  depends_on = [
-    module.projekt_k8s_cluster_helm_istio_cni_deployment
-  ]
-}
-
-# Applying helm istio gateway deployment
-module "projekt_k8s_cluster_helm_istio_gateway_deployment" {
-  source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  force_update      = var.force_update
-  dependency_update = var.dependency_update
-  wait              = local.istio-gateway.wait
-  name              = local.istio-gateway.name
-  chart             = local.istio-gateway.chart
-  values            = local.istio-gateway.values
-  helm_version      = local.istio-gateway.version
-  namespace         = local.istio-gateway.namespace
-  repository        = local.istio-gateway.repository
-  set_blocks        = local.istio-gateway.set_blocks
-  wait_for_jobs     = local.istio-gateway.wait_for_jobs
-  create_namespace  = local.istio-gateway.create_namespace
-  depends_on = [
-    module.projekt_k8s_cluster_helm_istio_ztunnel_deployment
-  ]
-}
-
 # Applying all helm module(s) deployment(s)
-module "projekt_k8s_cluster_helm_deployment" {
+module "project_k8s_cluster_helm_deployment" {
   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  for_each          = local.helm_deployment
+  for_each          = local.helm_deployment_dependencies
   wait              = each.value.wait
   name              = each.value.name
   chart             = each.value.chart
@@ -314,22 +199,21 @@ module "projekt_k8s_cluster_helm_deployment" {
 }
 
 # Create desired CertManager Cluster Issuer(s)
-module "project_k8s_ansible_playbook_cert_manager_issuer" {
+module "project_k8s_ansible_playbook_cert_manager_cluster_issuer" {
   source     = "git@github.com:thanos1983/terraform//Ansible/modules/Playbook"
   tags = ["k8sAnsible"]
   playbook   = var.playbook
   replayable = var.replayable
   name       = module.project_main_nodes["master01"].public_ip_address
   extra_vars = {
-    domain          = var.zone
-    ansible_user    = var.username
-    issuerNamespace = var.istioNamespace
-    acme_email      = var.CLOUDFLARE_EMAIL
-    secretKeyRef    = var.cloudflare_secretKeyRef_key
-    secretName      = var.cloudflare_secretKeyRef_name
+    domain       = var.zone
+    ansible_user = var.username
+    acme_email   = var.CLOUDFLARE_EMAIL
+    secretKeyRef = var.cloudflare_secretKeyRef_key
+    secretName   = var.cloudflare_secretKeyRef_name
   }
   depends_on = [
-    module.projekt_k8s_cluster_helm_deployment
+    module.project_k8s_cluster_helm_deployment
   ]
 }
 

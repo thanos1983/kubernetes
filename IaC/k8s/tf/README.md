@@ -1,4 +1,4 @@
-# Project Thanos
+# Project Custom k8s with NGINX Ingress
 
 ## Caution, if this is first deployment and the user has not being created prerequisites yet, the user must first navigate to prerequisites directory and apply the code there first.
 
@@ -11,7 +11,7 @@ use. Sample:
 $ az account list --output table --all
 Name                           CloudName    SubscriptionId                        TenantId                              State    IsDefault
 ---------------------------- ---------- ----------------------------------- ----------------------------------- ------ -----------
-xxxxxxxx                       AzureCloud   <SubscriptionId>                      <TenantId>                            Enabled  True
+<tenant id>                  AzureCloud   <SubscriptionId>                      <TenantId>                            Enabled  True
 ````
 
 ### Change the active subscription
@@ -21,7 +21,7 @@ Sample:
 
 ````bash
 # change the active subscription using the subscription name
-$ az account set --subscription "xxxxxxxx"
+$ az account set --subscription "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
 
 # change the active subscription using the subscription ID
 $ az account set --subscription "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -35,11 +35,11 @@ $ az account list --query "[?isDefault]"
     "id": "<id>",
     "isDefault": true,
     "managedByTenants": [],
-    "name": "xxxxxxxx",
+    "name": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
     "state": "Enabled",
     "tenantId": "<tenantId>",
     "user": {
-      "name": "<user>@<domain>.com",
+      "name": "<user>@<domain>.COM",
       "type": "user"
     }
   }
@@ -55,33 +55,12 @@ steps need to be applied. Sample:
 
 ````bash
 # install python required packages
-sudo apt-get install -y python3-kubernetes python3-passlib python3-hvac python3-k8sclient python3-openshift
+sudo apt get install -y python3-kubernetes python3-passlib python3-hvac python3-k8sclient python3-openshift
 # install wslu on e.g. Ubuntu WSL
 sudo apt install wslu -y
 # add these two lines to your shell's RC file, e.g. .bashrc or .zshrc.
 export DISPLAY=:0
 export BROWSER=/usr/bin/wslview
-````
-
-### Installing Helm on Ubuntu
-
-````bash
-# install helm required package
-curl https://baltocdn.com/helm/signing.asc | gpg --dearmor | sudo tee /usr/share/keyrings/helm.gpg > /dev/null
-sudo apt-get install apt-transport-https --yes
-echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/helm.gpg] https://baltocdn.com/helm/stable/debian/ all main" | sudo tee /etc/apt/sources.list.d/helm-stable-debian.list
-sudo apt-get update
-sudo apt-get install helm
-````
-
-### Installing Ansible on Ubuntu
-
-````bash
-# install ansible required package
-sudo apt update
-sudo apt install software-properties-common
-sudo add-apt-repository --yes --update ppa:ansible/ansible
-sudo apt install ansible
 ````
 
 Then the user will be able to log in to Azure via terminal e.g. Sample:
@@ -157,7 +136,7 @@ $ tofu -chdir=IaC/k8s/tf apply "planOutput"
 Acquiring state lock. This may take a few moments...
 module.project_resource_group.azurerm_resource_group.resource_group: Creating...
 ╷
-│ Error: A resource with the ID "/subscriptions/<subscription-id>/resourceGroups/testing_k8s_kubeadm" already exists to be managed via Terraform this resource needs to be imported numbero the State. Please see the resource documentation for "azurerm_resource_group" for more information.
+│ Error: A resource with the ID "/subscriptions/<subscription-id>/resourceGroups/demorg" already exists to be managed via Terraform this resource needs to be imported numbero the State. Please see the resource documentation for "azurerm_resource_group" for more information.
 │
 │   with module.project_resource_group.azurerm_resource_group.resource_group,
 │   on .terraform/modules/project_resource_group/tf/modules/ResourceGroup/main.tf line 1, in resource "azurerm_resource_group" "resource_group":
@@ -170,19 +149,19 @@ Releasing state lock. This may take a few moments...
 On this example the error is coming from module (
 resource) `module.project_resource_group.azurerm_resource_group.resource_group`
 
-So the user needs to import the resource(s) at this ponumber. For every resource the user needs to read the official
+So the user needs to import the resource(s) at this resource. For every resource the user needs to read the official
 documentation. On this
 example [azurerm_resource_group](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group).
 
 Sample of process:
 
 ````bash
-$ tofu -chdir=IaC/k8s/tf import -var-file=tfvars/test.tfvars module.project_resource_group.azurerm_resource_group.resource_group "/subscriptions/5dd4eb6a-9fc8-4def-82e8-625f1852e5de/resourceGroups/testing_k8s_kubeadm"
+$ tofu -chdir=IaC/k8s/tf import -var-file=tfvars/test.tfvars module.project_resource_group.azurerm_resource_group.resource_group "/subscriptions/5dd4eb6a-9fc8-4def-82e8-625f1852e5de/resourceGroups/demorg"
 Acquiring state lock. This may take a few moments...
-module.project_resource_group.azurerm_resource_group.resource_group: Importing from ID "/subscriptions/<subscription-id>/resourceGroups/testing_k8s_kubeadm"...
+module.project_resource_group.azurerm_resource_group.resource_group: Importing from ID "/subscriptions/<subscription-id>/resourceGroups/demorg"...
 module.project_resource_group.azurerm_resource_group.resource_group: Import prepared!
   Prepared azurerm_resource_group for import
-module.project_resource_group.azurerm_resource_group.resource_group: Refreshing state... [id=/subscriptions/<subscription-id>/resourceGroups/testing_k8s_kubeadm]
+module.project_resource_group.azurerm_resource_group.resource_group: Refreshing state... [id=/subscriptions/<subscription-id>/resourceGroups/demorg]
 
 Import successful!
 
@@ -218,6 +197,7 @@ The user needs to have the role included in ``IaC/k8s/tf/playbook.yml`` file bef
 The requirements are the following:
 
 - TF installed
+- docker daemon running
 - The user which will be used to create the resources should have enough permissions (sample as owner or custom RBAC
   role) to create / assign README access on the Subscription level and also Resource Group level. More information can
   be found on the Microsoft
