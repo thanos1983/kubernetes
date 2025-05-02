@@ -1,4 +1,4 @@
-# Project KITN
+# Project Hetzner Cloud Custom K8s Deployment
 
 ## Caution, if this is first deployment and the user has not being created prerequisites yet, the user must first navigate to prerequisites directory and apply the code there first.
 
@@ -11,7 +11,7 @@ use. Sample:
 $ az account list --output table --all
 Name                           CloudName    SubscriptionId                        TenantId                              State    IsDefault
 ---------------------------- ---------- ----------------------------------- ----------------------------------- ------ -----------
-LSAC-Digital-Solutions         AzureCloud   <SubscriptionId>                      <TenantId>                            Enabled  True
+<Subscription Name>            AzureCloud   <SubscriptionId>                      <TenantId>                            Enabled  True
 ````
 
 ### Change the active subscription
@@ -21,7 +21,7 @@ Sample:
 
 ````bash
 # change the active subscription using the subscription name
-$ az account set --subscription "LSAC-Digital-Solutions"
+$ az account set --subscription "<Subscription Name>"
 
 # change the active subscription using the subscription ID
 $ az account set --subscription "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
@@ -35,11 +35,11 @@ $ az account list --query "[?isDefault]"
     "id": "<id>",
     "isDefault": true,
     "managedByTenants": [],
-    "name": "LSAC-Digital-Solutions",
+    "name": "<Subscription Name>",
     "state": "Enabled",
     "tenantId": "<tenantId>",
     "user": {
-      "name": "<user>@NNIT.COM",
+      "name": "<user>@<domain>.COM",
       "type": "user"
     }
   }
@@ -122,53 +122,7 @@ $ tofu -chdir=IaC/k8s/tf apply "destroyPlan"
 In case the user decides to destroy a specific resource it can be accomplished by using the ``-target`` flag. Sample:
 
 ````bash
-$ tofu -chdir=IaC/k8s/tf plan -destroy -target module.da_projektet_df -out destroyPlan -var-file=tfvars/test.tfvars
-````
-
-#### terraform import
-
-If the user needs to import (already existing resources) please follow the example code below on how to do that:
-
-Sample of error:
-
-````bash
-$ tofu -chdir=IaC/k8s/tf apply "planOutput"
-Acquiring state lock. This may take a few moments...
-module.kitn_projekt_resource_group.azurerm_resource_group.resource_group: Creating...
-╷
-│ Error: A resource with the ID "/subscriptions/<subscription-id>/resourceGroups/devkitnrg" already exists to be managed via Terraform this resource needs to be imported numbero the State. Please see the resource documentation for "azurerm_resource_group" for more information.
-│
-│   with module.kitn_projekt_resource_group.azurerm_resource_group.resource_group,
-│   on .terraform/modules/kitn_projekt_resource_group/tf/modules/ResourceGroup/main.tf line 1, in resource "azurerm_resource_group" "resource_group":
-│    1: resource "azurerm_resource_group" "resource_group" {
-│
-╵
-Releasing state lock. This may take a few moments...
-````
-
-On this example the error is coming from module (
-resource) `module.kitn_projekt_resource_group.azurerm_resource_group.resource_group`
-
-So the user needs to import the resource(s) at this ponumber. For every resource the user needs to read the official
-documentation. On this
-example [azurerm_resource_group](https://registry.terraform.io/providers/hashicorp/azurerm/latest/docs/resources/resource_group).
-
-Sample of process:
-
-````bash
-$ tofu -chdir=IaC/k8s/tf import -var-file=tfvars/test.tfvars module.kitn_projekt_resource_group.azurerm_resource_group.resource_group "/subscriptions/5dd4eb6a-9fc8-4def-82e8-625f1852e5de/resourceGroups/devkitnrg"
-Acquiring state lock. This may take a few moments...
-module.kitn_projekt_resource_group.azurerm_resource_group.resource_group: Importing from ID "/subscriptions/<subscription-id>/resourceGroups/devkitnrg"...
-module.kitn_projekt_resource_group.azurerm_resource_group.resource_group: Import prepared!
-  Prepared azurerm_resource_group for import
-module.kitn_projekt_resource_group.azurerm_resource_group.resource_group: Refreshing state... [id=/subscriptions/<subscription-id>/resourceGroups/devkitnrg]
-
-Import successful!
-
-The resources that were imported are shown above. These resources are now in
-your Terraform state and will henceforth be managed by Terraform.
-
-Releasing state lock. This may take a few moments...
+$ tofu -chdir=IaC/k8s/tf plan -destroy -target module.projektet -out destroyPlan -var-file=tfvars/test.tfvars
 ````
 
 #### Qdrant Cloud
