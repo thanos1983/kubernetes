@@ -3,6 +3,17 @@ package_update: true
 package_upgrade: true
 package_reboot_if_required: true
 
+users:
+  - name: ${USER}
+    groups:
+      - users
+      - sudo
+    sudo:
+      - ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${SSH_PUBLIC_KEY}
+
 write_files:
   - path: /etc/modules-load.d/k8s.conf
     owner: root:root
@@ -42,8 +53,3 @@ runcmd:
 packages:
   - software-properties-common
   - curl
-
-cloud_config_modules:
-  - apt-configure
-  - runcmd
-  - write-files

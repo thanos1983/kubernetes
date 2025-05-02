@@ -21,3 +21,7 @@ provider "helm" {
 provider "kubernetes" {
   config_path = var.kubeConfigDestination
 }
+
+provider "hcloud" {
+  token = var.HETZNER_API_TOKEN
+}

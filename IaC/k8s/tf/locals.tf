@@ -1,6 +1,8 @@
 locals {
-  knativeDomain     = "knative.${var.zone}"
-  haproxy_k8s_nodes = "${path.module}/${var.haproxy_k8s_nodes}"
+  hetzner_datacenter          = "hel1-dc2"
+  hetzner_datacenter_location = "hel1"
+  knativeDomain               = "knative.${var.zone}"
+  haproxy_k8s_nodes           = "${path.module}/${var.haproxy_k8s_nodes}"
 
   cloudFlareTypeDnsRecord = {
     knative = {
@@ -8,7 +10,21 @@ locals {
       type    = "A"
       ttl     = var.ttl
       name    = "*.${local.knativeDomain}"
-      content = module.project_nodes_public_ips["haProxyLB"].ip_address
+      content = module.project_hetzner_primary_ip["haProxyLB"].ip_address
+    }
+  }
+
+  network = {
+    virtual_network = {
+      ip_range = "10.0.0.0/16"
+      name     = "network"
+      subnet = {
+        k8s = {
+          type         = "cloud"
+          network_zone = "eu-central"
+          ip_range     = "10.0.1.0/24"
+        }
+      }
     }
   }
 
@@ -23,24 +39,23 @@ locals {
         ip_addrs_of_peers = ["10.240.0.12"]
       }
       public_ip = {
-        sku               = "Basic"
-        name              = "haProxy-ip"
-        allocation_method = "Static"
-        domain_name_label = "haproxy-vm"
+        type          = "ipv4"
+        assignee_type = "server"
+        name          = "haProxy-ip"
+        datacenter    = local.hetzner_datacenter
       }
-      network_interface = {
-        name                  = "nic-haProxy"
-        ip_forwarding_enabled = true
-        ip_configuration = {
-          name                          = "primary"
-          private_ip_address_allocation = "Static"
-          private_ip_address            = "10.240.0.11"
-        }
+      network = {
+        ip = "10.0.1.5"
       }
       linux_virtual_machine = {
-        name = "linuxHaProxy"
-        size = "Standard_B2als_v2"
-        custom_data = base64encode(templatefile("${path.module}/templates/haproxy-cloud-init.tftpl", {
+        server_type    = "cx22"
+        admin_username = "tinyos"
+        image          = "ubuntu-22.04"
+        name           = "linuxhaproxy"
+        location       = local.hetzner_datacenter_location
+        user_data = templatefile("${path.module}/templates/haproxy-cloud-init.tftpl", {
+          SSH_PUBLIC_KEY = file(var.admin_ssh_key)
+          USER                                = var.username
           HAPROXY_STATS_URI_PATH              = var.haProxyStatsUriPath
           HAPROXY_STATS_BIND_PORT             = var.haProxyStatsBindPort
           NODE_PORT_HTTP                      = var.kubeServerNodePortHttp
@@ -48,16 +63,16 @@ locals {
           HAPROXY_STATS_WEB_PAGE_REFRESH_RATE = var.haProxyStatsRefreshRate
           APISERVER_BIND_PORT                 = var.kubeServerApiServerBindPort
           config_master = {
-            (local.master_nodes.master01.linux_virtual_machine.name) = local.master_nodes.master01.network_interface.ip_configuration.private_ip_address
-            (local.master_nodes.master02.linux_virtual_machine.name) = local.master_nodes.master02.network_interface.ip_configuration.private_ip_address
-            (local.master_nodes.master03.linux_virtual_machine.name) = local.master_nodes.master03.network_interface.ip_configuration.private_ip_address
+            (local.master_nodes.master01.linux_virtual_machine.name) = local.master_nodes.master01.network.ip
+            (local.master_nodes.master02.linux_virtual_machine.name) = local.master_nodes.master02.network.ip
+            # (local.master_nodes.master03.linux_virtual_machine.name) = local.master_nodes.master03.network.ip
           }
           config_worker = {
-            (local.worker_nodes.worker01.linux_virtual_machine.name) = local.worker_nodes.worker01.network_interface.ip_configuration.private_ip_address
-            (local.worker_nodes.worker02.linux_virtual_machine.name) = local.worker_nodes.worker02.network_interface.ip_configuration.private_ip_address
-            (local.worker_nodes.worker03.linux_virtual_machine.name) = local.worker_nodes.worker03.network_interface.ip_configuration.private_ip_address
+            (local.worker_nodes.worker01.linux_virtual_machine.name) = local.worker_nodes.worker01.network.ip
+            (local.worker_nodes.worker02.linux_virtual_machine.name) = local.worker_nodes.worker02.network.ip
+            # (local.worker_nodes.worker03.linux_virtual_machine.name) = local.worker_nodes.worker03.network.ip
           }
-        }))
+        })
         os_disk = {
           name                 = "linuxHaProxyDisk"
           caching              = "ReadWrite"
@@ -73,27 +88,26 @@ locals {
       tags = ["k8sPrimeMasterNode"]
       # tags = ["ping"]
       public_ip = {
-        sku               = "Basic"
-        name              = "master01-ip"
-        allocation_method = "Static"
-        domain_name_label = "master01-vm"
+        type          = "ipv4"
+        assignee_type = "server"
+        name          = "master01-ip"
+        datacenter    = local.hetzner_datacenter
       }
-      network_interface = {
-        name                  = "nic-master01"
-        ip_forwarding_enabled = true
-        ip_configuration = {
-          name                          = "primary"
-          private_ip_address_allocation = "Static"
-          private_ip_address            = "10.240.0.13"
-        }
+      network = {
+        ip = "10.0.1.6"
       }
       linux_virtual_machine = {
-        name = "linuxVmMaster01"
-        size = "Standard_B2als_v2"
-        custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
+        server_type    = "cx22"
+        admin_username = "tinyos"
+        image          = "ubuntu-22.04"
+        name           = "linuxVmMaster01"
+        location       = local.hetzner_datacenter_location
+        user_data = templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
+          SSH_PUBLIC_KEY = file(var.admin_ssh_key)
+          USER               = var.username
           KUBERNETES_VERSION = var.kubernetes_version
           CRIO_VERSION       = var.crio_version
-        }))
+        })
         os_disk = {
           name                 = "linuxVmMasterDisk01"
           caching              = "ReadWrite"
@@ -106,27 +120,26 @@ locals {
       tags = ["k8sSecondaryMasterNodes"]
       # tags = ["ping"]
       public_ip = {
-        sku               = "Basic"
-        name              = "master02-ip"
-        allocation_method = "Static"
-        domain_name_label = "master02-vm"
+        type          = "ipv4"
+        assignee_type = "server"
+        name          = "master02-ip"
+        datacenter    = local.hetzner_datacenter
       }
-      network_interface = {
-        name                  = "nic-master02"
-        ip_forwarding_enabled = true
-        ip_configuration = {
-          name                          = "primary"
-          private_ip_address_allocation = "Static"
-          private_ip_address            = "10.240.0.14"
-        }
+      network = {
+        ip = "10.0.1.7"
       }
       linux_virtual_machine = {
-        name = "linuxVmMaster02"
-        size = "Standard_B2als_v2"
-        custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
+        location       = local.hetzner_datacenter_location
+        name           = "linuxVmMaster02"
+        image          = "ubuntu-22.04"
+        server_type    = "cx22"
+        admin_username = "tinyos"
+        user_data = templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
+          SSH_PUBLIC_KEY = file(var.admin_ssh_key)
+          USER               = var.username
           KUBERNETES_VERSION = var.kubernetes_version
           CRIO_VERSION       = var.crio_version
-        }))
+        })
         os_disk = {
           name                 = "linuxVmMasterDisk02"
           caching              = "ReadWrite"
@@ -135,39 +148,38 @@ locals {
         }
       }
     },
-    master03 = {
-      tags = ["k8sSecondaryMasterNodes"]
-      # tags = ["ping"]
-      public_ip = {
-        sku               = "Basic"
-        name              = "master03-ip"
-        allocation_method = "Static"
-        domain_name_label = "master03-vm"
-      }
-      network_interface = {
-        name                  = "nic-master03"
-        ip_forwarding_enabled = true
-        ip_configuration = {
-          name                          = "primary"
-          private_ip_address_allocation = "Static"
-          private_ip_address            = "10.240.0.15"
-        }
-      }
-      linux_virtual_machine = {
-        name = "linuxVmMaster03"
-        size = "Standard_B2als_v2"
-        custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
-          KUBERNETES_VERSION = var.kubernetes_version
-          CRIO_VERSION       = var.crio_version
-        }))
-        os_disk = {
-          name                 = "linuxVmMasterDisk03"
-          caching              = "ReadWrite"
-          storage_account_type = "StandardSSD_LRS"
-          disk_size_gb         = 32
-        }
-      }
-    }
+    # master03 = {
+    #   tags = ["k8sSecondaryMasterNodes"]
+    #   # tags = ["ping"]
+    #   public_ip = {
+    #     type          = "ipv4"
+    #     assignee_type = "server"
+    #     name          = "master03-ip"
+    #     datacenter    = local.hetzner_datacenter
+    #   }
+    #   network = {
+    #     ip = "10.0.1.8"
+    #   }
+    #   linux_virtual_machine = {
+    #     location       = local.hetzner_datacenter_location
+    #     name           = "linuxVmMaster03"
+    #     image          = "ubuntu-22.04"
+    #     server_type    = "cx22"
+    #     admin_username = "tinyos"
+    #     user_data = templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
+    #       SSH_PUBLIC_KEY = file(var.admin_ssh_key)
+    #       USER = var.username
+    #       KUBERNETES_VERSION = var.kubernetes_version
+    #       CRIO_VERSION       = var.crio_version
+    #     })
+    #     os_disk = {
+    #       name                 = "linuxVmMasterDisk03"
+    #       caching              = "ReadWrite"
+    #       storage_account_type = "StandardSSD_LRS"
+    #       disk_size_gb         = 32
+    #     }
+    #   }
+    # }
   }
 
   worker_nodes = {
@@ -175,27 +187,26 @@ locals {
       tags = ["k8sWorkerNodes"]
       # tags = ["ping"]
       public_ip = {
-        sku               = "Basic"
-        name              = "worker01-ip"
-        allocation_method = "Static"
-        domain_name_label = "worker01-vm"
+        type          = "ipv4"
+        assignee_type = "server"
+        name          = "worker01-ip"
+        datacenter    = local.hetzner_datacenter
       }
-      network_interface = {
-        name                  = "nic-worker01"
-        ip_forwarding_enabled = true
-        ip_configuration = {
-          name                          = "primary"
-          private_ip_address_allocation = "Static"
-          private_ip_address            = "10.240.0.16"
-        }
+      network = {
+        ip = "10.0.1.9"
       }
       linux_virtual_machine = {
-        name = "linuxVmWorker01"
-        size = "Standard_B2als_v2"
-        custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
+        server_type    = "cx22"
+        admin_username = "tinyos"
+        image          = "ubuntu-22.04"
+        name           = "linuxVmWorker01"
+        location       = local.hetzner_datacenter_location
+        user_data = templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
+          SSH_PUBLIC_KEY = file(var.admin_ssh_key)
+          USER               = var.username
           KUBERNETES_VERSION = var.kubernetes_version
           CRIO_VERSION       = var.crio_version
-        }))
+        })
         os_disk = {
           name                 = "linuxVmWorkerDisk01"
           caching              = "ReadWrite"
@@ -208,27 +219,26 @@ locals {
       tags = ["k8sWorkerNodes"]
       # tags = ["ping"]
       public_ip = {
-        sku               = "Basic"
-        name              = "worker02-ip"
-        allocation_method = "Static"
-        domain_name_label = "worker02-vm"
+        type          = "ipv4"
+        assignee_type = "server"
+        name          = "worker02-ip"
+        datacenter    = local.hetzner_datacenter
       }
-      network_interface = {
-        name                  = "nic-worker02"
-        ip_forwarding_enabled = true
-        ip_configuration = {
-          name                          = "primary"
-          private_ip_address_allocation = "Static"
-          private_ip_address            = "10.240.0.17"
-        }
+      network = {
+        ip = "10.0.1.10"
       }
       linux_virtual_machine = {
-        name = "linuxVmWorker02"
-        size = "Standard_B2als_v2"
-        custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
+        server_type    = "cx22"
+        admin_username = "tinyos"
+        image          = "ubuntu-22.04"
+        name           = "linuxVmWorker02"
+        location       = local.hetzner_datacenter_location
+        user_data = templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
+          SSH_PUBLIC_KEY = file(var.admin_ssh_key)
+          USER               = var.username
           KUBERNETES_VERSION = var.kubernetes_version
           CRIO_VERSION       = var.crio_version
-        }))
+        })
         os_disk = {
           name                 = "linuxVmWorkerDisk02"
           caching              = "ReadWrite"
@@ -237,52 +247,38 @@ locals {
         }
       }
     },
-    worker03 = {
-      tags = ["k8sWorkerNodes"]
-      # tags = ["ping"]
-      public_ip = {
-        sku               = "Basic"
-        name              = "worker03-ip"
-        allocation_method = "Static"
-        domain_name_label = "worker03-vm"
-      }
-      network_interface = {
-        name                  = "nic-worker03"
-        ip_forwarding_enabled = true
-        ip_configuration = {
-          name                          = "primary"
-          private_ip_address_allocation = "Static"
-          private_ip_address            = "10.240.0.18"
-        }
-      }
-      linux_virtual_machine = {
-        name = "linuxVmWorker03"
-        size = "Standard_B2als_v2"
-        custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
-          KUBERNETES_VERSION = var.kubernetes_version
-          CRIO_VERSION       = var.crio_version
-        }))
-        os_disk = {
-          name                 = "linuxVmWorkerDisk03"
-          caching              = "ReadWrite"
-          storage_account_type = "StandardSSD_LRS"
-          disk_size_gb         = 32
-        }
-      }
-    }
-  }
-
-  network = {
-    virtual_network = {
-      address_space = ["10.240.0.0/16"]
-      name = "k8s-${var.environment}-vnet"
-      subnet = {
-        k8s = {
-          address_prefixes = ["10.240.0.0/16"]
-          name = "k8sNodesSubnet"
-        }
-      }
-    }
+    # worker03 = {
+    #   tags = ["k8sWorkerNodes"]
+    #   # tags = ["ping"]
+    #   public_ip = {
+    #     type          = "ipv4"
+    #     assignee_type = "server"
+    #     name          = "worker03-ip"
+    #     datacenter    = local.hetzner_datacenter
+    #   }
+    #   network = {
+    #     ip = "10.0.1.11"
+    #   }
+    #   linux_virtual_machine = {
+    #     server_type    = "cx22"
+    #     admin_username = "tinyos"
+    #     image          = "ubuntu-22.04"
+    #     name           = "linuxVmWorker03"
+    #     location       = local.hetzner_datacenter_location
+    #     user_data = templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
+    #       SSH_PUBLIC_KEY = file(var.admin_ssh_key)
+    #       USER = var.username
+    #       KUBERNETES_VERSION = var.kubernetes_version
+    #       CRIO_VERSION       = var.crio_version
+    #     })
+    #     os_disk = {
+    #       name                 = "linuxVmWorkerDisk03"
+    #       caching              = "ReadWrite"
+    #       storage_account_type = "StandardSSD_LRS"
+    #       disk_size_gb         = 32
+    #     }
+    #   }
+    # }
   }
 
   security_rules = [
@@ -558,7 +554,7 @@ locals {
     # },
     ingress-nginx = {
       create_namespace = true
-      wait             = false
+      wait = false
       wait_for_jobs    = false
       version          = "4.12.1"
       name             = "ingress-nginx"
@@ -580,7 +576,7 @@ locals {
         },
         {
           name  = "controller.service.loadBalancerIP"
-          value = module.project_nodes_public_ips["haProxyLB"].ip_address
+          value = module.project_hetzner_primary_ip["haProxyLB"].ip_address
         },
         {
           name  = "controller.service.annotations.external-dns\\.alpha\\.kubernetes\\.io/ttl"
@@ -593,7 +589,7 @@ locals {
       ]
       values = [
         templatefile("${path.module}/helmIngressNginxValues/values.yaml.tpl", {
-          externalIPs = [module.project_nodes_public_ips["haProxyLB"].ip_address]
+          externalIPs = [module.project_hetzner_primary_ip["haProxyLB"].ip_address]
           zones = "www.${var.zone},${var.zone}"
         })
       ]

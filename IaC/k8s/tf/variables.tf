@@ -4,36 +4,8 @@ variable "location" {
   default     = "North Europe"
 }
 
-variable "environment" {
-  description = "Environment (stage) where the resources will be created."
-  type        = string
-}
-
-variable "source_image_reference" {
-  description = "A source_image_reference block as defined below."
-  type = object({
-    publisher = string
-    offer     = string
-    sku       = string
-    version   = string
-  })
-  default = {
-    publisher = "Canonical"
-    offer     = "0001-com-ubuntu-server-jammy"
-    sku       = "22_04-lts"
-    version   = "latest"
-  }
-  # not yet available for CRI-O socket
-  # default = {
-  #   publisher = "Canonical"
-  #   offer     = "ubuntu-24_04-lts"
-  #   sku       = "server"
-  #   version   = "latest"
-  # }
-}
-
-variable "username" {
-  description = "Username to use for ssh key as defined below."
+variable "admin_ssh_key_name" {
+  description = "One or more admin_ssh_key blocks as defined below."
   type        = string
   default     = "tinyos"
 }
@@ -44,12 +16,7 @@ variable "admin_ssh_key" {
   default     = "~/.ssh/id_ed25519.pub"
 }
 
-variable "resource_group_name" {
-  description = "The Name which should be used for this Resource Group."
-  type        = string
-}
-
-variable "tags" {
+variable "labels" {
   description = "A mapping of tags to assign to the resource."
   type = map(any)
 }
@@ -57,26 +24,6 @@ variable "tags" {
 variable "ARM_SUBSCRIPTION_ID" {
   description = "The Subscription ID which should be used."
   type        = string
-}
-
-variable "network_security_group_name" {
-  description = "Specifies the name of the network security group."
-  type        = string
-}
-
-variable "master_nodes_availability_set_name" {
-  description = "Specifies the name of the availability set."
-  type        = string
-}
-
-variable "platform_fault_domain_count" {
-  description = "Specifies the number of fault domains that are used."
-  type        = number
-}
-
-variable "platform_update_domain_count" {
-  description = "Specifies the number of update domains that are used."
-  type        = number
 }
 
 variable "protocol" {
@@ -227,6 +174,11 @@ variable "zone" {
   default     = "k8sdemocluster.com"
 }
 
+variable "HETZNER_API_TOKEN" {
+  description = "Hetzner Cloud API Token."
+  type        = string
+}
+
 variable "CLOUDFLARE_EMAIL" {
   description = "A registered Cloudflare email address."
   type        = string
@@ -273,15 +225,33 @@ variable "serviceCidr" {
   default     = "10.200.0.0/16"
 }
 
+variable "knativeServingName" {
+  description = "The name where the Knative Serving will be used after deployment."
+  type        = string
+  default     = "knative-serving"
+}
+
+variable "knativeServingNamespace" {
+  description = "The namespace where the Knative Serving will be deployed."
+  type        = string
+  default     = "knative-serving"
+}
+
+variable "knativeEventingName" {
+  description = "The name where the Knative Eventing will be used as deployment."
+  type        = string
+  default     = "knative-eventing"
+}
+
+variable "knativeEventingNamespace" {
+  description = "The namespace where the Knative Eventing will be deployed."
+  type        = string
+  default     = "knative-eventing"
+}
+
 variable "ingressReplicaCount" {
   description = "How many pods should be deployed for the IngressController."
   type        = number
-}
-
-variable "accelerated_networking_enabled" {
-  description = "Enable Accelerated Networking. Needed for CNI."
-  type        = bool
-  default     = true
 }
 
 variable "type" {
@@ -317,4 +287,10 @@ variable "ttl" {
   description = "Time To Live (TTL) of the DNS record in seconds."
   type        = number
   default     = 1
+}
+
+variable "username" {
+  description = "Username for SSH to the server."
+  type        = string
+  default     = "tinyos"
 }

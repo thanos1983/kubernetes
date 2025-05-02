@@ -18,7 +18,7 @@
         wait: "{{ calico.helm.wait }}"
         name: "{{ calico.helm.name }}"
         chart_version: "{{ calico.helm.chart_version }}"
-        values_files: "{{ role_path }}/files/calico.yaml"
+#        values_files: "{{ role_path }}/files/calico.yaml"
         create_namespace: "{{ calico.helm.create_namespace }}"
         kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
         release_namespace: "{{ calicoReleaseNamespace | default('tigera-operator') }}"

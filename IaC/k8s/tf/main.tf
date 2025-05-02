@@ -1,9 +1,9 @@
-# Create Resource Group
-module "project_resource_group" {
-  source              = "git@github.com:thanos1983/terraform//Azure/modules/ResourceGroup"
-  tags                = var.tags
-  location            = var.location
-  resource_group_name = var.resource_group_name
+# Create Hetzner Cloud SSH Key Resource
+module "project_hetzner_ssh_key" {
+  source = "git@github.com:thanos1983/terraform//Hetznercloud/modules/HetznerCloudSSHKey"
+  labels = var.labels
+  name   = var.admin_ssh_key_name
+  public_key = file(var.admin_ssh_key)
 }
 
 # Create Cloudflare Api Token for External DNS
@@ -14,122 +14,79 @@ module "project_cloudflare_api_token" {
   name     = var.cloudflare_api_token_name
 }
 
-# Create Network Security Group
-module "project_network_security_group" {
-  source               = "git@github.com:thanos1983/terraform//Azure/modules/NetworkSecurityGroup"
-  tags                 = var.tags
-  security_rule_blocks = local.security_rules
-  name                 = var.network_security_group_name
-  resource_group_name  = module.project_resource_group.name
-  location             = module.project_resource_group.location
-}
-
-# Create virtual network
-module "project_virtual_network" {
-  source              = "git@github.com:thanos1983/terraform//Azure/modules/VirtualNetwork"
-  tags                = var.tags
-  name                = local.network.virtual_network.name
-  resource_group_name = module.project_resource_group.name
-  location            = module.project_resource_group.location
-  address_space       = local.network.virtual_network.address_space
-  subnet_blocks = [
-    {
-      security_group   = module.project_network_security_group.id
-      name             = local.network.virtual_network.subnet.k8s.name
-      address_prefixes = local.network.virtual_network.subnet.k8s.address_prefixes
-    }
-  ]
-}
-
-# Assign Network Security Group to the Subnet
-# module "project_network_security_group_association" {
-#  source                    = "git@github.com:thanos1983/terraform//Azure/modules/SubnetNetworkSecurityGroupAssociation"
-#  network_security_group_id = module.project_network_security_group.id
-#  subnet_id                 = module.project_virtual_network.subnet[0].id
+# Create Hetzner Cloud Placement Group
+# module "project_hetzner_placement_group" {
+#   source = "git@github.com:thanos1983/terraform//Hetznercloud/modules/HetznerCloudPlacementGroup"
+#   type   = "spread"
+#   labels = var.labels
+#   name   = "my-placement-group"
 # }
 
-# Create Availability VM Set for Master node(s)
-module "project_nodes_availability_set" {
-  source                       = "git@github.com:thanos1983/terraform//Azure/modules/AvailabilitySet"
-  tags                         = var.tags
-  platform_fault_domain_count  = var.platform_fault_domain_count
-  platform_update_domain_count = var.platform_update_domain_count
-  resource_group_name          = module.project_resource_group.name
-  location                     = module.project_resource_group.location
-  name                         = var.master_nodes_availability_set_name
+# Create Hetzner Cloud Network
+module "project_hetzner_network" {
+  source = "git@github.com:thanos1983/terraform//Hetznercloud/modules/HetznerCloudNetwork"
+  labels   = var.labels
+  name     = local.network.virtual_network.name
+  ip_range = local.network.virtual_network.ip_range
 }
 
-# Create public IP(s) for Master Node(s)
-module "project_nodes_public_ips" {
-  source              = "git@github.com:thanos1983/terraform//Azure/modules/PublicIP"
+# Create Hetzner Cloud Network Subnets
+module "project_hetzner_subnet" {
+  source = "git@github.com:thanos1983/terraform//Hetznercloud/modules/HetznerCloudNetworkSubnet"
+  network_id   = module.project_hetzner_network.id
+  type         = local.network.virtual_network.subnet.k8s.type
+  ip_range     = local.network.virtual_network.subnet.k8s.ip_range
+  network_zone = local.network.virtual_network.subnet.k8s.network_zone
+}
+
+# Create Hetzner Primary IP(s) (Public IPs)
+module "project_hetzner_primary_ip" {
+  source = "git@github.com:thanos1983/terraform//Hetznercloud/modules/HetznerCloudPrimaryIP"
   for_each = merge(local.haPoxyLoadBalancer, local.master_nodes, local.worker_nodes)
-  tags                = var.tags
-  sku                 = each.value.public_ip.sku
-  name                = each.value.public_ip.name
-  resource_group_name = module.project_resource_group.name
-  domain_name_label   = each.value.public_ip.domain_name_label
-  allocation_method   = each.value.public_ip.allocation_method
-  location            = module.project_resource_group.location
+  labels        = var.labels
+  name          = each.value.public_ip.name
+  type          = each.value.public_ip.type
+  datacenter    = each.value.public_ip.datacenter
+  assignee_type = each.value.public_ip.assignee_type
+}
+
+# Create Hetzner Server(s) and assign IP(s) (Public IPs)
+module "project_hetzner_server" {
+  source = "git@github.com:thanos1983/terraform//Hetznercloud/modules/HetznerCloudServer"
+  for_each = merge(local.haPoxyLoadBalancer, local.master_nodes, local.worker_nodes)
+  labels      = var.labels
+  name        = each.value.linux_virtual_machine.name
+  image       = each.value.linux_virtual_machine.image
+  location = each.value.linux_virtual_machine.location
+  # placement_group_id = module.project_hetzner_placement_group.id
+  user_data   = each.value.linux_virtual_machine.user_data
+  server_type = each.value.linux_virtual_machine.server_type
+  public_net_block = {
+    ipv4_enabled = true
+    ipv6_enabled = false
+    ipv4         = module.project_hetzner_primary_ip[each.key].id
+  }
+  network_blocks = [
+    {
+      ip         = each.value.network.ip
+      network_id = module.project_hetzner_network.id
+    }
+  ]
+  ssh_keys = [module.project_hetzner_ssh_key.id]
+  depends_on = [
+    module.project_hetzner_subnet
+  ]
 }
 
 # Create DNS record for Knative domain(s)
 module "project_knative_dns_records" {
-  source   = "git@github.com:thanos1983/terraform//Cloudflare/modules/DnsRecord"
+  source = "git@github.com:thanos1983/terraform//Cloudflare/modules/DnsRecord"
   for_each = local.cloudFlareTypeDnsRecord
   zone_id  = var.CLOUDFLARE_ZONE_ID
   content  = each.value.content
   name     = each.value.name
   type     = each.value.type
   ttl      = each.value.ttl
-}
-
-# Create Network Interfaces for Master node(s)
-module "project_nodes_network_interfaces" {
-  source = "git@github.com:thanos1983/terraform//Azure/modules/NetworkInterface"
-  for_each = merge(local.haPoxyLoadBalancer, local.master_nodes, local.worker_nodes)
-  tags   = var.tags
-  name   = each.value.network_interface.name
-  ip_configuration_blocks = [
-    {
-      subnet_id                     = module.project_virtual_network.subnet[0].id
-      public_ip_address_id          = module.project_nodes_public_ips[each.key].id
-      name                          = each.value.network_interface.ip_configuration.name
-      private_ip_address            = each.value.network_interface.ip_configuration.private_ip_address
-      private_ip_address_allocation = each.value.network_interface.ip_configuration.private_ip_address_allocation
-    }
-  ]
-  accelerated_networking_enabled = var.accelerated_networking_enabled
-  resource_group_name            = module.project_resource_group.name
-  location                       = module.project_resource_group.location
-  ip_forwarding_enabled          = each.value.network_interface.ip_forwarding_enabled
-}
-
-# Create Master node(s) - Linux Virtual Machine(s)
-module "project_main_nodes" {
-  source = "git@github.com:thanos1983/terraform//Azure/modules/LinuxVirtualMachine"
-  for_each = merge(local.haPoxyLoadBalancer, local.master_nodes, local.worker_nodes)
-  os_disk_block = {
-    name                 = each.value.linux_virtual_machine.os_disk.name
-    caching              = each.value.linux_virtual_machine.os_disk.caching
-    disk_size_gb         = each.value.linux_virtual_machine.os_disk.disk_size_gb
-    storage_account_type = each.value.linux_virtual_machine.os_disk.storage_account_type
-  }
-  admin_ssh_key_blocks = [
-    {
-      username = var.username
-      public_key = file(var.admin_ssh_key)
-    }
-  ]
-  tags                         = var.tags
-  admin_username               = var.username
-  source_image_reference_block = var.source_image_reference
-  resource_group_name          = module.project_resource_group.name
-  size                         = each.value.linux_virtual_machine.size
-  name                         = each.value.linux_virtual_machine.name
-  location                     = module.project_resource_group.location
-  availability_set_id          = module.project_nodes_availability_set.id
-  custom_data                  = each.value.linux_virtual_machine.custom_data
-  network_interface_ids = [module.project_nodes_network_interfaces[each.key].id]
 }
 
 # Ansible roles to deploy HAProxy node(s)
@@ -139,7 +96,7 @@ module "project_k8s_ansible_playbook_load_balancer" {
   playbook   = var.playbook
   replayable = var.replayable
   tags       = each.value.tags
-  name       = module.project_main_nodes[each.key].public_ip_address
+  name       = module.project_hetzner_server[each.key].ipv4_address
   extra_vars = {
     ansible_user = var.username
   }
@@ -152,25 +109,24 @@ module "project_k8s_ansible_playbook" {
   playbook   = var.playbook
   replayable = var.replayable
   tags       = each.value.tags
-  name       = module.project_main_nodes[each.key].public_ip_address
+  name       = module.project_hetzner_server[each.key].ipv4_address
   extra_vars = {
-    domain                    = var.zone
-    ansible_user              = var.username
-    serviceCidr               = var.serviceCidr
-    faasNamespace             = var.faasNamespace
-    istioNamespace            = var.istioNamespace
-    podNetworkCidr            = var.podNetworkCidr
-    lb_stats_uri_path         = var.haProxyStatsUriPath
-    certManagerNamespace      = var.certManagerNamespace
-    lb_stats_bind_port        = var.haProxyStatsBindPort
-    kubeConfigDestination     = var.kubeConfigDestination
-    kube_api_bind_port        = var.kubeServerApiServerBindPort
-    secretName                = var.cloudflare_secretKeyRef_name
-    AZURE_NODE_RESOURCE_GROUP = module.project_resource_group.name
-    secretValue               = module.project_cloudflare_api_token.value
-    AZURE_TENANT_ID           = data.azurerm_client_config.current.tenant_id
-    AZURE_SUBSCRIPTION_ID     = data.azurerm_client_config.current.subscription_id
-    lb_ip_address             = module.project_nodes_public_ips["haProxyLB"].ip_address
+    domain                = var.zone
+    ansible_user          = var.username
+    serviceCidr           = var.serviceCidr
+    faasNamespace         = var.faasNamespace
+    istioNamespace        = var.istioNamespace
+    podNetworkCidr        = var.podNetworkCidr
+    lb_stats_uri_path     = var.haProxyStatsUriPath
+    certManagerNamespace  = var.certManagerNamespace
+    lb_stats_bind_port    = var.haProxyStatsBindPort
+    kubeConfigDestination = var.kubeConfigDestination
+    kube_api_bind_port    = var.kubeServerApiServerBindPort
+    secretName            = var.cloudflare_secretKeyRef_name
+    secretValue           = module.project_cloudflare_api_token.value
+    AZURE_TENANT_ID       = data.azurerm_client_config.current.tenant_id
+    AZURE_SUBSCRIPTION_ID = data.azurerm_client_config.current.subscription_id
+    lb_ip_address         = module.project_hetzner_server["haProxyLB"].ipv4_address
   }
   depends_on = [
     module.project_k8s_ansible_playbook_load_balancer
@@ -178,7 +134,7 @@ module "project_k8s_ansible_playbook" {
 }
 
 # Applying all helm module(s) deployment(s)
-module "project_k8s_cluster_helm_deployment" {
+module "project_k8s_cluster_helm_deployment_dependencies" {
   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
   for_each          = local.helm_deployment_dependencies
   wait              = each.value.wait
@@ -204,7 +160,7 @@ module "project_k8s_ansible_playbook_cert_manager_cluster_issuer" {
   tags = ["k8sAnsible"]
   playbook   = var.playbook
   replayable = var.replayable
-  name       = module.project_main_nodes["master01"].public_ip_address
+  name       = module.project_hetzner_server["master01"].ipv4_address
   extra_vars = {
     domain       = var.zone
     ansible_user = var.username
@@ -213,7 +169,7 @@ module "project_k8s_ansible_playbook_cert_manager_cluster_issuer" {
     secretName   = var.cloudflare_secretKeyRef_name
   }
   depends_on = [
-    module.project_k8s_cluster_helm_deployment
+    module.project_k8s_cluster_helm_deployment_dependencies
   ]
 }
 

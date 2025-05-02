@@ -4,9 +4,9 @@ terraform {
       source  = "ansible/ansible"
       version = "1.3.0"
     }
-    azuread = {
-      source  = "hashicorp/azuread"
-      version = "3.3.0"
+    hcloud = {
+      source  = "hetznercloud/hcloud"
+      version = "1.50.1"
     }
     azurerm = {
       source  = "hashicorp/azurerm"

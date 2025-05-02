@@ -3,6 +3,17 @@ package_update: true
 package_upgrade: true
 package_reboot_if_required: true
 
+users:
+  - name: ${USER}
+    groups:
+      - users
+      - sudo
+    sudo:
+      - ALL=(ALL) NOPASSWD:ALL
+    shell: /bin/bash
+    ssh_authorized_keys:
+      - ${SSH_PUBLIC_KEY}
+
 runcmd:
   - dpkg --configure -a
   - apt-get install --no-install-recommends software-properties-common
