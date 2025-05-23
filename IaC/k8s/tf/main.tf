@@ -558,8 +558,8 @@ module "project_k8s_cluster_post_helm_deployment" {
   ]
 }
 
-# Create desired ISTIO GW, VirtualServices and CertManager Certificates(s)
-module "project_k8s_ansible_playbook_istio_gw_routes_and_cert_manager" {
+# Create desired CertManager Cluster Issuer(s)
+module "project_k8s_ansible_playbook_cert_manager_issuer" {
   source     = "git@github.com:oneNNIT/internal-azure//ansible/modules/Playbook"
   tags = ["k8sIssuer"]
   playbook   = var.playbook
