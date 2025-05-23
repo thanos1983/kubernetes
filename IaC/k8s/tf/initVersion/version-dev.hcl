@@ -1,4 +1,4 @@
-resource_group_name  = "InfraStructureAsCode"
-storage_account_name = "saiacdaprojektetstate"
-container_name       = "k8s"
+resource_group_name  = "sharedKITNRG"
+storage_account_name = "saiacprojektkitn"
+container_name       = "kitn-custom-k8s"
 key                  = "terraform.tfstate"
