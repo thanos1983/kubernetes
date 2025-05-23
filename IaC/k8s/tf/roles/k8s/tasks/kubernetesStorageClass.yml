@@ -1,0 +1,20 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s kubernetesStorageClass
+- name: Create k8s StorageClass
+  connection: local
+  delegate_to: localhost
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      kind: StorageClass
+      apiVersion: storage.k8s.io/v1
+      metadata:
+        name: "{{ item.value.storageClass.metadata.name }}"
+      provisioner: "{{ item.value.storageClass.provisioner }}"
+      reclaimPolicy: "{{ item.value.storageClass.reclaimPolicy | default('Delete') }}"
+      volumeBindingMode: "{{ item.value.storageClass.volumeBindingMode | default('Immediate') }}"
+      allowVolumeExpansion: "{{ item.value.storageClass.allowVolumeExpansion | default('false') }}"
+      parameters:
+        skuName: "{{ item.value.storageClass.parameters.skuName | default('') }}"
+    kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+  loop: "{{ lookup('ansible.builtin.dict', storage) }}"

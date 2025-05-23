@@ -1,0 +1,16 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8sStorage
+- name: Create desired StorageClass(es)
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: kubernetesStorageClass
+
+- name: Create desired PersistentVolume(s)
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: kubernetesPersistentVolume
+
+- name: Create desired PersistentVolumeClaim(s)
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: kubernetesPersistentVolumeClaim

@@ -1,0 +1,124 @@
+---
+# vars file for IaC/k8s/tf/roles/k8sStorage
+storage:
+  prometheus_server:
+    storageClass:
+      metadata:
+        name: "{{ storageClassPrometheus }}"
+      provisioner: "disk.csi.azure.com"
+      parameters:
+        skuName: "{{ skuName }}"
+      reclaimPolicy: "Retain"
+      volumeBindingMode: "Immediate"
+      allowVolumeExpansion: false
+    persistentVolume:
+      metadata:
+        name: "{{ persistentVolumePrometheusServer }}"
+        annotations:
+          pv.kubernetes.io/provisioned-by: "disk.csi.azure.com"
+      spec:
+        capacity:
+          storage: "{{ storageSizePrometheusServer }}"
+        accessModes:
+          - "ReadWriteOnce"
+        persistentVolumeReclaimPolicy: "Retain"
+        csi:
+          readOnly: false
+          volumeHandle: "{{ volumeHandle }}"
+          volumeAttributes:
+            cachingMode: "ReadOnly"
+            fsType: "ext4"
+    persistentVolumeClaim:
+      metadata:
+        name: "{{ prometheusServerPersistentVolumeClaim }}"
+        namespace: "{{ persistentVolumeClaimNamespace }}"
+        labels:
+          app.kubernetes.io/name: prometheus
+          app.kubernetes.io/component: server
+          app.kubernetes.io/instance: prometheus
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "{{ storageSizePrometheusServer }}"
+  prometheus-alertmanager:
+    storageClass:
+      metadata:
+        name: "{{ storageClassPrometheus }}"
+      provisioner: "disk.csi.azure.com"
+      parameters:
+        skuName: "{{ skuName }}"
+      reclaimPolicy: "Retain"
+      volumeBindingMode: "Immediate"
+      allowVolumeExpansion: false
+    persistentVolume:
+      metadata:
+        name: "{{ persistentVolumePrometheusAlertManager }}"
+        annotations:
+          pv.kubernetes.io/provisioned-by: "disk.csi.azure.com"
+      spec:
+        capacity:
+          storage: "{{ storageSizePrometheusAlertManager }}"
+        accessModes:
+          - "ReadWriteOnce"
+        persistentVolumeReclaimPolicy: "Retain"
+        csi:
+          readOnly: false
+          volumeHandle: "{{ volumeHandle }}"
+          volumeAttributes:
+            cachingMode: "ReadOnly"
+            fsType: "ext4"
+    persistentVolumeClaim:
+      metadata:
+        name: "{{ prometheusAlertManagerPersistentVolumeClaim }}"
+        namespace: "{{ persistentVolumeClaimNamespace }}"
+        labels:
+          app.kubernetes.io/name: alertmanager
+          app.kubernetes.io/instance: prometheus
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "{{ storageSizePrometheusAlertManager }}"
+  grafana:
+    storageClass:
+      metadata:
+        name: "{{ storageClassGrafana }}"
+      provisioner: "disk.csi.azure.com"
+      parameters:
+        skuName: "{{ skuName }}"
+      reclaimPolicy: "Retain"
+      volumeBindingMode: "Immediate"
+      allowVolumeExpansion: false
+    persistentVolume:
+      metadata:
+        name: "{{ persistentVolumeGrafana }}"
+        annotations:
+          pv.kubernetes.io/provisioned-by: "disk.csi.azure.com"
+      spec:
+        capacity:
+          storage: "{{ storageSizeGrafana }}"
+        accessModes:
+          - "ReadWriteOnce"
+        persistentVolumeReclaimPolicy: "Retain"
+        csi:
+          readOnly: false
+          volumeHandle: "{{ volumeHandle }}"
+          volumeAttributes:
+            cachingMode: "ReadOnly"
+            fsType: "ext4"
+    persistentVolumeClaim:
+      metadata:
+        name: "{{ grafanaPersistentVolumeClaim }}"
+        namespace: "{{ persistentVolumeClaimNamespace }}"
+        labels:
+          app.kubernetes.io/name: grafana
+          app.kubernetes.io/instance: grafana
+      spec:
+        accessModes:
+          - "ReadWriteOnce"
+        resources:
+          requests:
+            storage: "{{ storageSizeGrafana }}"

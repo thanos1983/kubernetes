@@ -1,0 +1,20 @@
+---
+# vars file for IaC/k8s/tf/roles/IstioGWRoutes
+labelsGateway:
+  "app.kubernetes.io/component": "{{ component }}"
+  "app.kubernetes.io/name": "{{ component }}Gateway"
+  "app.kubernetes.io/version": "{{ kubernetesVersion }}"
+  "app.kubernetes.io/instance": "{{ component }}-terraform"
+
+labelsCertificate:
+  "app.kubernetes.io/component": "{{ component }}"
+  "app.kubernetes.io/name": "{{ component }}Certificate"
+  "app.kubernetes.io/version": "{{ kubernetesVersion }}"
+  "app.kubernetes.io/instance": "{{ component }}-terraform"
+
+labelsVirtualService:
+  "app.kubernetes.io/component": "{{ component }}"
+  "app.kubernetes.io/version": "{{ kubernetesVersion }}"
+  "app.kubernetes.io/name": "{{ component }}VirtualService"
+  "app.kubernetes.io/instance": "{{ component }}-terraform"
+

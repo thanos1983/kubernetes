@@ -4,7 +4,7 @@
   block:
     - name: Generate Custom Cert Key
       ansible.builtin.command:
-        cmd: kubeadm certs certificate-key
+        cmd: "kubeadm certs certificate-key"
       register: certificateCustomKey
 
     - name: Copy Cert Key to File

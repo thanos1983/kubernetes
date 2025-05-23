@@ -1,0 +1,30 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s PersistentVolume
+- name: Create k8s PersistentVolume
+  connection: local
+  delegate_to: localhost
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: PersistentVolume
+      metadata:
+        annotations:
+          "{{ item.value.persistentVolume.metadata.annotations | default({}) }}"
+        name: "{{ item.value.persistentVolume.metadata.name }}"
+      spec:
+        capacity:
+          storage: "{{ item.value.persistentVolume.spec.capacity.storage }}"
+        accessModes:
+          "{{ item.value.persistentVolume.spec.accessModes }}"
+        persistentVolumeReclaimPolicy: "{{ item.value.persistentVolume.spec.persistentVolumeReclaimPolicy }}"
+        storageClassName: "{{ item.value.storageClass.metadata.name }}"
+        csi:
+          driver: "{{ item.value.storageClass.provisioner }}"
+          readOnly: "{{ item.value.persistentVolume.spec.csi.readOnly }}"
+          volumeHandle: "{{ item.value.persistentVolume.spec.csi.volumeHandle }}"
+          volumeAttributes:
+            fsType: "{{ item.value.persistentVolume.spec.csi.volumeAttributes.fsType }}"
+            cachingMode: "{{ item.value.persistentVolume.spec.csi.volumeAttributes.cachingMode }}"
+    kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+  loop: "{{ lookup('ansible.builtin.dict', storage) }}"

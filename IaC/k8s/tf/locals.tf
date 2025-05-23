@@ -1,6 +1,8 @@
 locals {
-  knativeDomain     = "knative.${var.zone}"
-  haproxy_k8s_nodes = "${path.module}/${var.haproxy_k8s_nodes}"
+  knativeDomain         = "knative.${var.zone}"
+  kubeConfigDestination = "${path.module}/kube/config"
+  haproxy_k8s_nodes     = "${path.module}/${var.haproxy_k8s_nodes}"
+  vault_file            = "${path.module}/roles/k8s/files/certificate-custom-key.yml"
 
   cloudFlareTypeDnsRecord = {
     knative = {
@@ -26,7 +28,7 @@ locals {
         sku               = "Basic"
         name              = "haProxy-ip"
         allocation_method = "Static"
-        domain_name_label = "haproxy-vm"
+        domain_name_label = "haproxy-new-vm"
       }
       network_interface = {
         name                  = "nic-haProxy"
@@ -48,14 +50,14 @@ locals {
           HAPROXY_STATS_WEB_PAGE_REFRESH_RATE = var.haProxyStatsRefreshRate
           APISERVER_BIND_PORT                 = var.kubeServerApiServerBindPort
           config_master = {
-            (local.master_nodes.master01.linux_virtual_machine.name) = local.master_nodes.master01.network_interface.ip_configuration.private_ip_address
-            (local.master_nodes.master02.linux_virtual_machine.name) = local.master_nodes.master02.network_interface.ip_configuration.private_ip_address
-            (local.master_nodes.master03.linux_virtual_machine.name) = local.master_nodes.master03.network_interface.ip_configuration.private_ip_address
+            (local.master_nodes.master11.linux_virtual_machine.name) = local.master_nodes.master11.network_interface.ip_configuration.private_ip_address
+            (local.master_nodes.master12.linux_virtual_machine.name) = local.master_nodes.master12.network_interface.ip_configuration.private_ip_address
+            (local.master_nodes.master13.linux_virtual_machine.name) = local.master_nodes.master13.network_interface.ip_configuration.private_ip_address
           }
           config_worker = {
-            (local.worker_nodes.worker01.linux_virtual_machine.name) = local.worker_nodes.worker01.network_interface.ip_configuration.private_ip_address
-            (local.worker_nodes.worker02.linux_virtual_machine.name) = local.worker_nodes.worker02.network_interface.ip_configuration.private_ip_address
-            (local.worker_nodes.worker03.linux_virtual_machine.name) = local.worker_nodes.worker03.network_interface.ip_configuration.private_ip_address
+            (local.worker_nodes.worker11.linux_virtual_machine.name) = local.worker_nodes.worker11.network_interface.ip_configuration.private_ip_address
+            (local.worker_nodes.worker12.linux_virtual_machine.name) = local.worker_nodes.worker12.network_interface.ip_configuration.private_ip_address
+            (local.worker_nodes.worker13.linux_virtual_machine.name) = local.worker_nodes.worker13.network_interface.ip_configuration.private_ip_address
           }
         }))
         os_disk = {
@@ -69,17 +71,17 @@ locals {
   }
 
   master_nodes = {
-    master01 = {
+    master11 = {
       tags = ["k8sPrimeMasterNode"]
       # tags = ["ping"]
       public_ip = {
         sku               = "Basic"
-        name              = "master01-ip"
+        name              = "master11-ip"
         allocation_method = "Static"
-        domain_name_label = "master01-vm"
+        domain_name_label = "master11-vm"
       }
       network_interface = {
-        name                  = "nic-master01"
+        name                  = "nic-master11"
         ip_forwarding_enabled = true
         ip_configuration = {
           name                          = "primary"
@@ -88,31 +90,31 @@ locals {
         }
       }
       linux_virtual_machine = {
-        name = "linuxVmMaster01"
+        name = "linuxVmMaster11"
         size = "Standard_B2als_v2"
         custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
           KUBERNETES_VERSION = var.kubernetes_version
           CRIO_VERSION       = var.crio_version
         }))
         os_disk = {
-          name                 = "linuxVmMasterDisk01"
+          name                 = "linuxVmMasterDisk11"
           caching              = "ReadWrite"
           storage_account_type = "StandardSSD_LRS"
           disk_size_gb         = 32
         }
       }
     },
-    master02 = {
+    master12 = {
       tags = ["k8sSecondaryMasterNodes"]
       # tags = ["ping"]
       public_ip = {
         sku               = "Basic"
-        name              = "master02-ip"
+        name              = "master12-ip"
         allocation_method = "Static"
-        domain_name_label = "master02-vm"
+        domain_name_label = "master12-vm"
       }
       network_interface = {
-        name                  = "nic-master02"
+        name                  = "nic-master12"
         ip_forwarding_enabled = true
         ip_configuration = {
           name                          = "primary"
@@ -121,31 +123,31 @@ locals {
         }
       }
       linux_virtual_machine = {
-        name = "linuxVmMaster02"
+        name = "linuxVmMaster12"
         size = "Standard_B2als_v2"
         custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
           KUBERNETES_VERSION = var.kubernetes_version
           CRIO_VERSION       = var.crio_version
         }))
         os_disk = {
-          name                 = "linuxVmMasterDisk02"
+          name                 = "linuxVmMasterDisk12"
           caching              = "ReadWrite"
           storage_account_type = "StandardSSD_LRS"
           disk_size_gb         = 32
         }
       }
     },
-    master03 = {
+    master13 = {
       tags = ["k8sSecondaryMasterNodes"]
       # tags = ["ping"]
       public_ip = {
         sku               = "Basic"
-        name              = "master03-ip"
+        name              = "master13-ip"
         allocation_method = "Static"
-        domain_name_label = "master03-vm"
+        domain_name_label = "master13-vm"
       }
       network_interface = {
-        name                  = "nic-master03"
+        name                  = "nic-master13"
         ip_forwarding_enabled = true
         ip_configuration = {
           name                          = "primary"
@@ -154,14 +156,14 @@ locals {
         }
       }
       linux_virtual_machine = {
-        name = "linuxVmMaster03"
+        name = "linuxVmMaster13"
         size = "Standard_B2als_v2"
         custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
           KUBERNETES_VERSION = var.kubernetes_version
           CRIO_VERSION       = var.crio_version
         }))
         os_disk = {
-          name                 = "linuxVmMasterDisk03"
+          name                 = "linuxVmMasterDisk13"
           caching              = "ReadWrite"
           storage_account_type = "StandardSSD_LRS"
           disk_size_gb         = 32
@@ -171,17 +173,17 @@ locals {
   }
 
   worker_nodes = {
-    worker01 = {
+    worker11 = {
       tags = ["k8sWorkerNodes"]
       # tags = ["ping"]
       public_ip = {
         sku               = "Basic"
-        name              = "worker01-ip"
+        name              = "worker11-ip"
         allocation_method = "Static"
-        domain_name_label = "worker01-vm"
+        domain_name_label = "worker11-vm"
       }
       network_interface = {
-        name                  = "nic-worker01"
+        name                  = "nic-worker11"
         ip_forwarding_enabled = true
         ip_configuration = {
           name                          = "primary"
@@ -190,7 +192,7 @@ locals {
         }
       }
       linux_virtual_machine = {
-        name = "linuxVmWorker01"
+        name = "linuxVmWorker11"
         size = "Standard_B2als_v2"
         custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
           KUBERNETES_VERSION = var.kubernetes_version
@@ -204,17 +206,17 @@ locals {
         }
       }
     },
-    worker02 = {
+    worker12 = {
       tags = ["k8sWorkerNodes"]
       # tags = ["ping"]
       public_ip = {
         sku               = "Basic"
-        name              = "worker02-ip"
+        name              = "worker12-ip"
         allocation_method = "Static"
-        domain_name_label = "worker02-vm"
+        domain_name_label = "worker12-vm"
       }
       network_interface = {
-        name                  = "nic-worker02"
+        name                  = "nic-worker12"
         ip_forwarding_enabled = true
         ip_configuration = {
           name                          = "primary"
@@ -223,31 +225,31 @@ locals {
         }
       }
       linux_virtual_machine = {
-        name = "linuxVmWorker02"
+        name = "linuxVmWorker12"
         size = "Standard_B2als_v2"
         custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
           KUBERNETES_VERSION = var.kubernetes_version
           CRIO_VERSION       = var.crio_version
         }))
         os_disk = {
-          name                 = "linuxVmWorkerDisk02"
+          name                 = "linuxVmWorkerDisk12"
           caching              = "ReadWrite"
           storage_account_type = "StandardSSD_LRS"
           disk_size_gb         = 32
         }
       }
     },
-    worker03 = {
+    worker13 = {
       tags = ["k8sWorkerNodes"]
       # tags = ["ping"]
       public_ip = {
         sku               = "Basic"
-        name              = "worker03-ip"
+        name              = "worker13-ip"
         allocation_method = "Static"
-        domain_name_label = "worker03-vm"
+        domain_name_label = "worker13-vm"
       }
       network_interface = {
-        name                  = "nic-worker03"
+        name                  = "nic-worker13"
         ip_forwarding_enabled = true
         ip_configuration = {
           name                          = "primary"
@@ -256,14 +258,14 @@ locals {
         }
       }
       linux_virtual_machine = {
-        name = "linuxVmWorker03"
+        name = "linuxVmWorker13"
         size = "Standard_B2als_v2"
         custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
           KUBERNETES_VERSION = var.kubernetes_version
           CRIO_VERSION       = var.crio_version
         }))
         os_disk = {
-          name                 = "linuxVmWorkerDisk03"
+          name                 = "linuxVmWorkerDisk13"
           caching              = "ReadWrite"
           storage_account_type = "StandardSSD_LRS"
           disk_size_gb         = 32
@@ -476,9 +478,39 @@ locals {
     }
   ]
 
-  istio-base = {
+  azure_csi_driver = {
     create_namespace = false
     wait             = true
+    wait_for_jobs    = false
+    version          = "1.33.0"
+    namespace        = var.kubeNamespace
+    name             = "azuredisk-csi-driver"
+    chart            = "azuredisk-csi-driver"
+    repository       = "https://raw.githubusercontent.com/kubernetes-sigs/azuredisk-csi-driver/master/charts"
+    set_blocks = [
+      {
+        name  = "node.cloudConfigSecretName"
+        value = var.cloudConfigSecretName
+      },
+      {
+        name  = "node.cloudConfigSecretNamesapce"
+        value = var.kubeNamespace
+      },
+      {
+        name  = "controller.cloudConfigSecretName"
+        value = var.cloudConfigSecretName
+      },
+      {
+        name  = "controller.cloudConfigSecretNamespace"
+        value = var.kubeNamespace
+      }
+    ]
+    values = []
+  }
+
+  istio-base = {
+    wait             = true
+    create_namespace = false
     wait_for_jobs    = false
     chart            = "base"
     version          = "1.25.2"
@@ -578,27 +610,23 @@ locals {
     ]
   }
 
-  helm_deployment = {
-    # argo-cd = {
-    #   create_namespace = true
-    #   wait             = true
-    #   wait_for_jobs    = false
-    #   version          = "7.8.28"
-    #   name             = "argo-cd"
-    #   chart            = "argo-cd"
-    #   namespace        = var.argoCdNamespace
-    #   repository       = "https://argoproj.github.io/argo-helm"
-    #   set_blocks = [
-    #     {
-    #       # Run server without TLS
-    #       name  = "configs.params.server\\.insecure"
-    #       value = true
-    #     }
-    #   ]
-    #   values = [
-    #     file("${path.module}/argoCD/values.yaml")
-    #   ]
-    # },
+  helm_prime_packages = {
+    calico = {
+      wait             = true
+      wait_for_jobs    = false
+      create_namespace = true
+      version          = "3.30.0"
+      name             = "projectcalico"
+      chart            = "tigera-operator"
+      namespace        = "tigera-operator"
+      repository       = "https://docs.tigera.io/calico/charts"
+      set_blocks = []
+      values = [
+        templatefile("${path.module}/calico/values.yaml.tpl", {
+          podNetworkCidr = var.podNetworkCidr
+        })
+      ]
+    },
     cert-manager = {
       wait             = true
       wait_for_jobs    = true
@@ -620,6 +648,43 @@ locals {
       ]
       values = []
     },
+    metrics_server = {
+      wait             = false
+      wait_for_jobs    = false
+      create_namespace = false
+      version          = "3.12.2"
+      name             = "metrics-server"
+      chart            = "metrics-server"
+      namespace        = var.kubeNamespace
+      repository       = "https://kubernetes-sigs.github.io/metrics-server/"
+      set_blocks = []
+      values = [
+        file("${path.module}/metricsServer/values.yaml")
+      ]
+    }
+  }
+
+  helm_deployment = {
+    # argo-cd = {
+    #   create_namespace = true
+    #   wait             = true
+    #   wait_for_jobs    = false
+    #   version          = "7.8.28"
+    #   name             = "argo-cd"
+    #   chart            = "argo-cd"
+    #   namespace        = var.argoCdNamespace
+    #   repository       = "https://argoproj.github.io/argo-helm"
+    #   set_blocks = [
+    #     {
+    #       # Run server without TLS
+    #       name  = "configs.params.server\\.insecure"
+    #       value = true
+    #     }
+    #   ]
+    #   values = [
+    #     file("${path.module}/argoCD/values.yaml")
+    #   ]
+    # },
     external-dns = {
       create_namespace = false
       wait             = true
@@ -638,26 +703,6 @@ locals {
         })
       ]
     },
-    # grafana = {
-    #   create_namespace = true
-    #   wait             = true
-    #   wait_for_jobs    = false
-    #   version          = "8.13.1"
-    #   name             = "grafana"
-    #   chart            = "grafana"
-    #   namespace        = var.monitoring_namespace
-    #   repository       = "https://grafana.github.io/helm-charts"
-    #   set_blocks = []
-    #   values = [
-    #     templatefile("${path.module}/helmGrafanaValues/values.yaml.tpl", {
-    #       namespace     = "monitoring"
-    #       adminPassword = var.MONITORING_BOOTSTRAP_PASSWORD
-    #       defaultRegion = module.project_resource_group.location
-    #       # lokiUrl       = "http://loki-gateway.${var.monitoring_namespace}.svc.cluster.local:80"
-    #       prometheusUrl = "http://prometheus-server.${var.monitoring_namespace}.svc.cluster.local:80"
-    #     })
-    #   ]
-    # },
     # loki = { # Do not uncomment
     #   create_namespace = true
     #   wait             = true
@@ -665,7 +710,7 @@ locals {
     #   version          = "6.29.0"
     #   name             = "loki"
     #   chart            = "loki"
-    #   namespace        = var.monitoring_namespace
+    #   namespace        = var.monitoringNamespace
     #   repository       = "https://grafana.github.io/helm-charts"
     #   set_blocks = []
     #   values = [
@@ -677,20 +722,28 @@ locals {
     #     })
     #   ]
     # },
-    # prometheus = {
-    #   create_namespace = true
-    #   wait             = true
-    #   wait_for_jobs    = false
-    #   version          = "27.11.0"
-    #   name             = "prometheus"
-    #   chart            = "prometheus"
-    #   namespace        = var.monitoring_namespace
-    #   repository       = "https://prometheus-community.github.io/helm-charts"
-    #   set_blocks = []
-    #   values = [
-    #     file("${path.module}/helmPrometheusValues/values.yaml")
-    #   ]
-    # },
+    prometheus = {
+      wait             = true
+      create_namespace = false
+      wait_for_jobs    = false
+      version          = "27.16.0"
+      name             = "prometheus"
+      chart            = "prometheus"
+      namespace        = var.monitoringNamespace
+      repository       = "https://prometheus-community.github.io/helm-charts"
+      set_blocks = []
+      values = [
+        templatefile("${path.module}/helmPrometheusValues/values.yaml.tpl", {
+          storageClass  = var.storageClassPrometheus
+          existingClaim = var.prometheusServerPersistentVolumeClaim
+          config_labels = {
+            "app.kubernetes.io/name"      = "prometheus"
+            "app.kubernetes.io/component" = "server"
+            "app.kubernetes.io/instance"  = "prometheus"
+          }
+        })
+      ]
+    },
     #   promtail = {
     #     create_namespace = true
     #     wait             = true
@@ -698,7 +751,7 @@ locals {
     #     version          = "6.16.6"
     #     name             = "promtail"
     #     chart            = "promtail"
-    #     namespace        = var.monitoring_namespace
+    #     namespace        = var.monitoringNamespace
     #     repository       = "https://grafana.github.io/helm-charts"
     #     set_blocks = []
     #     values = []
@@ -729,7 +782,7 @@ locals {
       version          = "9.0.344"
       chart            = "reflector"
       name             = "emberstack"
-      namespace        = "kube-system"
+      namespace        = var.kubeNamespace
       repository       = "https://emberstack.github.io/helm-charts"
       set_blocks = []
       values = []
@@ -746,6 +799,36 @@ locals {
       set_blocks = []
       values = []
     }
+  }
+
+  post_helm_deployment = {
+    grafana = {
+      create_namespace = false
+      wait             = true
+      wait_for_jobs    = false
+      version          = "9.0.0"
+      name             = "grafana"
+      chart            = "grafana"
+      namespace        = var.monitoringNamespace
+      repository       = "https://grafana.github.io/helm-charts"
+      set_blocks = []
+      values = [
+        templatefile("${path.module}/helmGrafanaValues/values.yaml.tpl", {
+          namespace     = "monitoring"
+          size          = var.storageSizeGrafana
+          storageClass  = var.storageClassGrafana
+          existingClaim = var.grafanaPersistentVolumeClaim
+          adminPassword = var.MONITORING_BOOTSTRAP_PASSWORD
+          defaultRegion = module.project_resource_group.location
+          # lokiUrl       = "http://loki-gateway.${var.monitoringNamespace}.svc.cluster.local:80"
+          prometheusUrl = "http://prometheus-server.${var.monitoringNamespace}.svc.cluster.local:80"
+          config_labels = {
+            "app.kubernetes.io/name"     = "grafana"
+            "app.kubernetes.io/instance" = "grafana"
+          }
+        })
+      ]
+    },
   }
 
   knative = {
@@ -775,9 +858,146 @@ locals {
       }
     }
   }
+
+  istioGateway = {
+    grafana = {
+      virtualServiceHttpRouteDestinationPortNumber = 80
+      virtualServiceHttpMatchUriPrefix             = "/"
+      gatewayTlsMode                               = "SIMPLE"
+      component                                    = "grafana"
+      gatewaySelector                              = "ingressgateway"
+      certificateNamespace                         = var.istioNamespace
+      certificateIssuerRefName                     = var.issuer_name_prod
+      hosts                                        = "grafana.${var.zone}"
+      commonName                                   = "grafana.${var.zone}"
+      namespace                                    = var.monitoringNamespace
+      gatewayName                                  = "istio-ingressgateway-grafana"
+      virtualServiceName                           = "istio-virtualservice-grafana"
+      secretName                                   = "grafana-${var.issuer_name_prod}"
+      virtualServiceHttpRouteDestinationHost       = "grafana.${var.monitoringNamespace}.svc.cluster.local"
+      virtualServiceGateways                       = "${var.monitoringNamespace}/istio-ingressgateway-grafana"
+    },
+    prometheus = {
+      virtualServiceHttpRouteDestinationPortNumber = 80
+      virtualServiceHttpMatchUriPrefix             = "/"
+      gatewayTlsMode                               = "SIMPLE"
+      component                                    = "prometheus"
+      gatewaySelector                              = "ingressgateway"
+      certificateNamespace                         = var.istioNamespace
+      certificateIssuerRefName                     = var.issuer_name_prod
+      namespace                                    = var.monitoringNamespace
+      hosts                                        = "prometheus.${var.zone}"
+      commonName                                   = "prometheus.${var.zone}"
+      gatewayName                                  = "istio-ingressgateway-prometheus"
+      virtualServiceName                           = "istio-virtualservice-prometheus"
+      secretName                                   = "prometheus-${var.issuer_name_prod}"
+      virtualServiceGateways                       = "${var.monitoringNamespace}/istio-ingressgateway-prometheus"
+      virtualServiceHttpRouteDestinationHost       = "prometheus-server.${var.monitoringNamespace}.svc.cluster.local"
+    }
+  }
+
+  istioGatewayKubectl = {
+    grafanaGateway = {
+      yaml_body = templatefile("${path.module}/gatewayVirtualServiceCertificatesTemplates/gateway.yaml.tpl", {
+        labels = {
+          "app.kubernetes.io/version"   = var.kubernetes_version
+          "app.kubernetes.io/component" = "grafana"
+          "app.kubernetes.io/name"      = "grafanaGateway"
+          "app.kubernetes.io/instance"  = "grafana-terraform"
+        }
+        gatewayName      = "istio-ingressgateway-grafana"
+        gatewayNamespace = var.monitoringNamespace
+        gatewaySelector  = "ingressgateway"
+        gatewayTlsMode   = "SIMPLE "
+        secretName       = "grafana-${var.issuer_name_prod}"
+        hosts = ["grafana.${var.zone}"]
+      })
+    },
+    grafanaCertificate = {
+      yaml_body = templatefile("${path.module}/gatewayVirtualServiceCertificatesTemplates/certificate.yaml.tpl", {
+        labels = {
+          "app.kubernetes.io/version"   = var.kubernetes_version
+          "app.kubernetes.io/component" = "grafana"
+          "app.kubernetes.io/instance"  = "grafana-terraform"
+          "app.kubernetes.io/name"      = "grafanaCertificate"
+        }
+        secretName               = "grafana-${var.issuer_name_prod}"
+        certificateNamespace     = var.istioNamespace
+        certificateIssuerRefName = var.issuer_name_prod
+        commonName               = "grafana.${var.zone}"
+        hosts = ["grafana.${var.zone}"]
+      })
+    },
+    grafanaVirtualService = {
+      yaml_body = templatefile("${path.module}/gatewayVirtualServiceCertificatesTemplates/virtualService.yaml.tpl", {
+        labels = {
+          "app.kubernetes.io/version"   = var.kubernetes_version
+          "app.kubernetes.io/component" = "grafana"
+          "app.kubernetes.io/instance"  = "grafana-terraform"
+          "app.kubernetes.io/name"      = "grafanaVirtualService"
+        }
+        virtualServiceName                           = "istio-virtualservice-grafana"
+        virtualServiceNamespace                      = var.monitoringNamespace
+        virtualServiceHttpMatchUriPrefix             = "/"
+        virtualServiceHttpRouteDestinationHost       = "grafana.${var.monitoringNamespace}.svc.cluster.local"
+        virtualServiceHttpRouteDestinationPortNumber = 80
+        hosts = ["grafana.${var.zone}"]
+        virtualServiceGateways = ["${var.monitoringNamespace}/istio-ingressgateway-grafana"]
+      })
+    },
+    prometheusGateway = {
+      yaml_body = templatefile("${path.module}/gatewayVirtualServiceCertificatesTemplates/gateway.yaml.tpl", {
+        labels = {
+          "app.kubernetes.io/version"   = var.kubernetes_version
+          "app.kubernetes.io/component" = "prometheus"
+          "app.kubernetes.io/name"      = "prometheusGateway"
+          "app.kubernetes.io/instance"  = "prometheus-terraform"
+        }
+        gatewayNamespace = var.monitoringNamespace
+        gatewayName      = "istio-ingressgateway-prometheus"
+        gatewaySelector  = "ingressgateway"
+        gatewayTlsMode   = "SIMPLE "
+        secretName       = "prometheus-${var.issuer_name_prod}"
+        hosts = ["prometheus.${var.zone}"]
+      })
+    },
+    prometheusCertificate = {
+      yaml_body = templatefile("${path.module}/gatewayVirtualServiceCertificatesTemplates/certificate.yaml.tpl", {
+        labels = {
+          "app.kubernetes.io/version"   = var.kubernetes_version
+          "app.kubernetes.io/component" = "prometheus"
+          "app.kubernetes.io/instance"  = "prometheus-terraform"
+          "app.kubernetes.io/name"      = "prometheusCertificate"
+        }
+        secretName               = "prometheus-${var.issuer_name_prod}"
+        certificateNamespace     = var.istioNamespace
+        certificateIssuerRefName = var.issuer_name_prod
+        commonName               = "prometheus.${var.zone}"
+        hosts = ["prometheus.${var.zone}"]
+      })
+    },
+    prometheusVirtualService = {
+      yaml_body = templatefile("${path.module}/gatewayVirtualServiceCertificatesTemplates/virtualService.yaml.tpl", {
+        labels = {
+          "app.kubernetes.io/version"   = var.kubernetes_version
+          "app.kubernetes.io/component" = "prometheus"
+          "app.kubernetes.io/instance"  = "prometheus-terraform"
+          "app.kubernetes.io/name"      = "prometheusVirtualService"
+        }
+        virtualServiceName                           = "istio-virtualservice-prometheus"
+        virtualServiceNamespace                      = var.monitoringNamespace
+        virtualServiceHttpMatchUriPrefix             = "/"
+        virtualServiceHttpRouteDestinationHost       = "prometheus-server.${var.monitoringNamespace}.svc.cluster.local"
+        virtualServiceHttpRouteDestinationPortNumber = 80
+        hosts = ["prometheus.${var.zone}"]
+        virtualServiceGateways = ["${var.monitoringNamespace}/istio-ingressgateway-prometheus"]
+      })
+    },
+  }
 }
 
 # User permissions
+data "azuread_client_config" "current" {}
 data "azurerm_client_config" "current" {}
 data "azurerm_subscription" "subscription" {}
 

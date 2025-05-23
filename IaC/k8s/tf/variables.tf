@@ -1,7 +1,6 @@
 variable "location" {
   description = "The Azure Region where the Resource Group should exist."
   type        = string
-  default     = "North Europe"
 }
 
 variable "environment" {
@@ -133,12 +132,6 @@ variable "replayable" {
   default     = false
 }
 
-variable "kubeConfigDestination" {
-  description = "Location for the kube config file path."
-  type        = string
-  default     = "~/.kube/config"
-}
-
 variable "haproxy_k8s_nodes" {
   description = "The path to the file that will be created for the "
   type        = string
@@ -168,7 +161,7 @@ variable "qdrant_namespace" {
   default     = "qdrant"
 }
 
-variable "monitoring_namespace" {
+variable "monitoringNamespace" {
   description = "The namespace where all monitoring resources will be deployed."
   type        = string
   default     = "monitoring"
@@ -328,11 +321,156 @@ variable "ttl" {
 variable "reflection-allowed-namespaces" {
   description = "Control the namespaces we want to replicate a Secret(s) of the reflector. Add more by separating them by coma."
   type        = string
-  default     = "demo-dev,demo-sit,demo-uat,demo-prod"
+  default     = "arc-dev,arc-sit,arc-uat,arc-prod"
 }
 
 variable "kubernetes-gateway-api-version" {
   description = "Kubernetes Gateway API version deployment."
   type        = string
   default     = "v1.3.0"
+}
+
+variable "public_network_access_enabled" {
+  description = "Whether the public network access is enabled?"
+  type        = bool
+  default     = false
+}
+
+variable "service_endpoints" {
+  description = "The list of Service endpoints to associate with the subnet."
+  type = list(string)
+  default = ["Microsoft.Storage"]
+}
+
+variable "create_option" {
+  description = "The method to use when creating the managed disk."
+  type        = string
+  default     = "Empty"
+}
+
+variable "storage_account_type" {
+  description = "The type of storage to use for the managed disk."
+  type        = string
+  default     = "Premium_LRS"
+  # default     = "PremiumV2_LRS"
+}
+
+variable "disk_size_gb" {
+  description = "Specifies the size of the managed disk to create in gigabytes."
+  type        = string
+  default     = "30"
+}
+
+variable "skuName" {
+  description = "Azure Disks storage account type (alias: storageAccountType)"
+  type        = string
+  default     = "StandardSSD_LRS"
+}
+
+variable "azure_disks" {
+  description = "Specifies the configurations of the Managed Disk(s)."
+  type = list(string)
+  default = ["prometheus_disk"]
+}
+
+variable "kubeNamespace" {
+  description = "The namespace for objects created by the Kubernetes system."
+  type        = string
+  default     = "kube-system"
+}
+
+variable "cloudConfigSecretName" {
+  description = "Cloud config secret name."
+  type        = string
+  default     = "azure-cloud-provider"
+}
+
+variable "criSocket" {
+  description = "Path to the CRI socket to connect."
+  type        = string
+  default     = "unix:///var/run/crio/crio.sock"
+}
+
+variable "kubeConfig" {
+  description = "The kubeconfig file to use when talking to the cluster."
+  type        = string
+  default     = "/etc/kubernetes/admin.conf"
+}
+
+variable "storageClassPrometheus" {
+  description = "The name of a StorageClass for Prometheus Monitoring."
+  type        = string
+  default     = "azuredisk-prometheus"
+}
+
+variable "storageClassGrafana" {
+  description = "The name of a StorageClass for Grafana Visualizer."
+  type        = string
+  default     = "azuredisk-grafana"
+}
+
+variable "persistentVolumePrometheusServer" {
+  description = "The name of a Persistent Volume for Prometheus Server."
+  type        = string
+  default     = "azuredisk-prometheus"
+}
+
+variable "persistentVolumePrometheusAlertManager" {
+  description = "The name of a Persistent Volume for Prometheus Alert Manager."
+  type        = string
+  default     = "azuredisk-prometheus-alert"
+}
+
+variable "persistentVolumeGrafana" {
+  description = "The name of a Persistent Volume for Grafana Server."
+  type        = string
+  default     = "azuredisk-grafana"
+}
+
+variable "prometheusServerPersistentVolumeClaim" {
+  description = "A persistentVolumeClaim volume is used to mount a PersistentVolume into a Pod."
+  type        = string
+  default     = "prometheus-server"
+}
+
+variable "prometheusAlertManagerPersistentVolumeClaim" {
+  description = "A persistentVolumeClaim volume is used to mount a PersistentVolume into a Pod."
+  type        = string
+  default     = "prometheus-alertmanager-0"
+}
+
+variable "grafanaPersistentVolumeClaim" {
+  description = "A persistentVolumeClaim volume is used to mount a PersistentVolume into a Pod."
+  type        = string
+  default     = "grafana"
+}
+
+variable "storageSizePrometheusServer" {
+  description = "Storage capacity is limited and may vary depending on the Persistent Volume."
+  type        = string
+  default     = "8Gi"
+}
+
+variable "storageSizePrometheusAlertManager" {
+  description = "Storage capacity is limited and may vary depending on the Persistent Volume."
+  type        = string
+  default     = "2Gi"
+}
+
+variable "storageSizeGrafana" {
+  description = "Storage capacity is limited and may vary depending on the Persistent Volume."
+  type        = string
+  default     = "10Gi"
+}
+
+variable "issuer_name_prod" {
+  description = "The role issuer name for Issuer Prod."
+  type        = string
+  default     = "letsencrypt-prod"
+}
+
+variable "issuer_name_stage" {
+  description = "The role issuer name for Issuer Stage."
+  type        = string
+  default     = "letsencrypt-stage"
 }

@@ -1,0 +1,11 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8sPrerequisites
+- name: Create required namespace(s)
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: kubernetesNamespaces
+
+- name: Create desired secret(s)
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: kubernetesSecret

@@ -1,0 +1,6 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8sAzureDiskCsiDriver
+- name: Create AzureDiskCsiDriver Secret
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: kubernetesSecret

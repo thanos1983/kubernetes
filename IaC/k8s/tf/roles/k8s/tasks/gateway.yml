@@ -1,0 +1,37 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s gateway
+- name: Create k8s Istio Gateway Rule(s)
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: networking.istio.io/v1
+      kind: Gateway
+      metadata:
+        name: "{{ gatewayName }}"
+        labels:
+          "{{ labelsGateway }}"
+        namespace: "{{ namespace }}"
+      spec:
+        selector:
+          istio: "{{ gatewaySelector }}"
+        servers:
+          - port:
+              number: 80
+              name: "http"
+              protocol: "HTTP"
+            hosts:
+              - "{{ hosts }}"
+            tls:
+              httpsRedirect: true
+          - port:
+              number: 443
+              name: "https"
+              protocol: "HTTPS"
+            tls:
+              mode: "{{ gatewayTlsMode }}"
+              credentialName: "{{ secretName }}" # This should match the Certificate secretName
+            hosts:
+              - "{{ hosts }}"
+    kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+  connection: local
+  delegate_to: localhost

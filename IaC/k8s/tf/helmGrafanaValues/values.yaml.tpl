@@ -56,12 +56,20 @@ dashboards:
       datasource: Prometheus
       # https://grafana.com/grafana/dashboards/315-kubernetes-cluster-monitoring-via-prometheus/
 
+initChownData:
+  enabled: false
+
 persistence:
   type: pvc
   enabled: true
-  storageClassName: default
+  existingClaim: ${existingClaim}
+  storageClassName: ${storageClass}
   accessModes:
     - ReadWriteOnce
-  size: 4Gi
+  size: ${size}
+  selectorLabels:
+%{ for config_label_key, config_label_value in config_labels ~}
+      ${config_label_key}: ${config_label_value}
+%{ endfor ~}
   finalizers:
     - kubernetes.io/pvc-protection

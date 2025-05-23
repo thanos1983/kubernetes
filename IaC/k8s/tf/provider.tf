@@ -14,10 +14,10 @@ provider "azurerm" {
 
 provider "helm" {
   kubernetes {
-    config_path = var.kubeConfigDestination
+    config_path = local.kubeConfigDestination
   }
 }
 
-provider "kubernetes" {
-  config_path = var.kubeConfigDestination
-}
+provider "external" {}
+provider "remote" {}
+provider "local" {}

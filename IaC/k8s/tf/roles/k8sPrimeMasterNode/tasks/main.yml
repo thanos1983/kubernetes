@@ -45,6 +45,11 @@
     name: k8s
     tasks_from: calico
 
+#- name: Deploy Azure CSI Helm Chart
+#  ansible.builtin.include_role:
+#    name: k8s
+#    tasks_from: azureCsi
+
 - name: Deploy Metrics Server
   ansible.builtin.include_role:
     name: k8s
@@ -64,3 +69,8 @@
   ansible.builtin.include_role:
     name: k8s
     tasks_from: kubernetesSecret
+
+#- name: Create desired StorageClass(es)
+#  ansible.builtin.include_role:
+#    name: k8s
+#    tasks_from: kubernetesStorageClass

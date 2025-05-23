@@ -1,0 +1,24 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s PersistentVolumeClaim
+- name: Create k8s PersistentVolumeClaim
+  connection: local
+  delegate_to: localhost
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: v1
+      kind: PersistentVolumeClaim
+      metadata:
+        labels:
+          "{{ item.value.persistentVolumeClaim.metadata.labels | default({}) }}"
+        name: "{{ item.value.persistentVolumeClaim.metadata.name }}"
+        namespace: "{{ item.value.persistentVolumeClaim.metadata.namespace }}"
+      spec:
+        storageClassName: "{{ item.value.storageClass.metadata.name }}"
+        accessModes:
+          "{{ item.value.persistentVolumeClaim.spec.accessModes }}"
+        resources:
+          requests:
+            storage: "{{ item.value.persistentVolumeClaim.spec.resources.requests.storage }}"
+    kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+  loop: "{{ lookup('ansible.builtin.dict', storage) }}"

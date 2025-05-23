@@ -1,2 +1,25 @@
 ---
 # vars file for IaC/k8s/tf/roles/k8sPrimeMasterNode
+secrets:
+  certManager:
+    name: "{{ secretName }}"
+    namespace: "{{ certManagerNamespace }}"
+    data:
+      secretKey: "api-token"
+      secretValue: "{{ secretValue }}"
+  istio:
+    name: "{{ secretName }}"
+    namespace: "{{ istioNamespace }}"
+    data:
+      secretKey: "api-token"
+      secretValue: "{{ secretValue }}"
+
+namespaces:
+  faas:
+    labels:
+      istio-injection: enabled
+    name: "{{ faasNamespace }}"
+  istio:
+    name: "{{ istioNamespace }}"
+  certManager:
+    name: "{{ certManagerNamespace }}"

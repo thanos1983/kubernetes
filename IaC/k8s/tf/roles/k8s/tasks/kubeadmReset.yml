@@ -2,8 +2,7 @@
 # tasks file for IaC/k8s/tf/roles/k8s kubeadmReset
 - name: Cleaning up a Node Local File System from Files that were Created
   ansible.builtin.command:
-    cmd: |
-      kubeadm reset -f --cri-socket={{ kubeadm.crioUnixSocket }}
+    cmd: "kubeadm reset -f --cri-socket={{ kubeadm.crioUnixSocket }}"
 
 - name: Recursively remove directory
   ansible.builtin.file:

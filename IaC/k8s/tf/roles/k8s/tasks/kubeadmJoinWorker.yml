@@ -3,6 +3,6 @@
 - name: Joining Worker Node
   block:
     - name: Join Worker Node
-      ansible.builtin.command: |
-        {{ kubeadm_token }} --cri-socket={{ kubeadm.crioUnixSocket }}
+      ansible.builtin.command:
+        cmd: "{{ kubeadm_token }} --cri-socket={{ kubeadm.crioUnixSocket }}"
   become: true

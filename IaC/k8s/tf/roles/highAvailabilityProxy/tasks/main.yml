@@ -1,5 +1,10 @@
 ---
 # tasks file for IaC/k8s/tf/roles/highAvailabilityProxy
+- name: Create Cert Key for k8s Cluster
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: kubeadmCerts
+
 - name: Wait for SSH Connection until the node becomes accessible
   ansible.builtin.include_role:
     name: common
@@ -14,8 +19,3 @@
   ansible.builtin.include_role:
     name: common
     tasks_from: cloudInit
-
-- name: Wait for SSH Connection until the node becomes accessible
-  ansible.builtin.include_role:
-    name: common
-    tasks_from: waitForSshConnection

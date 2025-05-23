@@ -1,0 +1,22 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s calico
+- name: Download and Install Azure CSI Helm Reposítory
+  block:
+    - name: Add Stable Azure CSI Helm Repo
+      kubernetes.core.helm_repository:
+        repo_url: "{{ azureCsiHelm.helm.repo_url }}"
+        name: "{{ azureCsiHelmChartName | default('azuredisk-csi-driver') }}"
+        kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+
+    - name: Deploy Azure CSI Helm chart Version '{{ azureCsiHelm.helm.chart_version }}'
+      kubernetes.core.helm:
+        wait: "{{ azureCsiHelm.helm.wait }}"
+        name: "{{ azureCsiHelm.helm.name }}"
+        chart_version: "{{ azureCsiHelm.helm.chart_version }}"
+        values_files: "{{ role_path }}/files/azureCsiHelm.yaml"
+        create_namespace: "{{ azureCsiHelm.helm.create_namespace }}"
+        kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+        release_namespace: "{{ azureCsiReleaseNamespace | default('kube-system') }}"
+        chart_ref: "{{ azureCsiHelmChartRef | default('azuredisk-csi-driver/azuredisk-csi-driver') }}"
+  connection: local
+  delegate_to: localhost

@@ -4,6 +4,5 @@
   block:
     - name: Instantiate Prime Master Node
       ansible.builtin.command:
-        cmd: |
-          kubeadm init --upload-certs --control-plane-endpoint={{ lb_ip_address }} --apiserver-bind-port={{ kube_api_bind_port }} --certificate-key={{ kubeClusterCertKey }} --cri-socket={{ kubeadm.crioUnixSocket }} --pod-network-cidr={{ podNetworkCidr }} --service-cidr={{ serviceCidr }}
+        cmd: "kubeadm init --upload-certs --control-plane-endpoint={{ lb_ip_address }} --apiserver-bind-port={{ kube_api_bind_port }} --certificate-key={{ kubeClusterCertKey }} --cri-socket={{ kubeadm.crioUnixSocket }} --pod-network-cidr={{ podNetworkCidr }} --service-cidr={{ serviceCidr }}"
   become: true

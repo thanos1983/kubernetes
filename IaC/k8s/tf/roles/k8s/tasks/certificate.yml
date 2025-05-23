@@ -1,0 +1,24 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s certificate
+- name: Create k8s CertManager Certificate(s)
+  kubernetes.core.k8s:
+    state: present
+    definition:
+      apiVersion: cert-manager.io/v1
+      kind: Certificate
+      metadata:
+        name: "{{ secretName }}"
+        labels:
+          "{{ labelsCertificate }}"
+        namespace: "{{ certificateNamespace }}"
+      spec:
+        secretName: "{{ secretName }}"
+        commonName: "{{ commonName }}"
+        dnsNames:
+          - "{{ hosts }}"
+        issuerRef:
+          kind: Issuer
+          name: "{{ certificateIssuerRefName }}"
+    kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+  connection: local
+  delegate_to: localhost
