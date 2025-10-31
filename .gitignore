@@ -50,4 +50,4 @@ terraform.rc
 **/planOutput
 **/destroyPlan
 
-IaCaKs/tf/initVersion/version-*.hcl
+IaCaKs/tf/initVersion/
