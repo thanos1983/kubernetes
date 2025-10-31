@@ -237,13 +237,13 @@ variable "knativeServingNamespace" {
 variable "knativeOperatorVersion" {
   description = "The version of the Knative operator to deploy."
   type        = string
-  default     = "1.17.3"
+  default     = "1.19.5"
 }
 
 variable "knativeNetIstioVersion" {
-  description = "The version of the Knative operator to deploy."
+  description = "The version of the Knative net-istio plugin to deploy."
   type        = string
-  default     = "1.17.0"
+  default     = "1.19.6"
 }
 
 variable "knativeEventingName" {

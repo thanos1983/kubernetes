@@ -85,7 +85,7 @@ The user also needs to activate the following Azure RBAC roles if desired to syn
 - Directory Writers
 - Groups Administrator
 
-In order to guide through the UI the user can go to Home -> Privileged Identity Management -> Microsoft Entra roles
+In order to guide through the UI the user needs to navigate to Home -> Privileged Identity Management -> Microsoft Entra roles
 
 #### Azure-Cli
 
@@ -1147,7 +1147,7 @@ Sample:
 
 ```bash
 # change the active subscription using the subscription name
-$ az account set --subscription "KMToll - DEV"
+$ az account set --subscription "Sample - DEV"
 
 # change the active subscription using the subscription ID
 $ az account set --subscription "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"

@@ -9,14 +9,14 @@ locals {
       type    = "A"
       ttl     = var.ttl
       name    = "www.${var.zone}"
-      content = module.aks_projekt_public_ips["aks"].ip_address
+      content = module.aks_project_public_ips["aks"].ip_address
     }
     knative = {
       comment = "Primary record for Knative (subdomains) needed to trigger DNS resolution and subsequent."
       type    = "A"
       ttl     = var.ttl
       name    = "*.${local.knativeDomain}"
-      content = module.aks_projekt_public_ips["aks"].ip_address
+      content = module.aks_project_public_ips["aks"].ip_address
     }
   }
 
@@ -162,7 +162,7 @@ locals {
       allocation_method = "Static"
       sku               = "Standard"
       name              = "${var.aks_cluster_name}-ip"
-      # resource_group_name = module.aks_projekt_aks_cluster.node_resource_group
+      # resource_group_name = module.aks_project_aks_cluster.node_resource_group
     }
   }
 
@@ -194,7 +194,7 @@ locals {
       chart            = "argo-cd"
       namespace        = var.argoCdNamespace
       repository       = "https://argoproj.github.io/argo-helm"
-      set_blocks = [
+      set = [
         {
           # Run server without TLS
           name  = "configs.params.server\\.insecure"
@@ -213,7 +213,7 @@ locals {
       chart            = "cert-manager"
       namespace        = var.certManagerNamespace
       repository       = "https://charts.jetstack.io"
-      set_blocks = [
+      set = [
         {
           name  = "crds.enabled"
           value = true
@@ -233,7 +233,7 @@ locals {
       chart            = "external-dns"
       namespace        = var.certManagerNamespace
       repository       = "https://kubernetes-sigs.github.io/external-dns"
-      set_blocks = []
+      set = []
       values = [
         templatefile("${path.module}/helmExternalDnsValues/cloudflare.yaml.tpl", {
           # txtOwnerId                   = var.CLOUDFLARE_ZONE_ID # to be used with cloudflare.yaml.tpl.bck
@@ -250,12 +250,12 @@ locals {
       chart            = "grafana"
       namespace        = var.monitoring_namespace
       repository       = "https://grafana.github.io/helm-charts"
-      set_blocks = []
+      set = []
       values = [
         templatefile("${path.module}/helmGrafanaValues/values.yaml.tpl", {
           namespace     = "monitoring"
           adminPassword = var.MONITORING_BOOTSTRAP_PASSWORD
-          # defaultRegion = module.aks_projekt_resource_group.location
+          # defaultRegion = module.aks_project_resource_group.location
           # lokiUrl       = "http://loki-gateway.${var.monitoring_namespace}.svc.cluster.local:80"
           prometheusUrl = "http://prometheus-server.${var.monitoring_namespace}.svc.cluster.local:80"
         })
@@ -269,7 +269,7 @@ locals {
       name             = "istio-base"
       namespace        = var.istio_namespace
       repository       = "https://istio-release.storage.googleapis.com/charts"
-      set_blocks = [
+      set = [
         {
           name  = "defaultRevision"
           value = "default"
@@ -285,7 +285,7 @@ locals {
       name             = "istio-cni"
       namespace        = var.istio_namespace
       repository       = "https://istio-release.storage.googleapis.com/charts"
-      set_blocks = []
+      set = []
       values = []
     },
     istio-discovery = {
@@ -296,7 +296,7 @@ locals {
       name             = "istio-discovery"
       namespace        = var.istio_namespace
       repository       = "https://istio-release.storage.googleapis.com/charts"
-      set_blocks = [
+      set = [
         {
           name  = "meshConfig.accessLogFile"
           value = "/dev/stdout"
@@ -312,13 +312,13 @@ locals {
     #   chart            = "loki"
     #   namespace        = var.monitoring_namespace
     #   repository       = "https://grafana.github.io/helm-charts"
-    #   set_blocks = []
+    #   set = []
     #   values = [
     #     templatefile("${path.module}/helmLokiValues/values.yaml.tpl", {
     #       requestTimeout   = "10s"
-    #       accountName      = module.aks_projekt_storage_account.name
-    #       accountKey       = module.aks_projekt_storage_account.primary_access_key
-    #       connectionString = module.aks_projekt_storage_account.primary_connection_string
+    #       accountName      = module.aks_project_storage_account.name
+    #       accountKey       = module.aks_project_storage_account.primary_access_key
+    #       connectionString = module.aks_project_storage_account.primary_connection_string
     #     })
     #   ]
     # },
@@ -330,7 +330,7 @@ locals {
       chart            = "prometheus"
       namespace        = var.monitoring_namespace
       repository       = "https://prometheus-community.github.io/helm-charts"
-      set_blocks = []
+      set = []
       values = [
         file("${path.module}/helmPrometheusValues/values.yaml")
       ]
@@ -343,7 +343,7 @@ locals {
       chart            = "promtail"
       namespace        = var.monitoring_namespace
       repository       = "https://grafana.github.io/helm-charts"
-      set_blocks = []
+      set = []
       values = []
     },
     qdrant = {
@@ -354,7 +354,7 @@ locals {
       chart            = "qdrant"
       namespace        = var.qdrant_namespace
       repository       = "https://qdrant.github.io/qdrant-helm"
-      set_blocks = [
+      set = [
         {
           name  = "replicaCount"
           value = var.qdrant_replicaCount
@@ -372,7 +372,7 @@ locals {
       name             = "emberstack"
       namespace        = "kube-system"
       repository       = "https://emberstack.github.io/helm-charts"
-      set_blocks = []
+      set = []
       values = []
     },
     sealed-secrets = {
@@ -383,7 +383,7 @@ locals {
       chart            = "sealed-secrets"
       namespace        = var.sealed_secrets_namespace
       repository       = "https://bitnami-labs.github.io/sealed-secrets"
-      set_blocks = []
+      set = []
       values = []
     }
   }
@@ -396,14 +396,14 @@ locals {
       namespace     = var.istio_namespace
       name          = "istio-ingressgateway"
       repository    = "https://istio-release.storage.googleapis.com/charts"
-      set_blocks = [
+      set = [
         {
           name  = "replicaCount"
           value = var.ingressReplicaCount
         },
         {
           name  = "service.loadBalancerIP"
-          value = module.aks_projekt_public_ips["aks"].ip_address
+          value = module.aks_project_public_ips["aks"].ip_address
         }
       ]
       values = [
@@ -419,7 +419,7 @@ locals {
     #  chart         = "trust-manager"
     #  namespace     = var.certManagerNamespace
     #  repository    = "https://charts.jetstack.io"
-    #  set_blocks = [
+    #  set = [
     #         {
     #           name  = "secretTargets.enabled"
     #           value = "true"
@@ -439,7 +439,7 @@ locals {
     #       chart            = "kiali-operator"
     #       namespace        = var.kialiNamespace
     #       repository       = "https://kiali.org/helm-charts"
-    #       set_blocks = [
+    #       set = [
     #         {
     #           name  = "cr.create"
     #           value = "true"
@@ -852,9 +852,4 @@ data "kubectl_file_documents" "knative_eventing" {
     knativeEventingName      = var.knativeEventingName
     knativeEventingNamespace = var.knativeEventingNamespace
   })
-}
-
-data "azurerm_cognitive_account" "openai" {
-  name                = "devDemoOpenAI"
-  resource_group_name = "devDemoRG"
 }
