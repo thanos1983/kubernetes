@@ -49,3 +49,5 @@ terraform.rc
 # Ignore plan Output file(s)
 **/planOutput
 **/destroyPlan
+
+IaCaKs/tf/initVersion/version-*.hcl
