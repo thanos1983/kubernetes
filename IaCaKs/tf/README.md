@@ -80,6 +80,7 @@ Either the user or service connection needs to have ``Azure Kubernetes Service R
 before deployment. On this deployment we have enabled RBAC on the cluster that is why.
 
 The user also needs to activate the following Azure RBAC roles if desired to sync AKS with AAD:
+
 - Global Administrator
 - Directory Writers
 - Groups Administrator
@@ -803,8 +804,8 @@ $ echo -n 'ewoJ...fQp9' | base64 -d
 
 ##### Knative FAAS with ISTIO
 
-Very important customisation (Configuring the Knative Serving Operator custom
-resource)[https://knative.dev/docs/install/operator/configuring-serving-cr/].
+Very important customisation [Configuring the Knative Serving Operator custom
+resource](https://knative.dev/docs/install/operator/configuring-serving-cr/).
 
 We applied the following customization:
 
@@ -1035,19 +1036,19 @@ The user needs to look a bit deeper as what could be the problem.
       Issuer Ref:
         Kind:  ClusterIssuer
         Name:  letsencrypt-staging
-      Key:     -AvSH5_lbswZjN9XO3CHrynd3woRLUR1ZMKQwgTROvM
+      Key:     <key>
       Solver:
         dns01:
           Cloudflare:
             API Token Secret Ref:
               Key:   api-token
               Name:  cloudflare-api-token
-            Email:   thanos.egw@gmail.com
+            Email:   <email@example.com>
         Selector:
           Dns Zones:
             example.com
             *.example.com
-      Token:     BnvHsQHWB1sn5LbCuWSx1AprR4W4UgEkMSOgXR2XA-I
+      Token:     <token>
       Type:      DNS-01
       URL:       https://acme-staging-v02.api.letsencrypt.org/acme/chall-v3/13222595573/V65sIQ
       Wildcard:  false
@@ -1301,21 +1302,20 @@ Please ensure that /usr/local/bin is in your search PATH, so the `kubelogin` com
 
 #### Get Credentials AKS
 
-# by default, this command merges the kubeconfig into ${HOME}/.kube/config for users with admin access
+By default, this command merges the kubeconfig into ${HOME}/.kube/config for users with admin access
 
 ````bash
 az aks get-credentials --resource-group ${RESOURCE_GROUP_NAME} --name ${AKS_NAME} --admin
 ````
 
-# by default, this command merges the kubeconfig into ${HOME}/.kube/config for users with non admin access
+By default, this command merges the kubeconfig into ${HOME}/.kube/config for users with non admin access
 
 ````bash
 az aks get-credentials --resource-group ${RESOURCE_GROUP_NAME} --name ${AKS_NAME}
 ````
 
-# kubelogin by default will use the kubeconfig from ${KUBECONFIG}. Specify --kubeconfig to override
-
-# this converts to use azurecli login mode
+kubelogin by default will use the kubeconfig from ${KUBECONFIG}. Specify --kubeconfig to override this converts to use
+azurecli login mode
 
 ````bash
 kubelogin convert-kubeconfig -l azurecli
