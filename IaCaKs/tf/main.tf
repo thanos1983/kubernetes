@@ -1,7 +1,7 @@
 # Create Azure Active Directory Group
 module "aks_project_active_directory_group" {
   source             = "git@github.com:thanos1983/terraform//Azure/modules/ActiveDirectoryGroup"
-  for_each = merge(local.aks_active_directory_groups, local.aks_active_directory_admin_group)
+  for_each           = merge(local.aks_active_directory_groups, local.aks_active_directory_admin_group)
   security_enabled   = var.security_enabled
   assignable_to_role = var.assignable_to_role
   description        = each.value.description
@@ -13,7 +13,7 @@ module "aks_project_active_directory_group" {
 # Role Assignment for Active Directory Group to gain access to AKS cluster
 module "aks_project_subsciption_identity_ad_group_assignment" {
   source               = "git@github.com:thanos1983/terraform//Azure/modules/RoleAssignment"
-  for_each = merge(local.aks_active_directory_groups, local.aks_active_directory_admin_group)
+  for_each             = merge(local.aks_active_directory_groups, local.aks_active_directory_admin_group)
   role_definition_name = var.aksRoleAssignment
   scope                = data.azurerm_subscription.subscription.id
   principal_id         = module.aks_project_active_directory_group[each.key].object_id
@@ -88,9 +88,9 @@ module "aks_project_aks_cluster" {
     network_policy = var.network_policy
   }
   azure_active_directory_role_based_access_control_block = {
-    managed            = var.managed
-    azure_rbac_enabled = var.azure_rbac_enabled
-    tenant_id          = data.azurerm_client_config.current.tenant_id
+    managed                = var.managed
+    azure_rbac_enabled     = var.azure_rbac_enabled
+    tenant_id              = data.azurerm_client_config.current.tenant_id
     admin_group_object_ids = [module.aks_project_active_directory_group["admin-group"].object_id]
   }
 }
@@ -107,7 +107,7 @@ module "aks_project_aks_cluster_kubeconfig" {
 # Assign RBAC subscription level role to the deployment user
 module "aks_project_subscription_identity_assignment" {
   source               = "git@github.com:thanos1983/terraform//Azure/modules/RoleAssignment"
-  count = length(var.user_role_definition_names)
+  count                = length(var.user_role_definition_names)
   scope                = data.azurerm_subscription.subscription.id
   role_definition_name = var.user_role_definition_names[count.index]
   principal_id         = data.azurerm_client_config.current.object_id
@@ -131,9 +131,9 @@ module "aks_project_storage_account" {
   tags   = var.tags
   name   = var.storage_account
   network_rules_block = {
-    bypass = ["AzureServices"]
-    default_action = "Deny"
-    ip_rules = [] # module.aks_project_public_ips["aks"].ip_address
+    bypass                     = ["AzureServices"]
+    default_action             = "Deny"
+    ip_rules                   = [] # module.aks_project_public_ips["aks"].ip_address
     virtual_network_subnet_ids = [module.aks_project_virtual_network_subNet["aks"].id]
   }
   public_network_access_enabled = var.public_network_access_enabled
@@ -158,7 +158,7 @@ module "aks_project_create_namespaces" {
   for_each   = local.nameSpacesToCreate
   playbook   = var.playbook
   replayable = var.replayable
-  tags = ["namespace"]
+  tags       = ["namespace"]
   name       = var.ansible_hostname
   extra_vars = {
     ansible_hostname   = var.ansible_hostname
@@ -167,9 +167,9 @@ module "aks_project_create_namespaces" {
     namespaceName      = each.value.metadata.name
     istioInjection     = each.value.metadata.labels.istio-injection
     host               = module.aks_project_aks_cluster.kube_admin_config[0].host
-    client_key = base64decode(module.aks_project_aks_cluster.kube_admin_config[0].client_key)
-    client_cert = base64decode(module.aks_project_aks_cluster.kube_admin_config[0].client_certificate)
-    ca_cert = base64decode(module.aks_project_aks_cluster.kube_admin_config[0].cluster_ca_certificate)
+    client_key         = base64decode(module.aks_project_aks_cluster.kube_admin_config[0].client_key)
+    client_cert        = base64decode(module.aks_project_aks_cluster.kube_admin_config[0].client_certificate)
+    ca_cert            = base64decode(module.aks_project_aks_cluster.kube_admin_config[0].cluster_ca_certificate)
   }
 }
 
@@ -235,7 +235,7 @@ module "aks_project_aks_cluster_helm_deployment_dependencies" {
 }
 
 output "test" {
-  value = nonsensitive(module.aks_project_cloudflare_api_token.value)
+  value     = nonsensitive(module.aks_project_cloudflare_api_token.value)
   sensitive = false
 }
 
@@ -302,7 +302,7 @@ module "aks_project_deploy_knative_operator_manifests" {
   source     = "git@github.com:thanos1983/terraform//Ansible/modules/Playbook"
   playbook   = var.playbook
   replayable = var.replayable
-  tags = ["knative"]
+  tags       = ["knative"]
   name       = var.ansible_hostname
   extra_vars = {
     domain                   = local.knativeDomain
@@ -315,9 +315,9 @@ module "aks_project_deploy_knative_operator_manifests" {
     knativeOperatorSrc       = local.knative.operator.filename
     knativeNetIstioSrc       = local.knative.net_istio.filename
     host                     = module.aks_project_aks_cluster.kube_admin_config[0].host
-    client_key = base64decode(module.aks_project_aks_cluster.kube_admin_config[0].client_key)
-    client_cert = base64decode(module.aks_project_aks_cluster.kube_admin_config[0].client_certificate)
-    ca_cert = base64decode(module.aks_project_aks_cluster.kube_admin_config[0].cluster_ca_certificate)
+    client_key               = base64decode(module.aks_project_aks_cluster.kube_admin_config[0].client_key)
+    client_cert              = base64decode(module.aks_project_aks_cluster.kube_admin_config[0].client_certificate)
+    ca_cert                  = base64decode(module.aks_project_aks_cluster.kube_admin_config[0].cluster_ca_certificate)
   }
   depends_on = [
     module.aks_project_download_knative_manifests,
