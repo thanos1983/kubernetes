@@ -19,20 +19,19 @@ variable "aks_cluster_name" {
   type        = string
 }
 
-variable "default_node_pool_blocks" {
+variable "default_node_pool_block" {
   description = "A default_node_pool block as defined below."
-  type = list(object({
+  type = object({
     name                        = string
     vm_size                     = string
-    max_pods                    = number
     temporary_name_for_rotation = string
     node_count                  = number
     upgrade_settings_block = object({
-      drain_timeout_in_minutes = optional(number)
+      drain_timeout_in_minutes      = optional(number)
       node_soak_duration_in_minutes = optional(number, 0)
-      max_surge = string
+      max_surge                     = string
     })
-  }))
+  })
 }
 
 variable "sku_tier" {
@@ -61,7 +60,7 @@ variable "kubeConfigFilename" {
 
 variable "tags" {
   description = "A mapping of tags to assign to the resource."
-  type = map(any)
+  type        = map(any)
 }
 
 variable "force_update" {
@@ -115,11 +114,6 @@ variable "CLOUDFLARE_API_KEY" {
   description = "The API key for operations."
   type        = string
 }
-
-# variable "CLOUDFLARE_API_TOKEN" {
-#  description = "The CloudFlare API token value."
-#  type        = string
-# }
 
 variable "CLOUDFLARE_ZONE_ID" {
   description = "Zone ID (can be found on the UI)."
@@ -290,8 +284,8 @@ variable "argoCdNamespace" {
 
 variable "cloudFlareTypeDnsRecord" {
   description = "The type of the record."
-  type = list(string)
-  default = ["A", "TXT"]
+  type        = list(string)
+  default     = ["A", "TXT"]
 }
 
 variable "ttl" {
@@ -304,12 +298,6 @@ variable "demoNamespace" {
   description = "The namespace that we will use for Demo."
   type        = string
   default     = "demo"
-}
-
-variable "demoOpenAiReferenceKey" {
-  description = "The key name of the OpenAI primary key."
-  type        = string
-  default     = "openai_key"
 }
 
 variable "reflection-allowed-namespaces" {
@@ -326,14 +314,14 @@ variable "apply_retry_count" {
 
 variable "aks_role_definition_names" {
   description = "The role definition name(s) of the aks cluster."
-  type = list(string)
-  default = ["Azure Kubernetes Service RBAC Cluster Admin"]
+  type        = list(string)
+  default     = ["Azure Kubernetes Service RBAC Cluster Admin"]
 }
 
 variable "user_role_definition_names" {
   description = "The role definition name(s) of the aks cluster."
-  type = list(string)
-  default = ["Network Contributor"]
+  type        = list(string)
+  default     = ["Network Contributor"]
 }
 
 variable "network_plugin" {
@@ -350,8 +338,8 @@ variable "network_policy" {
 
 variable "service_endpoints" {
   description = "The list of Service endpoints to associate with the subnet."
-  type = list(string)
-  default = ["Microsoft.AzureActiveDirectory", "Microsoft.ContainerRegistry", "Microsoft.Storage"]
+  type        = list(string)
+  default     = ["Microsoft.AzureActiveDirectory", "Microsoft.ContainerRegistry", "Microsoft.Storage"]
 }
 
 variable "faasNamespace" {

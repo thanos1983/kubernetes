@@ -11,7 +11,7 @@ module "aks_project_active_directory_group" {
 }
 
 # Role Assignment for Active Directory Group to gain access to AKS cluster
-module "aks_project_subsciption_identity_ad_group_assignment" {
+module "aks_project_subscription_identity_ad_group_assignment" {
   source               = "git@github.com:thanos1983/terraform//Azure/modules/RoleAssignment"
   for_each             = merge(local.aks_active_directory_groups, local.aks_active_directory_admin_group)
   role_definition_name = var.aksRoleAssignment
@@ -63,21 +63,18 @@ module "aks_project_aks_cluster" {
   sku_tier           = var.sku_tier
   name               = var.aks_cluster_name
   kubernetes_version = var.kubernetes_version
-  default_node_pool_blocks = [
-    {
-      name                        = var.default_node_pool_blocks[0].name
-      vm_size                     = var.default_node_pool_blocks[0].vm_size
-      max_pods                    = var.default_node_pool_blocks[0].max_pods
-      node_count                  = var.default_node_pool_blocks[0].node_count
-      vnet_subnet_id              = module.aks_project_virtual_network_subNet["aks"].id
-      temporary_name_for_rotation = var.default_node_pool_blocks[0].temporary_name_for_rotation
-      upgrade_settings_block = {
-        max_surge                     = var.default_node_pool_blocks[0].upgrade_settings_block.max_surge
-        drain_timeout_in_minutes      = var.default_node_pool_blocks[0].upgrade_settings_block.drain_timeout_in_minutes
-        node_soak_duration_in_minutes = var.default_node_pool_blocks[0].upgrade_settings_block.node_soak_duration_in_minutes
-      }
+  default_node_pool_block = {
+    name                        = var.default_node_pool_block.name
+    vm_size                     = var.default_node_pool_block.vm_size
+    node_count                  = var.default_node_pool_block.node_count
+    vnet_subnet_id              = module.aks_project_virtual_network_subNet["aks"].id
+    temporary_name_for_rotation = var.default_node_pool_block.temporary_name_for_rotation
+    upgrade_settings_block = {
+      max_surge                     = var.default_node_pool_block.upgrade_settings_block.max_surge
+      drain_timeout_in_minutes      = var.default_node_pool_block.upgrade_settings_block.drain_timeout_in_minutes
+      node_soak_duration_in_minutes = var.default_node_pool_block.upgrade_settings_block.node_soak_duration_in_minutes
     }
-  ]
+  }
   role_definition_names     = var.aks_role_definition_names
   open_service_mesh_enabled = var.open_service_mesh_enabled
   dns_prefix                = module.aks_project_resource_group.name
@@ -234,11 +231,6 @@ module "aks_project_aks_cluster_helm_deployment_dependencies" {
   ]
 }
 
-output "test" {
-  value     = nonsensitive(module.aks_project_cloudflare_api_token.value)
-  sensitive = false
-}
-
 # Create Cloudflare Secret in ISTIO GW namespace
 module "aks_project_cloudflare_k8s_dns_secret_token" {
   source = "git@github.com:thanos1983/terraform//Kubernetes/modules/KubernetesSecretV1"
@@ -282,8 +274,7 @@ module "aks_project_aks_cluster_helm_deployment" {
   depends_on = [
     module.aks_project_public_ips,
     module.aks_project_cloudflare_k8s_dns_secret,
-    module.aks_project_k8s_cert_manager_issuer_manifest,
-    # module.aks_project_deploy_knative_operator_manifests,
+    module.aks_project_k8s_cert_manager_issuer_manifest
   ]
 }
 
@@ -332,18 +323,5 @@ module "aks_project_k8s_istio_gw_routes" {
   yaml_body = each.value.yaml_body
   depends_on = [
     module.aks_project_aks_cluster_helm_deployment
-  ]
-}
-
-# Annotate qdrant DB secret
-module "aks_project_k8s_annotate_secrets" {
-  source         = "git@github.com:thanos1983/terraform//Kubernetes/modules/KubernetesAnnotations"
-  for_each       = local.secret_reflector
-  api_version    = each.value.api_version
-  kind           = each.value.kind
-  annotations    = each.value.annotations
-  metadata_block = each.value.metadata
-  depends_on = [
-    module.aks_project_k8s_istio_gw_routes
   ]
 }
