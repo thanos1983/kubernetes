@@ -45,3 +45,7 @@ terraform.rc
 
 IaCaKs/tf/initVersion/version-prod.hcl
 IaCaKs/tf/initVersion/version-test.hcl
+
+# Ignore PIP files for Virtualenv
+Pipfile
+
