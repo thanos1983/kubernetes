@@ -1,6 +1,7 @@
-# HLD Design for on premise infrastructure with on premise AI
+# HLD Design for Azure Kubernetes Service with Azure Active Directory
 
 ## How to install
+
 This documentation will provide a solution for Ubuntu (LinuxOS). Sample of code:
 
 ```bash
@@ -14,10 +15,11 @@ exit
 ```
 
 ## Sample of creating HLD diagrams
+
 The way that the user can create an HLD diagram. Sample of code:
 
 ```bash
-$ python3 offlineAI.py
+$ python3 hldAzureKubernetesService.py
 ```
 
 ## Sample of examples
