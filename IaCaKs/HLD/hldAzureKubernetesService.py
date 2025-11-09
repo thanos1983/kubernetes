@@ -1,12 +1,19 @@
 from diagrams.k8s.infra import Node
+from diagrams.onprem.ci import Jenkins
+from diagrams.onprem.logging import Loki
 from diagrams.onprem.network import Istio
+from diagrams.k8s.controlplane import API
 from diagrams import Diagram, Cluster, Edge
+from diagrams.azure.devops import Pipelines
 from diagrams.azure.compute import OsImages
-from diagrams.azure.network import LoadBalancers
-# from diagrams.onprem.network import Haproxy
-# from diagrams.k8s.infra import Master, Node, ETCD
-from diagrams.azure.network import PublicIpAddresses
-# from diagrams.k8s.storage import StorageClass, PersistentVolume, PersistentVolumeClaim
+from diagrams.azure.general import Twousericon
+from diagrams.onprem.iac import Terraform, Ansible
+from diagrams.azure.storage import StorageAccounts
+from diagrams.k8s.ecosystem import ExternalDns, Helm
+from diagrams.azure.compute import ContainerRegistries
+from diagrams.onprem.monitoring import Prometheus, Grafana
+from diagrams.onprem.certificates import CertManager, LetsEncrypt
+from diagrams.azure.network import PublicIpAddresses, LoadBalancers
 
 with (((Diagram("High Level Design - Azure Kubernetes Service Infrastructure",
                 show=False,
@@ -14,48 +21,45 @@ with (((Diagram("High Level Design - Azure Kubernetes Service Infrastructure",
                 filename="hldAzureKubernetesService",
                 graph_attr={"bgcolor": "transparent"})))):
     with Cluster("Azure Resources"):
+        devopsEngineers = Twousericon("DevOps Engineers")
         cliApplications = OsImages("Client Application(s)")
         azureLoadBalancer = LoadBalancers("Azure LoadBalancer")
-        publicIp = PublicIpAddresses("Public IP")
-        # istioGateway = Istio("ISTIO Ingress Gateway")
+
+        with Cluster("Infrastructure Tools"):
+            infraTools = [Helm("Helm"),
+                          Ansible("Ansible"),
+                          Terraform("Terraform")]
 
         with Cluster("Azure Virtual Network"):
             with Cluster("Azure Virtual Network Subnet for AKS"):
-                istioGateway = Istio("ISTIO Ingress Gateway")
-                workerNodes = [Node("Worker 1st"),
+                workerNodes = [Node("Worker 3rd"),
                                Node("Worker 2nd"),
-                               Node("Worker 3rd"),
+                               Node("Worker 1st"),
                                Node("Worker nth")]
-                cliApplications >> azureLoadBalancer >> istioGateway >> Edge(label="mutual TLS", style="dotted") << workerNodes
 
+                with Cluster("K8s Tools Stack"):
+                    necessaryTools = [LetsEncrypt("LetsEncrypt"),
+                                      ExternalDns("ExternalDns"),
+                                      CertManager("CertManager")]
 
-    #     with Cluster("Master Node(s) Cluster"):
-    #         masterNodes = [Master("Control Plane 3rd"),
-    #                        Master("Control Plane 2nd"),
-    #                        Master("Control Plane 1st")]
-    #
-    #     with Cluster("ETCD Node(s) Cluster"):
-    #         etcdNodes = [ETCD("ETCD 3rd"),
-    #                      ETCD("ETCD 2nd"),
-    #                      ETCD("ETCD 1st")]
-    #
-    #     with Cluster("Worker Node(s)"):
-    #         workerNodes = [Node("Worker Nth"),
-    #                        Node("Worker 3rd"),
-    #                        Node("Worker 2nd"),
-    #                        Node("Worker 1st")]
-    #
-    #     with Cluster("Persistent Storage"):
-    #         storageClass = StorageClass("StorageClass")
-    #         persistentVolume = PersistentVolume("PersistentVolume")
-    #         persistentVolumeClaim = PersistentVolumeClaim("PersistentVolumeClaim")
-    #
-    # storageClass >> Edge(color="darkblue", style="dashed") >> persistentVolume
-    # persistentVolume >> Edge(color="darkblue", style="dashed") >> persistentVolumeClaim
-    # persistentVolumeClaim >> Edge(color="darkblue", style="dashed") << workerNodes
-    #
-    # publicIp >> Edge(color="darkblue", style="dashed") << lb
-    # workerNodes >> Edge(color="darkblue", style="dashed") << lb
-    #
-    # lb >> Edge(color="darkblue", style="dashed") << masterNodes
-    # lb >> Edge(color="darkblue", style="dashed") << etcdNodes
+                with Cluster("Grafana Stack"):
+                    grafanaToolsStack = [Loki("Loki"),
+                                         Grafana("Grafana"),
+                                         Prometheus("Prometheus")]
+
+                with Cluster("Pipelines Deployments"):
+                    pipelineDeployments = [Jenkins("Jenkins Pipelines"),
+                                           Pipelines("Azure DevOps Pipelines")]
+
+                azureContainerRegistry = ContainerRegistries("Azure Container Registry")
+                apiControlplane = API("Kubernetes API")
+                istioGateway = Istio("ISTIO Ingress Gateway")
+                storageAccount = StorageAccounts("Azure StorageAccount")
+                azureContainerRegistry << Edge(label="Outbound TLS") << workerNodes
+                devopsEngineers >> pipelineDeployments >> azureLoadBalancer
+                istioGateway >> Edge(label="mutual TLS", style="dotted") << grafanaToolsStack
+                devopsEngineers >> azureLoadBalancer >> Edge(
+                    label="TLS") >> apiControlplane >> workerNodes >> storageAccount
+                cliApplications >> azureLoadBalancer << Edge(abel="mutual TLS", style="dotted") >> istioGateway
+                workerNodes >> Edge(label="mutual TLS", style="dotted") << istioGateway >> Edge(label="mutual TLS",
+                                                                                                style="dotted") << necessaryTools
