@@ -8,6 +8,7 @@ from diagrams.azure.compute import OsImages
 from diagrams.azure.general import Twousericon
 from diagrams.onprem.iac import Terraform, Ansible
 from diagrams.azure.storage import StorageAccounts
+from diagrams.azure.identity import ActiveDirectory
 from diagrams.onprem.network import Internet, Istio
 from diagrams.k8s.ecosystem import ExternalDns, Helm
 from diagrams.azure.compute import ContainerRegistries
@@ -31,7 +32,8 @@ with (((Diagram("High Level Design - Azure Kubernetes Service Infrastructure",
 
     with Cluster("Azure Resources"):
         azureLoadBalancer = LoadBalancers("Azure LoadBalancer")
-        publicWeb >> azureLoadBalancer << publicWeb
+        publicWeb >> Edge(label="TLS") << azureLoadBalancer
+        activeDirectory = ActiveDirectory("Azure ActiveDirectory")
 
         with Cluster("Azure Virtual Network"):
             azureContainerRegistry = ContainerRegistries("Azure Container Registry")
@@ -60,10 +62,11 @@ with (((Diagram("High Level Design - Azure Kubernetes Service Infrastructure",
                 istioGateway = Istio("ISTIO Ingress Gateway")
                 storageAccount = StorageAccounts("Azure StorageAccount")
                 azureContainerRegistry << Edge(label="Outbound TLS") << workerNodes
-                devopsEngineers >> pipelineDeployments >> azureLoadBalancer
+                devopsEngineers >> pipelineDeployments >> activeDirectory >> azureLoadBalancer >> Edge(abel="TLS",
+                                                                                                       style="dotted") << istioGateway
                 istioGateway >> Edge(label="mutual TLS", style="dotted") << grafanaToolsStack
-                devopsEngineers >> azureLoadBalancer >> Edge(
+                devopsEngineers >> activeDirectory >> Edge(
                     label="TLS") >> apiControlplane >> workerNodes >> storageAccount
-                cliApplications >> azureLoadBalancer << Edge(abel="mutual TLS", style="dotted") >> istioGateway
+                cliApplications >> activeDirectory << Edge(abel="mutual TLS", style="dotted") >> istioGateway
                 workerNodes >> Edge(label="mutual TLS", style="dotted") << istioGateway >> Edge(label="mutual TLS",
                                                                                                 style="dotted") << necessaryTools
