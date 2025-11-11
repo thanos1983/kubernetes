@@ -1,3 +1,4 @@
+from diagrams.custom import Custom
 from diagrams.k8s.infra import Node
 from diagrams.onprem.ci import Jenkins
 from diagrams.onprem.logging import Loki
@@ -52,7 +53,8 @@ with (((Diagram("High Level Design - Azure Kubernetes Service Infrastructure",
                 with Cluster("Grafana Stack"):
                     grafanaToolsStack = [Loki("Loki"),
                                          Grafana("Grafana"),
-                                         Prometheus("Prometheus")]
+                                         Prometheus("Prometheus"),
+                                         Custom("Alloy", "./my_resources/alloy.png")]
 
                 with Cluster("Pipelines Deployments"):
                     pipelineDeployments = [Jenkins("Jenkins Pipelines"),
