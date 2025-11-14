@@ -92,6 +92,14 @@ module "aks_project_aks_cluster" {
   }
 }
 
+# Create RBAC role for AKS cluster
+module "aks_project_rbac_identity_assignment" {
+  source               = "git@github.com:thanos1983/terraform//Azure/modules/RoleAssignment"
+  role_definition_name = var.role_definition_name
+  scope                = module.aks_project_storage_account.id
+  principal_id         = module.aks_project_aks_cluster.identity[0].principal_id
+}
+
 # Download kubeconfig file to local directory
 module "aks_project_aks_cluster_kubeconfig" {
   source               = "git@github.com:thanos1983/terraform//TerraformSharedModules/modules/LocalSensitiveFile"
@@ -130,12 +138,19 @@ module "aks_project_storage_account" {
   network_rules_block = {
     bypass                     = ["AzureServices"]
     default_action             = "Deny"
-    ip_rules                   = [] # module.aks_project_public_ips["aks"].ip_address
+    ip_rules                   = []
     virtual_network_subnet_ids = [module.aks_project_virtual_network_subNet["aks"].id]
   }
   public_network_access_enabled = var.public_network_access_enabled
   resource_group_name           = module.aks_project_resource_group.name
   location                      = module.aks_project_resource_group.location
+}
+
+# Create Storage Account Container
+module "aks_project_storage_account_container" {
+  source             = "git@github.com:thanos1983/terraform.git//Azure/modules/StorageContainer"
+  name               = var.storage_account_container_name
+  storage_account_id = module.aks_project_storage_account.id
 }
 
 # Create DNS record for Knative domain(s)
@@ -210,6 +225,21 @@ module "aks_project_cloudflare_k8s_dns_secret" {
   ]
 }
 
+# Create kubernetes secret for helm Tempo chart
+module "aks_project_cloudflare_k8s_tempo_traces_stg_secret" {
+  source = "git@github.com:thanos1983/terraform//Kubernetes/modules/KubernetesSecretV1"
+  metadata_block = {
+    name      = var.tempo_traces_stg_key
+    namespace = var.monitoring_namespace
+  }
+  data = {
+    (var.tempo_traces_key) = module.aks_project_storage_account.primary_access_key
+  }
+  depends_on = [
+    module.aks_project_create_namespaces
+  ]
+}
+
 # Applying all helm module(s) deployment(s)
 module "aks_project_aks_cluster_helm_deployment_dependencies" {
   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
@@ -227,7 +257,8 @@ module "aks_project_aks_cluster_helm_deployment_dependencies" {
   create_namespace  = each.value.create_namespace
   depends_on = [
     module.aks_project_storage_account,
-    module.aks_project_cloudflare_k8s_dns_secret
+    module.aks_project_cloudflare_k8s_dns_secret,
+    module.aks_project_cloudflare_k8s_tempo_traces_stg_secret
   ]
 }
 

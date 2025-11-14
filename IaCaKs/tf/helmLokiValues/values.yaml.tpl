@@ -40,15 +40,6 @@ loki:
       ruler: "ruler"
       admin: "admin"
 
-#gateway:
-#  ingress:
-#    enabled: true
-#    hosts:
-#      - host: to-be-replaced
-#        paths:
-#          - path: /
-#            pathType: Prefix
-
 deploymentMode: SimpleScalable
 
 backend:

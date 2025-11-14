@@ -20,6 +20,17 @@ datasources:
           tlsAuth: false
           tlsAuthWithCACert: false
           tlsSkipVerify: false
+      - name: Loki
+        type: loki
+        url: ${lokiUrl}
+        access: proxy
+        isDefault: false
+        editable: false
+        jsonData:
+          authType: default
+          tlsAuth: false
+          tlsAuthWithCACert: false
+          tlsSkipVerify: false
 
 dashboardProviders:
   dashboardproviders.yaml:

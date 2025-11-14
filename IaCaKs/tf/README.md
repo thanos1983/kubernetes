@@ -1315,10 +1315,10 @@ az aks get-credentials --resource-group ${RESOURCE_GROUP_NAME} --name ${AKS_NAME
 ````
 
 kubelogin by default will use the kubeconfig from ${KUBECONFIG}. Specify --kubeconfig to override this converts to use
-azurecli login mode
+`azurecli` login mode
 
 ````bash
-kubelogin convert-kubeconfig -l azurecli
+kubectl get all -n monitoring --kubeconfig IaCaKs/tf/kube/config
 ````
 
 # voila!

@@ -213,7 +213,7 @@ variable "storage_account" {
 variable "public_network_access_enabled" {
   description = "Whether the public network access is enabled?"
   type        = bool
-  default     = false
+  default     = true
 }
 
 variable "knativeServingName" {
@@ -418,4 +418,40 @@ variable "status" {
   description = "Status of the token."
   type        = string
   default     = "active"
+}
+
+variable "monitoringHelmChartUrl" {
+  description = "Grafana Helm charts url."
+  type        = string
+  default     = "https://grafana.github.io/helm-charts"
+}
+
+variable "container_access_type" {
+  description = "The Access Level configured for this Container."
+  type        = string
+  default     = "blob"
+}
+
+variable "storage_account_container_name" {
+  description = "The name of the Container which should be created within the Storage Account."
+  type        = string
+  default     = "tempo-traces"
+}
+
+variable "tempo_traces_stg_key" {
+  description = "Name of the key for the secret Tempo Storage Account token."
+  type        = string
+  default     = "tempo-traces-stg-key"
+}
+
+variable "tempo_traces_key" {
+  description = "Key for the secret Tempo Storage Account token."
+  type        = string
+  default     = "tempo-traces-key"
+}
+
+variable "role_definition_name" {
+  description = "RBAC role for AKS cluster to be able to write to Storage Account Blobs."
+  type        = string
+  default     = "Storage Blob Data Contributor"
 }
