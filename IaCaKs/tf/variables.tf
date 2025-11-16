@@ -231,13 +231,13 @@ variable "knativeServingNamespace" {
 variable "knativeOperatorVersion" {
   description = "The version of the Knative operator to deploy."
   type        = string
-  default     = "1.19.5"
+  default     = "1.20.0"
 }
 
 variable "knativeNetIstioVersion" {
   description = "The version of the Knative net-istio plugin to deploy."
   type        = string
-  default     = "1.19.6"
+  default     = "1.20.1"
 }
 
 variable "knativeEventingName" {
@@ -259,7 +259,7 @@ variable "wait_for_rollout" {
 }
 
 variable "istio_namespace" {
-  description = "The namespace in which ision core charts are to be installed."
+  description = "The namespace in which istio core charts are to be installed."
   type        = string
   default     = "istio-system"
 }

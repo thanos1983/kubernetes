@@ -774,9 +774,9 @@ data "http" "net_istio" {
   url = "https://github.com/knative/net-istio/releases/download/knative-v${var.knativeNetIstioVersion}/net-istio.yaml"
 }
 
-data "kubectl_file_documents" "knative_operator" {
-  content = replace(data.http.knative_operator.response_body, "initialDelaySeconds: 120", "initialDelaySeconds: 180")
-}
+# data "kubectl_file_documents" "knative_operator" {
+#   content = replace(data.http.knative_operator.response_body, "initialDelaySeconds: 120", "initialDelaySeconds: 180")
+# }
 
 data "kubectl_file_documents" "net_istio" {
   content = data.http.net_istio.response_body
