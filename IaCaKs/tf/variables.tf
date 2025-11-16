@@ -437,3 +437,15 @@ variable "role_definition_name" {
   type        = string
   default     = "Storage Blob Data Contributor"
 }
+
+variable "bypass" {
+  description = "Specifies whether traffic is bypassed for Logging/Metrics/AzureServices."
+  type        = list(string)
+  default     = ["AzureServices"]
+}
+
+variable "default_action" {
+  description = "Specifies the default action of allow or deny when no other rules match."
+  type        = string
+  default     = "Deny"
+}

@@ -127,15 +127,18 @@ module "aks_project_storage_account" {
   source = "git@github.com:thanos1983/terraform.git//Azure/modules/StorageAccount"
   tags   = var.tags
   name   = var.storage_account
-  network_rules_block = {
-    bypass                     = ["AzureServices"]
-    default_action             = "Deny"
-    ip_rules                   = []
-    virtual_network_subnet_ids = [module.aks_project_virtual_network_subNet["aks"].id]
-  }
   public_network_access_enabled = var.public_network_access_enabled
   resource_group_name           = module.aks_project_resource_group.name
   location                      = module.aks_project_resource_group.location
+}
+
+# Create Storage Account Network Rules
+module "aks_project_storage_account_network_rules" {
+  source                     = "git@github.com:thanos1983/terraform.git//Azure/modules/StorageAccountNetworkRules"
+  bypass                     = var.bypass
+  default_action             = var.default_action
+  storage_account_id         = module.aks_project_storage_account.id
+  virtual_network_subnet_ids = [module.aks_project_virtual_network_subNet["aks"].id]
 }
 
 # Create RBAC role for AKS cluster
