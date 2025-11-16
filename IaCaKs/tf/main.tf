@@ -92,14 +92,6 @@ module "aks_project_aks_cluster" {
   }
 }
 
-# Create RBAC role for AKS cluster
-module "aks_project_rbac_identity_assignment" {
-  source               = "git@github.com:thanos1983/terraform//Azure/modules/RoleAssignment"
-  role_definition_name = var.role_definition_name
-  scope                = module.aks_project_storage_account.id
-  principal_id         = module.aks_project_aks_cluster.identity[0].principal_id
-}
-
 # Download kubeconfig file to local directory
 module "aks_project_aks_cluster_kubeconfig" {
   source               = "git@github.com:thanos1983/terraform//TerraformSharedModules/modules/LocalSensitiveFile"
@@ -146,10 +138,19 @@ module "aks_project_storage_account" {
   location                      = module.aks_project_resource_group.location
 }
 
+# Create RBAC role for AKS cluster
+module "aks_project_rbac_identity_assignment" {
+  source               = "git@github.com:thanos1983/terraform//Azure/modules/RoleAssignment"
+  role_definition_name = var.role_definition_name
+  scope                = module.aks_project_storage_account.id
+  principal_id         = module.aks_project_aks_cluster.identity[0].principal_id
+}
+
 # Create Storage Account Container
 module "aks_project_storage_account_container" {
   source             = "git@github.com:thanos1983/terraform.git//Azure/modules/StorageContainer"
-  name               = var.storage_account_container_name
+  for_each           = tomap(var.storage_account_container_names)
+  name               = each.value
   storage_account_id = module.aks_project_storage_account.id
 }
 

@@ -49,4 +49,5 @@ terraform.rc
 
 # Ignore PIP files for Virtualenv
 Pipfile
+Pipfile.lock
 

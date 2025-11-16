@@ -2,6 +2,7 @@ from diagrams.custom import Custom
 from diagrams.k8s.infra import Node
 from diagrams.onprem.ci import Jenkins
 from diagrams.onprem.logging import Loki
+from diagrams.onprem.tracing import Tempo
 from diagrams.k8s.controlplane import API
 from diagrams import Diagram, Cluster, Edge
 from diagrams.azure.devops import Pipelines
@@ -52,6 +53,7 @@ with (((Diagram("High Level Design - Azure Kubernetes Service Infrastructure",
 
                 with Cluster("Grafana Stack"):
                     grafanaToolsStack = [Loki("Loki"),
+                                         Tempo("Tempo"),
                                          Grafana("Grafana"),
                                          Prometheus("Prometheus"),
                                          Custom("Alloy", "./my_resources/alloy.png")]

@@ -191,7 +191,7 @@ locals {
     #   recreate_pods    = true
     #   create_namespace = true
     #   wait_for_jobs    = false
-    #   version          = "1.3.1"
+    #   version          = "1.4.0"
     #   name             = "alloy"
     #   chart            = "alloy"
     #   namespace        = var.monitoring_namespace
@@ -392,7 +392,7 @@ locals {
           TEMPO_TRACES_KEY               = var.tempo_traces_key
           TEMPO_TRACES_STG_KEY           = var.tempo_traces_stg_key
           STORAGE_ACCOUNT_NAME           = module.aks_project_storage_account.name
-          STORAGE_ACCOUNT_CONTAINER_NAME = module.aks_project_storage_account_container.name
+          STORAGE_ACCOUNT_CONTAINER_NAME = module.aks_project_storage_account_container["tempo_container_name"].name
         })
       ]
     }
@@ -728,6 +728,14 @@ locals {
         name = "${var.demoNamespace}-prod"
         labels = {
           istio-injection = "enabled"
+        }
+      }
+    }
+    (var.monitoring_namespace) = {
+      metadata = {
+        name = var.monitoring_namespace
+        labels = {
+          istio-injection = "disabled"
         }
       }
     }

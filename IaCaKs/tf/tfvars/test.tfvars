@@ -8,6 +8,12 @@ ingressReplicaCount = 1
 qdrant_replicaCount = 1
 kubernetes_version  = "1.33.3"
 
+storage_account_container_names = {
+  loki_container_chunk = "loki-chunk"
+  loki_container_ruler = "loki-ruler"
+  tempo_container_name = "tempo-traces"
+}
+
 default_node_pool_block = {
   name                        = "aks"
   vm_size                     = "Standard_A4_v2"

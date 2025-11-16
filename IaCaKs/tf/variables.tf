@@ -432,10 +432,13 @@ variable "container_access_type" {
   default     = "blob"
 }
 
-variable "storage_account_container_name" {
+variable "storage_account_container_names" {
   description = "The name of the Container which should be created within the Storage Account."
-  type        = string
-  default     = "tempo-traces"
+  type = object({
+    loki_container_chunk = string
+    loki_container_ruler = string
+    tempo_container_name = string
+  })
 }
 
 variable "tempo_traces_stg_key" {
