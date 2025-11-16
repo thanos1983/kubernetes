@@ -51,3 +51,7 @@ terraform.rc
 Pipfile
 Pipfile.lock
 
+# Ignore sensitive file(s)
+**/kube/config
+**/knative/files/operator.yaml
+**/knative/files/net-istio.yaml

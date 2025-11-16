@@ -6,14 +6,14 @@ issuer_name         = "letsencrypt-prod"
 secret_key_ref      = "letsencrypt-prod"
 storage_account     = "demoprodaks"
 aks_cluster_name    = "demo_test_aks_cluster"
+kubernetes_version  = "1.33.3"
 resource_group_name = "demoProdRG"
 ingressReplicaCount = 2
-qdrant_replicaCount = 3
-kubernetes_version  = "1.33.3"
 
 storage_account_container_names = {
   loki_container_chunk = "loki-chunk"
   loki_container_ruler = "loki-ruler"
+  loki_container_admin = "loki-admin"
   tempo_container_name = "tempo-traces"
 }
 

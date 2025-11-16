@@ -1,77 +1,94 @@
 loki:
-  auth_enabled: false
   schemaConfig:
     configs:
-      - from: 2024-04-01
+      - from: "2024-04-01"
         store: tsdb
         object_store: azure
         schema: v13
         index:
           prefix: loki_index_
           period: 24h
+  storage_config:
+    azure:
+      account_name: "${STORAGE_ACCOUNT_NAME}"
+      container_name: "${STORAGE_ACCOUNT_CONTAINER_CHUNKS}" # Your actual Azure Blob Storage container name (loki-azure-dev-chunks)
   ingester:
     chunk_encoding: snappy
-  tracing:
+  pattern_ingester:
     enabled: true
+  limits_config:
+    allow_structured_metadata: true
+    volume_enabled: true
+    retention_period: 672h # 28 days retention
+  compactor:
+    retention_enabled: true
+    delete_request_store: azure
+  ruler:
+    enable_api: true
+    storage:
+      type: azure
+      azure:
+        account_name: ${STORAGE_ACCOUNT_NAME}
+        container_name: ${STORAGE_ACCOUNT_CONTAINER_RULER} # Your actual Azure Blob Storage container name (loki-azure-dev-ruler)
+      alertmanager_url: ${PROMETHEUS_ALERT_URL} # The URL of the Alertmanager to send alerts (Prometheus, Mimir, etc.)
+
   querier:
     max_concurrent: 4
 
   storage:
+    object_store:
+      azure:
+        accountKey: ${STORAGE_ACCOUNT_KEY}
+        accountName: ${STORAGE_ACCOUNT_NAME}
     type: azure
-    azure:
-      # Name of the Azure Blob Storage account
-      accountName: ${accountName}
-      # Key associated with the Azure Blob Storage account
-      accountKey: ${accountKey}
-      # Comprehensive connection string for Azure Blob Storage account (Can be used to replace endpoint, accountName, and accountKey)
-      connectionString: ${connectionString}
-      # Flag indicating whether to use Azure Managed Identity for authentication
-      useManagedIdentity: false
-      # Flag indicating whether to use a federated token for authentication
-      useFederatedToken: false
-      # Client ID of the user-assigned managed identity (if applicable)
-      userAssignedId: <your-user-assigned-id>
-      # Timeout duration for requests made to the Azure Blob Storage account (in seconds)
-      requestTimeout: ${requestTimeout}
-      # Domain suffix of the Azure Blob Storage service endpoint (e.g., core.windows.net)
-      endpointSuffix: <your-endpoint-suffix>
     bucketNames:
-      chunks: "chunks"
-      ruler: "ruler"
-      admin: "admin"
+      chunks: "${STORAGE_ACCOUNT_CONTAINER_CHUNKS}" # Your actual Azure Blob Storage container name (loki-azure-dev-chunks)
+      ruler: "${STORAGE_ACCOUNT_CONTAINER_RULER}" # Your actual Azure Blob Storage container name (loki-azure-dev-ruler)
+      admin: "${STORAGE_ACCOUNT_CONTAINER_ADMIN}" # Your actual Azure Blob Storage container name (loki-azure-dev-admin)
+    azure:
+      accountKey: ${STORAGE_ACCOUNT_KEY}
+      requestTimeout: ${REQUEST_TIMEOUT}
+      accountName: ${STORAGE_ACCOUNT_NAME}
+      connectionString: ${STORAGE_ACCOUNT_CONNECTION_STRING}
 
-deploymentMode: SimpleScalable
-
-backend:
-  replicas: 3
-read:
-  replicas: 3
-write:
-  replicas: 3
-
-# Disable minio storage
-minio:
-  enabled: false
-
-# Zero out replica counts of other deployment modes
-singleBinary:
-  replicas: 0
+deploymentMode: Distributed
 
 ingester:
-  replicas: 0
+  replicas: 3
+  zoneAwareReplication:
+    enabled: false
+
 querier:
-  replicas: 0
+  replicas: 3
+  maxUnavailable: 2
+
 queryFrontend:
-  replicas: 0
+  replicas: 2
+  maxUnavailable: 1
+
 queryScheduler:
-  replicas: 0
+  replicas: 2
+
 distributor:
-  replicas: 0
+  replicas: 3
+  maxUnavailable: 2
 compactor:
-  replicas: 0
+  replicas: 1
+
 indexGateway:
+  replicas: 2
+  maxUnavailable: 1
+
+ruler:
+  replicas: 1
+  maxUnavailable: 1
+
+backend:
   replicas: 0
-bloomCompactor:
+read:
   replicas: 0
-bloomGateway:
+write:
+  replicas: 0
+
+singleBinary:
   replicas: 0

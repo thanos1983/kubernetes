@@ -9,17 +9,17 @@ aks_cluster_name    = "demo_test_aks_cluster"
 kubernetes_version  = "1.33.3"
 resource_group_name = "demoTestRG"
 ingressReplicaCount = 1
-qdrant_replicaCount = 1
 
 storage_account_container_names = {
   loki_container_chunk = "loki-chunk"
   loki_container_ruler = "loki-ruler"
+  loki_container_admin = "loki-admin"
   tempo_container_name = "tempo-traces"
 }
 
 default_node_pool_block = {
   name                        = "aks"
-  vm_size                     = "Standard_A4_v2"
+  vm_size                     = "Standard_A8_v2"
   node_count                  = 3
   temporary_name_for_rotation = "aksrotation"
   upgrade_settings_block = {

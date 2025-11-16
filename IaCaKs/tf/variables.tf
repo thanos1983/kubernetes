@@ -156,11 +156,6 @@ variable "load_config_file" {
   default     = false
 }
 
-variable "qdrant_replicaCount" {
-  description = "Use replicaCount of Qdrant in distributed deployment mode."
-  type        = number
-}
-
 variable "qdrant_namespace" {
   description = "The namespace where all monitoring resources will be deployed."
   type        = string
@@ -416,6 +411,7 @@ variable "storage_account_container_names" {
   type = object({
     loki_container_chunk = string
     loki_container_ruler = string
+    loki_container_admin = string
     tempo_container_name = string
   })
 }

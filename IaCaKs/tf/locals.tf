@@ -280,24 +280,28 @@ locals {
     #     })
     #   ]
     # },
-    # loki = {
-    #   create_namespace = false
-    #   wait_for_jobs    = false
-    #   name             = "loki"
-    #   chart            = "loki"
-    #   version          = "6.46.0"
-    #   namespace        = var.monitoring_namespace
-    #   repository       = var.monitoringHelmChartUrl
-    #   set              = []
-    #   values = [
-    #     templatefile("${path.module}/helmLokiValues/values.yaml.tpl", {
-    #       requestTimeout   = "10s"
-    #       accountName      = module.aks_project_storage_account.name
-    #       accountKey       = module.aks_project_storage_account.primary_access_key
-    #       connectionString = module.aks_project_storage_account.primary_connection_string
-    #     })
-    #   ]
-    # },
+    loki = {
+      create_namespace = false
+      wait_for_jobs    = false
+      name             = "loki"
+      chart            = "loki"
+      version          = "6.46.0"
+      namespace        = var.monitoring_namespace
+      repository       = var.monitoringHelmChartUrl
+      set              = []
+      values = [
+        templatefile("${path.module}/helmLokiValues/values.yaml.tpl", {
+          REQUEST_TIMEOUT                   = "10s"
+          STORAGE_ACCOUNT_NAME              = module.aks_project_storage_account.name
+          STORAGE_ACCOUNT_KEY               = module.aks_project_storage_account.primary_access_key
+          STORAGE_ACCOUNT_CONNECTION_STRING = module.aks_project_storage_account.primary_connection_string
+          STORAGE_ACCOUNT_CONTAINER_ADMIN   = module.aks_project_storage_account_container["loki_container_admin"].name
+          STORAGE_ACCOUNT_CONTAINER_RULER   = module.aks_project_storage_account_container["loki_container_ruler"].name
+          STORAGE_ACCOUNT_CONTAINER_CHUNKS  = module.aks_project_storage_account_container["loki_container_chunk"].name
+          PROMETHEUS_ALERT_URL              = "http://prometheus-alertmanager.${var.monitoring_namespace}.svc.cluster.local:9093"
+        })
+      ]
+    },
     istio-base = {
       create_namespace = true
       wait_for_jobs    = false

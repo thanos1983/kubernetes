@@ -260,7 +260,6 @@ module "aks_project_aks_cluster_helm_deployment_dependencies" {
   wait_for_jobs     = each.value.wait_for_jobs
   create_namespace  = each.value.create_namespace
   depends_on = [
-    module.aks_project_storage_account,
     module.aks_project_cloudflare_k8s_dns_secret,
     module.aks_project_cloudflare_k8s_tempo_traces_stg_secret
   ]
