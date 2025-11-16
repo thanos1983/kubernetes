@@ -1,9 +1,12 @@
 sku_tier            = "Standard"
 location            = "West Europe"
 environment         = "prod"
+acme_server         = "https://acme-v02.api.letsencrypt.org/directory"
+issuer_name         = "letsencrypt-prod"
+secret_key_ref      = "letsencrypt-prod"
+storage_account     = "demoprodaks"
 aks_cluster_name    = "demo_test_aks_cluster"
 resource_group_name = "demoProdRG"
-storage_account     = "demoprodaks"
 ingressReplicaCount = 2
 qdrant_replicaCount = 3
 kubernetes_version  = "1.33.3"

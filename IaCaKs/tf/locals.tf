@@ -473,7 +473,7 @@ locals {
     #     gatewayNamespace = var.argoCdNamespace
     #     gatewaySelector  = "ingressgateway"
     #     gatewayTlsMode   = "SIMPLE"
-    #     secretName       = "argo-cd-${var.secret_key_ref_prod}"
+    #     secretName       = "argo-cd-${var.secret_key_ref}"
     #     hosts            = ["argo-cd.${var.zone}"]
     #   })
     # },
@@ -485,9 +485,9 @@ locals {
     #       "app.kubernetes.io/instance"  = "argo-cd-terraform"
     #       "app.kubernetes.io/name"      = "argoCdCertificate"
     #     }
-    #     secretName               = "argo-cd-${var.secret_key_ref_prod}"
+    #     secretName               = "argo-cd-${var.secret_key_ref}"
     #     certificateNamespace     = var.istio_namespace
-    #     certificateIssuerRefName = var.issuer_name_prod
+    #     certificateIssuerRefName = var.issuer_name
     #     commonName               = "argo-cd.${var.zone}"
     #     hosts                    = ["argo-cd.${var.zone}"]
     #   })
@@ -521,7 +521,7 @@ locals {
         gatewayNamespace = var.monitoring_namespace
         gatewaySelector  = "ingressgateway"
         gatewayTlsMode   = "SIMPLE "
-        secretName       = "grafana-${var.secret_key_ref_prod}"
+        secretName       = "grafana-${var.secret_key_ref}"
         hosts            = ["grafana.${var.zone}"]
       })
     },
@@ -533,9 +533,9 @@ locals {
           "app.kubernetes.io/instance"  = "grafana-terraform"
           "app.kubernetes.io/name"      = "grafanaCertificate"
         }
-        secretName               = "grafana-${var.secret_key_ref_prod}"
+        secretName               = "grafana-${var.secret_key_ref}"
         certificateNamespace     = var.istio_namespace
-        certificateIssuerRefName = var.issuer_name_prod
+        certificateIssuerRefName = var.issuer_name
         commonName               = "grafana.${var.zone}"
         hosts                    = ["grafana.${var.zone}"]
       })
@@ -569,7 +569,7 @@ locals {
     #     gatewayNamespace = var.kialiNamespace
     #     gatewaySelector  = "ingressgateway"
     #     gatewayTlsMode   = "SIMPLE"
-    #     secretName       = "kiali-${var.secret_key_ref_prod}"
+    #     secretName       = "kiali-${var.secret_key_ref}"
     #     hosts            = ["kiali.${var.zone}"]
     #   })
     # },
@@ -581,9 +581,9 @@ locals {
     #       "app.kubernetes.io/instance"  = "kiali-terraform"
     #       "app.kubernetes.io/name"      = "kialiCertificate"
     #     }
-    #     secretName               = "kiali-${var.secret_key_ref_prod}"
+    #     secretName               = "kiali-${var.secret_key_ref}"
     #     certificateNamespace     = var.istio_namespace
-    #     certificateIssuerRefName = var.issuer_name_prod
+    #     certificateIssuerRefName = var.issuer_name
     #     commonName               = "kiali.${var.zone}"
     #     hosts                    = ["kiali.${var.zone}"]
     #   })
@@ -617,7 +617,7 @@ locals {
         gatewayName      = "istio-ingressgateway-prometheus"
         gatewaySelector  = "ingressgateway"
         gatewayTlsMode   = "SIMPLE "
-        secretName       = "prometheus-${var.secret_key_ref_prod}"
+        secretName       = "prometheus-${var.secret_key_ref}"
         hosts            = ["prometheus.${var.zone}"]
       })
     },
@@ -629,9 +629,9 @@ locals {
           "app.kubernetes.io/instance"  = "prometheus-terraform"
           "app.kubernetes.io/name"      = "prometheusCertificate"
         }
-        secretName               = "prometheus-${var.secret_key_ref_prod}"
+        secretName               = "prometheus-${var.secret_key_ref}"
         certificateNamespace     = var.istio_namespace
-        certificateIssuerRefName = var.issuer_name_prod
+        certificateIssuerRefName = var.issuer_name
         commonName               = "prometheus.${var.zone}"
         hosts                    = ["prometheus.${var.zone}"]
       })
@@ -658,28 +658,28 @@ locals {
   cert_manager_issuer_manifest = {
     ιssuer_prod = {
       yaml_body = templatefile("${path.module}/certManagerManifests/issuer.yaml.tpl", {
-        issuer_name                  = var.issuer_name_prod
+        domain                       = var.zone
+        acme_server                  = var.acme_server
+        issuer_name                  = var.issuer_name
+        secret_key_ref               = var.secret_key_ref
         issuer_namespace             = var.istio_namespace
         acme_email                   = var.CLOUDFLARE_EMAIL
-        acme_server                  = var.acme_server_prod
-        secret_key_ref               = var.secret_key_ref_prod
-        cloudflare_secretKeyRef_name = var.cloudflare_secretKeyRef_name
         cloudflare_secretKeyRef_key  = var.cloudflare_secretKeyRef_key
-        domain                       = var.zone
+        cloudflare_secretKeyRef_name = var.cloudflare_secretKeyRef_name
       })
     },
-    issuer_stage = {
-      yaml_body = templatefile("${path.module}/certManagerManifests/issuer.yaml.tpl", {
-        issuer_name                  = var.issuer_name_stage
-        issuer_namespace             = var.istio_namespace
-        acme_email                   = var.CLOUDFLARE_EMAIL
-        acme_server                  = var.acme_server_stage
-        secret_key_ref               = var.secret_key_ref_stage
-        cloudflare_secretKeyRef_name = var.cloudflare_secretKeyRef_name
-        cloudflare_secretKeyRef_key  = var.cloudflare_secretKeyRef_key
-        domain                       = var.zone
-      })
-    }
+    # issuer_stage = {
+    #   yaml_body = templatefile("${path.module}/certManagerManifests/issuer.yaml.tpl", {
+    #     acme_server                  = var.acme_server
+    #     issuer_name                  = var.issuer_name
+    #     secret_key_ref               = var.secret_key_ref
+    #     issuer_namespace             = var.istio_namespace
+    #     acme_email                   = var.CLOUDFLARE_EMAIL
+    #     cloudflare_secretKeyRef_name = var.cloudflare_secretKeyRef_name
+    #     cloudflare_secretKeyRef_key  = var.cloudflare_secretKeyRef_key
+    #     domain                       = var.zone
+    #   })
+    # }
   }
 
   nameSpacesToCreate = {

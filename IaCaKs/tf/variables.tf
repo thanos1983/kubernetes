@@ -130,40 +130,19 @@ variable "MONITORING_BOOTSTRAP_PASSWORD" {
   type        = string
 }
 
-variable "issuer_name_prod" {
-  description = "The role issuer name for Issuer Prod."
+variable "issuer_name" {
+  description = "The role issuer name for Issuer."
   type        = string
-  default     = "letsencrypt-prod"
 }
 
-variable "issuer_name_stage" {
-  description = "The role issuer name for Issuer Stage."
-  type        = string
-  default     = "letsencrypt-stage"
-}
-
-variable "acme_server_prod" {
+variable "acme_server" {
   description = "The ACME server can successfully retrieve this key via a DNS lookup and can validate that the client owns the domain for the requested certificate for Prod."
   type        = string
-  default     = "https://acme-v02.api.letsencrypt.org/directory"
 }
 
-variable "acme_server_stage" {
-  description = "The ACME server can successfully retrieve this key via a DNS lookup and can validate that the client owns the domain for the requested certificate for Stage."
-  type        = string
-  default     = "https://acme-staging-v02.api.letsencrypt.org/directory"
-}
-
-variable "secret_key_ref_prod" {
+variable "secret_key_ref" {
   description = "Secret resource that will be used to store the account's private key for Issuer Prod."
   type        = string
-  default     = "letsencrypt-prod"
-}
-
-variable "secret_key_ref_stage" {
-  description = "Secret resource that will be used to store the account's private key for Issuer Stage."
-  type        = string
-  default     = "letsencrypt-stage"
 }
 
 variable "ingressReplicaCount" {

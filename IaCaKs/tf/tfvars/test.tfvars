@@ -1,12 +1,15 @@
 sku_tier            = "Standard"
 location            = "West Europe"
 environment         = "test"
-aks_cluster_name    = "demo_test_aks_cluster"
-resource_group_name = "demoTestRG"
+acme_server         = "https://acme-staging-v02.api.letsencrypt.org/directory"
+issuer_name         = "letsencrypt-stage"
+secret_key_ref      = "letsencrypt-stage"
 storage_account     = "stdemotestaks"
+aks_cluster_name    = "demo_test_aks_cluster"
+kubernetes_version  = "1.33.3"
+resource_group_name = "demoTestRG"
 ingressReplicaCount = 1
 qdrant_replicaCount = 1
-kubernetes_version  = "1.33.3"
 
 storage_account_container_names = {
   loki_container_chunk = "loki-chunk"
