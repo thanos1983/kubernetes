@@ -203,6 +203,7 @@ locals {
           loggingFormat   = "logfmt"
           lokiEndpointUrl = "http://loki-gateway.${var.monitoring_namespace}.svc.cluster.local:80"
           tempoEndpoint   = "http://tempo-distributed-ingester.${var.monitoring_namespace}.svc.cluster.local:3200"
+          prometheusUrl   = "http://prometheus-prometheus-pushgateway.${var.monitoring_namespace}.svc.cluster.local:9091"
         })
       ]
     },
@@ -244,6 +245,22 @@ locals {
         }
       ]
       values = []
+    },
+    cloudflare-exporter = {
+      wait_for_jobs    = false
+      create_namespace = false
+      version          = "0.2.2"
+      name             = "cloudflare-exporter"
+      chart            = "cloudflare-exporter"
+      namespace        = var.certManagerNamespace
+      repository       = "https://lablabs.github.io/cloudflare-exporter/"
+      set              = []
+      values = [
+        templatefile("${path.module}/helmExternalDnsValues/cloudflare-exporter.yaml.tpl", {
+          cloudflare_secretKeyRef_key  = var.cloudflare_secretKeyRef_key
+          cloudflare_secretKeyRef_name = var.cloudflare_secretKeyRef_name
+        })
+      ]
     },
     external-dns = {
       create_namespace = false

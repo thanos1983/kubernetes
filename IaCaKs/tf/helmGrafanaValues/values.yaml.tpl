@@ -25,7 +25,7 @@ datasources:
         url: ${lokiUrl}
         access: proxy
         isDefault: false
-        editable: false
+        editable: true
         jsonData:
           authType: default
           tlsAuth: false
@@ -44,6 +44,14 @@ dashboardProviders:
         editable: true
         options:
           path: /var/lib/grafana/dashboards/istio
+      - name: 'cloudflare'
+        orgId: 1
+        folder: 'default'
+        type: file
+        disableDeletion: false
+        editable: true
+        options:
+          path: /var/lib/grafana/dashboards/cloudflare
       - name: 'prometheus'
         orgId: 1
         folder: 'default'
@@ -60,6 +68,12 @@ dashboards:
       revision: 225
       datasource: Prometheus
       # https://grafana.com/grafana/dashboards/7639-istio-mesh-dashboard/
+  cloudflare:
+    imported-dashboard-name:
+      gnetId: 13133
+      revision: 3
+      datasource: Prometheus
+      # https://grafana.com/grafana/dashboards/13133-cloudflare-zone-analytics/
   prometheus:
     imported-dashboard-name:
       gnetId: 315
