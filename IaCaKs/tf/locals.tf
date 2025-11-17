@@ -186,45 +186,45 @@ locals {
   ]
 
   helm_deployment_dependencies = {
-    # alloy = {
-    #   wait             = true
-    #   recreate_pods    = true
-    #   create_namespace = true
-    #   wait_for_jobs    = false
-    #   version          = "1.4.0"
-    #   name             = "alloy"
-    #   chart            = "alloy"
-    #   namespace        = var.monitoring_namespace
-    #   repository       = var.monitoringHelmChartUrl
-    #   set              = []
-    #   values = [
-    #     templatefile("${path.module}/helmAlloyValues/values.yaml.tpl", {
-    #       loggingLevel    = "info"
-    #       loggingFormat   = "logfmt"
-    #       lokiEndpointUrl = "http://loki-gateway.${var.monitoring_namespace}.svc.cluster.local:80"
-    #       tempoEndpoint   = "http://tempo-distributed-ingester.${var.monitoring_namespace}.svc.cluster.local:3200"
-    #     })
-    #   ]
-    # },
-    # argo-cd = {
-    #   create_namespace = true
-    #   wait_for_jobs    = false
-    #   version          = "9.1.2"
-    #   name             = "argo-cd"
-    #   chart            = "argo-cd"
-    #   namespace        = var.argoCdNamespace
-    #   repository       = "https://argoproj.github.io/argo-helm"
-    #   set = [
-    #     {
-    #       # Run server without TLS
-    #       name  = "configs.params.server\\.insecure"
-    #       value = true
-    #     }
-    #   ]
-    #   values = [
-    #     file("${path.module}/argoCD/values.yaml")
-    #   ]
-    # },
+    alloy = {
+      wait             = true
+      recreate_pods    = true
+      create_namespace = true
+      wait_for_jobs    = false
+      version          = "1.4.0"
+      name             = "alloy"
+      chart            = "alloy"
+      namespace        = var.monitoring_namespace
+      repository       = var.monitoringHelmChartUrl
+      set              = []
+      values = [
+        templatefile("${path.module}/helmAlloyValues/values.yaml.tpl", {
+          loggingLevel    = "info"
+          loggingFormat   = "logfmt"
+          lokiEndpointUrl = "http://loki-gateway.${var.monitoring_namespace}.svc.cluster.local:80"
+          tempoEndpoint   = "http://tempo-distributed-ingester.${var.monitoring_namespace}.svc.cluster.local:3200"
+        })
+      ]
+    },
+    argo-cd = {
+      create_namespace = true
+      wait_for_jobs    = false
+      version          = "9.1.2"
+      name             = "argo-cd"
+      chart            = "argo-cd"
+      namespace        = var.argoCdNamespace
+      repository       = "https://argoproj.github.io/argo-helm"
+      set = [
+        {
+          # Run server without TLS
+          name  = "configs.params.server\\.insecure"
+          value = true
+        }
+      ]
+      values = [
+        file("${path.module}/argoCD/values.yaml")
+      ]
+    },
     cert-manager = {
       wait_for_jobs    = false
       create_namespace = false
@@ -256,30 +256,29 @@ locals {
       set              = []
       values = [
         templatefile("${path.module}/helmExternalDnsValues/cloudflare.yaml.tpl", {
-          # txtOwnerId                   = var.CLOUDFLARE_ZONE_ID # to be used with cloudflare.yaml.tpl.bck
-          cloudflare_secretKeyRef_name = var.cloudflare_secretKeyRef_name,
           cloudflare_secretKeyRef_key  = var.cloudflare_secretKeyRef_key
+          cloudflare_secretKeyRef_name = var.cloudflare_secretKeyRef_name
         })
       ]
     },
-    # grafana = {
-    #   create_namespace = true
-    #   wait_for_jobs    = false
-    #   version          = "10.1.4"
-    #   name             = "grafana"
-    #   chart            = "grafana"
-    #   namespace        = var.monitoring_namespace
-    #   repository       = var.monitoringHelmChartUrl
-    #   set              = []
-    #   values = [
-    #     templatefile("${path.module}/helmGrafanaValues/values.yaml.tpl", {
-    #       namespace     = var.monitoring_namespace
-    #       adminPassword = var.MONITORING_BOOTSTRAP_PASSWORD
-    #       lokiUrl       = "http://loki-gateway.${var.monitoring_namespace}.svc.cluster.local:80"
-    #       prometheusUrl = "http://prometheus-server.${var.monitoring_namespace}.svc.cluster.local:80"
-    #     })
-    #   ]
-    # },
+    grafana = {
+      create_namespace = true
+      wait_for_jobs    = false
+      version          = "10.1.4"
+      name             = "grafana"
+      chart            = "grafana"
+      namespace        = var.monitoring_namespace
+      repository       = var.monitoringHelmChartUrl
+      set              = []
+      values = [
+        templatefile("${path.module}/helmGrafanaValues/values.yaml.tpl", {
+          namespace     = var.monitoring_namespace
+          adminPassword = var.MONITORING_BOOTSTRAP_PASSWORD
+          lokiUrl       = "http://loki-gateway.${var.monitoring_namespace}.svc.cluster.local:80"
+          prometheusUrl = "http://prometheus-server.${var.monitoring_namespace}.svc.cluster.local:80"
+        })
+      ]
+    },
     loki = {
       create_namespace = false
       wait_for_jobs    = false
@@ -465,54 +464,54 @@ locals {
   }
 
   istioGateway = {
-    # argoCdGateway = {
-    #   yaml_body = templatefile("${path.module}/gatewayVirtualServiceCertificatesTemplates/gateway.yaml.tpl", {
-    #     labels = {
-    #       "app.kubernetes.io/version"   = var.kubernetes_version
-    #       "app.kubernetes.io/component" = "argoCD"
-    #       "app.kubernetes.io/name"      = "argoCdGateway"
-    #       "app.kubernetes.io/instance"  = "argo-cd-terraform"
-    #     }
-    #     gatewayName      = "istio-ingressgateway-argo-cd"
-    #     gatewayNamespace = var.argoCdNamespace
-    #     gatewaySelector  = "ingressgateway"
-    #     gatewayTlsMode   = "SIMPLE"
-    #     secretName       = "argo-cd-${var.secret_key_ref}"
-    #     hosts            = ["argo-cd.${var.zone}"]
-    #   })
-    # },
-    # argoCdCertificate = {
-    #   yaml_body = templatefile("${path.module}/gatewayVirtualServiceCertificatesTemplates/certificate.yaml.tpl", {
-    #     labels = {
-    #       "app.kubernetes.io/version"   = var.kubernetes_version
-    #       "app.kubernetes.io/component" = "argoCD"
-    #       "app.kubernetes.io/instance"  = "argo-cd-terraform"
-    #       "app.kubernetes.io/name"      = "argoCdCertificate"
-    #     }
-    #     secretName               = "argo-cd-${var.secret_key_ref}"
-    #     certificateNamespace     = var.istio_namespace
-    #     certificateIssuerRefName = var.issuer_name
-    #     commonName               = "argo-cd.${var.zone}"
-    #     hosts                    = ["argo-cd.${var.zone}"]
-    #   })
-    # },
-    # argoCdVirtualService = {
-    #   yaml_body = templatefile("${path.module}/gatewayVirtualServiceCertificatesTemplates/virtualService.yaml.tpl", {
-    #     labels = {
-    #       "app.kubernetes.io/version"   = var.kubernetes_version
-    #       "app.kubernetes.io/component" = "argoCD"
-    #       "app.kubernetes.io/instance"  = "argo-cd-terraform"
-    #       "app.kubernetes.io/name"      = "argoCdVirtualService"
-    #     }
-    #     virtualServiceName                           = "istio-virtualservice-argo-cd"
-    #     virtualServiceNamespace                      = var.argoCdNamespace
-    #     virtualServiceHttpMatchUriPrefix             = "/"
-    #     virtualServiceHttpRouteDestinationHost       = "argo-cd-argocd-server.${var.argoCdNamespace}.svc.cluster.local"
-    #     virtualServiceHttpRouteDestinationPortNumber = 443
-    #     hosts                                        = ["argo-cd.${var.zone}"]
-    #     virtualServiceGateways                       = ["${var.argoCdNamespace}/istio-ingressgateway-argo-cd"]
-    #   })
-    # },
+    argoCdGateway = {
+      yaml_body = templatefile("${path.module}/gatewayVirtualServiceCertificatesTemplates/gateway.yaml.tpl", {
+        labels = {
+          "app.kubernetes.io/version"   = var.kubernetes_version
+          "app.kubernetes.io/component" = "argoCD"
+          "app.kubernetes.io/name"      = "argoCdGateway"
+          "app.kubernetes.io/instance"  = "argo-cd-terraform"
+        }
+        gatewayName      = "istio-ingressgateway-argo-cd"
+        gatewayNamespace = var.argoCdNamespace
+        gatewaySelector  = "ingressgateway"
+        gatewayTlsMode   = "SIMPLE"
+        secretName       = "argo-cd-${var.secret_key_ref}"
+        hosts            = ["argo-cd.${var.zone}"]
+      })
+    },
+    argoCdCertificate = {
+      yaml_body = templatefile("${path.module}/gatewayVirtualServiceCertificatesTemplates/certificate.yaml.tpl", {
+        labels = {
+          "app.kubernetes.io/version"   = var.kubernetes_version
+          "app.kubernetes.io/component" = "argoCD"
+          "app.kubernetes.io/instance"  = "argo-cd-terraform"
+          "app.kubernetes.io/name"      = "argoCdCertificate"
+        }
+        secretName               = "argo-cd-${var.secret_key_ref}"
+        certificateNamespace     = var.istio_namespace
+        certificateIssuerRefName = var.issuer_name
+        commonName               = "argo-cd.${var.zone}"
+        hosts                    = ["argo-cd.${var.zone}"]
+      })
+    },
+    argoCdVirtualService = {
+      yaml_body = templatefile("${path.module}/gatewayVirtualServiceCertificatesTemplates/virtualService.yaml.tpl", {
+        labels = {
+          "app.kubernetes.io/version"   = var.kubernetes_version
+          "app.kubernetes.io/component" = "argoCD"
+          "app.kubernetes.io/instance"  = "argo-cd-terraform"
+          "app.kubernetes.io/name"      = "argoCdVirtualService"
+        }
+        virtualServiceName                           = "istio-virtualservice-argo-cd"
+        virtualServiceNamespace                      = var.argoCdNamespace
+        virtualServiceHttpMatchUriPrefix             = "/"
+        virtualServiceHttpRouteDestinationHost       = "argo-cd-argocd-server.${var.argoCdNamespace}.svc.cluster.local"
+        virtualServiceHttpRouteDestinationPortNumber = 443
+        hosts                                        = ["argo-cd.${var.zone}"]
+        virtualServiceGateways                       = ["${var.argoCdNamespace}/istio-ingressgateway-argo-cd"]
+      })
+    },
     grafanaGateway = {
       yaml_body = templatefile("${path.module}/gatewayVirtualServiceCertificatesTemplates/gateway.yaml.tpl", {
         labels = {
@@ -671,19 +670,7 @@ locals {
         cloudflare_secretKeyRef_key  = var.cloudflare_secretKeyRef_key
         cloudflare_secretKeyRef_name = var.cloudflare_secretKeyRef_name
       })
-    },
-    # issuer_stage = {
-    #   yaml_body = templatefile("${path.module}/certManagerManifests/issuer.yaml.tpl", {
-    #     acme_server                  = var.acme_server
-    #     issuer_name                  = var.issuer_name
-    #     secret_key_ref               = var.secret_key_ref
-    #     issuer_namespace             = var.istio_namespace
-    #     acme_email                   = var.CLOUDFLARE_EMAIL
-    #     cloudflare_secretKeyRef_name = var.cloudflare_secretKeyRef_name
-    #     cloudflare_secretKeyRef_key  = var.cloudflare_secretKeyRef_key
-    #     domain                       = var.zone
-    #   })
-    # }
+    }
   }
 
   nameSpacesToCreate = {
@@ -785,10 +772,6 @@ data "http" "knative_operator" {
 data "http" "net_istio" {
   url = "https://github.com/knative/net-istio/releases/download/knative-v${var.knativeNetIstioVersion}/net-istio.yaml"
 }
-
-# data "kubectl_file_documents" "knative_operator" {
-#   content = replace(data.http.knative_operator.response_body, "initialDelaySeconds: 120", "initialDelaySeconds: 180")
-# }
 
 data "kubectl_file_documents" "net_istio" {
   content = data.http.net_istio.response_body

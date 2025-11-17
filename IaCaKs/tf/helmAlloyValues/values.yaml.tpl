@@ -53,6 +53,167 @@ alloy:
         }
       }
 
+      // Replace all values between the angle brackets '<>', with your desired configuration
+      discovery.relabel "istio_proxy_metrics" {
+        targets = discovery.kubernetes.pods.targets
+
+        rule {
+            action        = "keep"
+            source_labels = ["__meta_kubernetes_pod_container_name"]
+            regex         = "istio-proxy.*"
+        }
+        rule {
+            source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_port", "__meta_kubernetes_pod_ip"]
+            regex         = "(\\d+);(([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})"
+            target_label  = "__address__"
+            replacement   = "[$2]:$1"
+        }
+        rule {
+            source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_port", "__meta_kubernetes_pod_ip"]
+            regex         = "(\\d+);((([0-9]+?)(\\.|$)){4})"
+            target_label  = "__address__"
+            replacement   = "$2:$1"
+        }
+        rule {
+            target_label = "job"
+            replacement  = "integrations/istio"
+        }
+        rule {
+            target_label  = "instance"
+            source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name"]
+            separator     = "-"
+        }
+        rule {
+            target_label  = "pod"
+            action        = "replace"
+            source_labels = ["__meta_kubernetes_pod_name"]
+        }
+      }
+
+      prometheus.scrape "istio_proxy_metrics" {
+        targets      = discovery.relabel.istio_proxy_metrics.output
+        forward_to   = [prometheus.relabel.metrics_service.receiver]
+        metrics_path = "/stats/prometheus"
+      }
+
+      discovery.relabel "istio_istiod_metrics" {
+        targets = discovery.kubernetes.endpoints.targets
+
+        rule {
+            action        = "keep"
+            source_labels = ["__meta_kubernetes_service_name", "__meta_kubernetes_endpoint_port_name"]
+            regex         = "istiod;http-monitoring"
+        }
+        rule {
+            source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_port", "__meta_kubernetes_pod_ip"]
+            regex         = "(\\d+);(([A-Fa-f0-9]{1,4}::?){1,7}[A-Fa-f0-9]{1,4})"
+            target_label  = "__address__"
+            replacement   = "[$2]:$1"
+        }
+        rule {
+            source_labels = ["__meta_kubernetes_pod_annotation_prometheus_io_port", "__meta_kubernetes_pod_ip"]
+            regex         = "(\\d+);((([0-9]+?)(\\.|$)){4})"
+            target_label  = "__address__"
+            replacement   = "$2:$1"
+        }
+        rule {
+            target_label = "job"
+            replacement  = "integrations/istio"
+        }
+        rule {
+            target_label  = "instance"
+            source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name"]
+            separator     = "-"
+        }
+        rule {
+            target_label  = "pod"
+            action        = "replace"
+            source_labels = ["__meta_kubernetes_pod_name"]
+        }
+      }
+
+      prometheus.scrape "istio_istiod_metrics" {
+        targets    = discovery.relabel.istio_istiod_metrics.output
+        forward_to = [prometheus.relabel.metrics_service.receiver]
+      }
+
+      // Replace all values between the angle brackets '<>', with your desired configuration
+      discovery.relabel "istio_proxy_logs" {
+        targets = discovery.kubernetes.pods.targets
+
+        rule {
+            action        = "keep"
+            source_labels = ["__meta_kubernetes_pod_container_name"]
+            regex         = "istio-proxy.*"
+        }
+        rule {
+            target_label = "job"
+            replacement  = "integrations/istio"
+        }
+        rule {
+            target_label  = "instance"
+            source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name"]
+            separator     = "-"
+        }
+        rule {
+            target_label  = "pod"
+            action        = "replace"
+            source_labels = ["__meta_kubernetes_pod_name"]
+        }
+      }
+
+      loki.source.kubernetes "istio_proxy_logs" {
+        targets    = discovery.relabel.istio_proxy_logs.output
+        forward_to = [loki.process.istio_proxy_system_logs.receiver, loki.process.istio_proxy_access_logs.receiver]
+      }
+
+      loki.process "istio_proxy_system_logs" {
+        forward_to = [loki.process.logs_service.receiver]
+
+        stage.drop {
+            expression = "^\\[.*"
+        }
+        stage.multiline {
+            firstline = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+        }
+        stage.regex {
+            expression = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z\\t(?P<level>\\S+)\\t.+"
+        }
+        stage.labels {
+            values = {
+                level  = "",
+            }
+        }
+        stage.static_labels {
+            values = {
+                log_type = "system",
+            }
+        }
+      }
+
+      loki.process "istio_proxy_access_logs" {
+        forward_to = [loki.process.logs_service.receiver]
+
+        stage.drop {
+            expression = "^[^\\[].*"
+        }
+        stage.regex {
+            expression = "\\[\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\\] \"(?P<request_method>\\w+) \\S+ (?P<protocol>\\S+)\" (?P<response_code>\\d+) .+"
+        }
+        stage.labels {
+            values = {
+                request_method = "",
+                protocol       = "",
+                response_code  = "",
+            }
+        }
+        stage.static_labels {
+            values = {
+                log_type = "access",
+            }
+        }
+      }
+
       // pods
       discovery.kubernetes "pods" {
         role = "pod"

@@ -24,6 +24,7 @@ variable "default_node_pool_block" {
   type = object({
     name                        = string
     vm_size                     = string
+    max_pods                    = number
     temporary_name_for_rotation = string
     node_count                  = number
     upgrade_settings_block = object({

@@ -66,6 +66,7 @@ module "aks_project_aks_cluster" {
   default_node_pool_block = {
     name                        = var.default_node_pool_block.name
     vm_size                     = var.default_node_pool_block.vm_size
+    max_pods                    = var.default_node_pool_block.max_pods
     node_count                  = var.default_node_pool_block.node_count
     vnet_subnet_id              = module.aks_project_virtual_network_subNet["aks"].id
     temporary_name_for_rotation = var.default_node_pool_block.temporary_name_for_rotation
@@ -122,11 +123,22 @@ module "aks_project_public_ips" {
   resource_group_name = module.aks_project_aks_cluster.node_resource_group
 }
 
+# Create DNS record for Knative domain(s)
+module "aks_project_knative_dns_records" {
+  source   = "git@github.com:thanos1983/terraform//Cloudflare/modules/DnsRecord"
+  for_each = local.cloudFlareTypeDnsRecord
+  zone_id  = var.CLOUDFLARE_ZONE_ID
+  content  = each.value.content
+  name     = each.value.name
+  type     = each.value.type
+  ttl      = each.value.ttl
+}
+
 # Create Storage Account
 module "aks_project_storage_account" {
-  source = "git@github.com:thanos1983/terraform.git//Azure/modules/StorageAccount"
-  tags   = var.tags
-  name   = var.storage_account
+  source                        = "git@github.com:thanos1983/terraform.git//Azure/modules/StorageAccount"
+  tags                          = var.tags
+  name                          = var.storage_account
   public_network_access_enabled = var.public_network_access_enabled
   resource_group_name           = module.aks_project_resource_group.name
   location                      = module.aks_project_resource_group.location
@@ -155,17 +167,6 @@ module "aks_project_storage_account_container" {
   for_each           = tomap(var.storage_account_container_names)
   name               = each.value
   storage_account_id = module.aks_project_storage_account.id
-}
-
-# Create DNS record for Knative domain(s)
-module "aks_project_knative_dns_records" {
-  source   = "git@github.com:thanos1983/terraform//Cloudflare/modules/DnsRecord"
-  for_each = local.cloudFlareTypeDnsRecord
-  zone_id  = var.CLOUDFLARE_ZONE_ID
-  content  = each.value.content
-  name     = each.value.name
-  type     = each.value.type
-  ttl      = each.value.ttl
 }
 
 # Create all needed NameSpace(s)
