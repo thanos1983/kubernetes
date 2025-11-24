@@ -201,6 +201,7 @@ locals {
         templatefile("${path.module}/helmAlloyValues/values.yaml.tpl", {
           loggingLevel    = "info"
           loggingFormat   = "logfmt"
+          environment     = var.environment
           lokiEndpointUrl = "http://loki-gateway.${var.monitoring_namespace}.svc.cluster.local:80"
           tempoEndpoint   = "http://tempo-distributed-ingester.${var.monitoring_namespace}.svc.cluster.local:3200"
           prometheusUrl   = "http://prometheus-prometheus-pushgateway.${var.monitoring_namespace}.svc.cluster.local:9091"
