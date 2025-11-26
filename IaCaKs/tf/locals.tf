@@ -162,7 +162,6 @@ locals {
       allocation_method = "Static"
       sku               = "Standard"
       name              = "${var.aks_cluster_name}-ip"
-      # resource_group_name = module.aks_project_aks_cluster.node_resource_group
     }
   }
 
@@ -254,7 +253,7 @@ locals {
       name             = "cloudflare-exporter"
       chart            = "cloudflare-exporter"
       namespace        = var.certManagerNamespace
-      repository       = "https://lablabs.github.io/cloudflare-exporter/"
+      repository       = "https://lablabs.github.io/cloudflare-exporter"
       set              = []
       values = [
         templatefile("${path.module}/helmExternalDnsValues/cloudflare-exporter.yaml.tpl", {

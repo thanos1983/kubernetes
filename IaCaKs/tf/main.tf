@@ -307,7 +307,6 @@ module "aks_project_aks_cluster_helm_deployment" {
   repository        = each.value.repository
   wait_for_jobs     = each.value.wait_for_jobs
   depends_on = [
-    module.aks_project_public_ips,
     module.aks_project_cloudflare_k8s_dns_secret,
     module.aks_project_k8s_cert_manager_issuer_manifest
   ]
