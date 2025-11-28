@@ -15,6 +15,10 @@ datasources:
         access: proxy
         isDefault: true
         editable: false
+        # basicAuth: true
+        # basicAuthUser: "prometheus"
+        # secureJsonData:
+        #  basicAuthPassword: "${adminPassword}"
         jsonData:
           authType: default
           tlsAuth: false
@@ -26,6 +30,10 @@ datasources:
         access: proxy
         isDefault: false
         editable: true
+        # basicAuth: true
+        # basicAuthUser: "loki"
+        # secureJsonData:
+        #  basicAuthPassword: "${adminPassword}"
         jsonData:
           authType: default
           tlsAuth: false

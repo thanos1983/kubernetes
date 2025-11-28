@@ -247,6 +247,17 @@ alloy:
 
       prometheus.remote_write "default" {
         endpoint {
-          url = "${prometheusEndpointUrl}/api/prom/push"
+          url = "${prometheusEndpointUrl}/api/v1/write"
+        }
+      }
+
+      tracing {
+        sampling_fraction = 0.1
+        write_to          = [otelcol.exporter.otlp.default.input]
+      }
+
+      otelcol.exporter.otlp "default" {
+        client {
+          endpoint = "tempo:4317"
         }
       }

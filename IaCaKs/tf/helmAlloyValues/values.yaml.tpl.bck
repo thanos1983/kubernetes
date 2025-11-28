@@ -1,0 +1,76 @@
+configReloader:
+  securityContext:
+    # this is the UID of the "nobody" user that the configReloader image runs as
+    runAsUser: 65534
+    runAsGroup: 65534
+
+alloy:
+  extraPorts:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
+  securityContext:
+    runAsUser: 473
+    runAsGroup: 473
+  configMap:
+    create: true
+    content: |-
+      logging {
+        level = "${loggingLevel}"
+        format = "${loggingFormat}"
+      }
+
+      otelcol.receiver.otlp "example" {
+        grpc {
+          endpoint = "127.0.0.1:4317"
+        }
+
+        http {
+          endpoint = "127.0.0.1:4318"
+        }
+
+        output {
+          metrics = [otelcol.processor.batch.example.input]
+          logs    = [otelcol.processor.batch.example.input]
+          traces  = [otelcol.processor.batch.example.input]
+        }
+      }
+
+      otelcol.processor.batch "example" {
+        output {
+          metrics = [otelcol.exporter.prometheus.grafana_cloud_metrics.input]
+          logs    = [otelcol.exporter.loki.grafana_cloud_logs.input]
+          traces  = [otelcol.exporter.otlphttp.grafana_cloud_traces.input]
+        }
+      }
+
+      otelcol.exporter.otlphttp "grafana_cloud_metrics" {
+        client {
+          endpoint = "${tempoEndpoint}"
+        }
+      }
+
+      otelcol.exporter.prometheus "grafana_cloud_metrics" {
+        forward_to = [prometheus.remote_write.grafana_cloud_metrics.receiver]
+      }
+
+      prometheus.remote_write "grafana_cloud_metrics" {
+        endpoint {
+          url = "${prometheusEndpointUrl}/api/v1/push"
+        }
+      }
+
+      otelcol.exporter.loki "grafana_cloud_logs" {
+        forward_to = [loki.write.grafana_cloud_logs.receiver]
+      }
+
+      loki.write "grafana_cloud_logs" {
+        endpoint {
+          url = "${lokiEndpointUrl}/loki/api/v1/push"
+        }
+      }

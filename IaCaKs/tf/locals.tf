@@ -201,8 +201,9 @@ locals {
           loggingLevel          = "info"
           loggingFormat         = "logfmt"
           environment           = var.environment
+          grafanaEndpointUrl    = "http://grafana.${var.monitoring_namespace}.svc.cluster.local:80"
           lokiEndpointUrl       = "http://loki-gateway.${var.monitoring_namespace}.svc.cluster.local:80"
-          tempoEndpoint         = "tempo-distributed-distributor.${var.monitoring_namespace}.svc.cluster.local:3200"
+          tempoEndpoint         = "http://tempo-distributed-distributor.${var.monitoring_namespace}.svc.cluster.local:3200"
           prometheusEndpointUrl = "http://prometheus-prometheus-pushgateway.${var.monitoring_namespace}.svc.cluster.local:9091"
         })
       ]
@@ -210,7 +211,7 @@ locals {
     argo-cd = {
       create_namespace = true
       wait_for_jobs    = false
-      version          = "9.1.2"
+      version          = "9.1.4"
       name             = "argo-cd"
       chart            = "argo-cd"
       namespace        = var.argoCdNamespace
@@ -281,7 +282,7 @@ locals {
     grafana = {
       create_namespace = true
       wait_for_jobs    = false
-      version          = "10.1.4"
+      version          = "10.2.0"
       name             = "grafana"
       chart            = "grafana"
       namespace        = var.monitoring_namespace
@@ -364,7 +365,7 @@ locals {
     prometheus = {
       create_namespace = true
       wait_for_jobs    = false
-      version          = "27.44.1"
+      version          = "27.47.0"
       name             = "prometheus"
       chart            = "prometheus"
       namespace        = var.monitoring_namespace
@@ -377,7 +378,7 @@ locals {
     reflector = {
       create_namespace = false
       wait_for_jobs    = false
-      version          = "9.1.37"
+      version          = "9.1.41"
       chart            = "reflector"
       name             = "emberstack"
       namespace        = "kube-system"
@@ -388,7 +389,7 @@ locals {
     sealed-secrets = {
       create_namespace = true
       wait_for_jobs    = false
-      version          = "2.17.7"
+      version          = "2.17.9"
       name             = "sealed-secrets"
       chart            = "sealed-secrets"
       namespace        = var.sealed_secrets_namespace
@@ -401,7 +402,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "1.56.1"
+      version          = "1.56.2"
       name             = "tempo-distributed"
       chart            = "tempo-distributed"
       namespace        = var.monitoring_namespace
@@ -439,6 +440,35 @@ locals {
       values = [
         templatefile("${path.module}/helmIngressIstioGatewayValues/values.yaml.tpl", {
           zone = var.zone
+        })
+      ]
+    },
+    opentelemetry-collector = {
+      wait_for_jobs = true
+      version       = "0.140.0"
+      name          = "opentelemetry-collector"
+      chart         = "opentelemetry-collector"
+      namespace     = var.monitoring_namespace
+      repository    = "https://open-telemetry.github.io/opentelemetry-helm-charts"
+      set           = []
+      values = [
+        templatefile("${path.module}/helmOpenTelemetryCollectorValues/values.yaml.tpl", {
+          mode = "daemonset"
+        })
+      ]
+    },
+    opentelemetry-operator = {
+      wait_for_jobs = true
+      version       = "0.99.2"
+      name          = "opentelemetry-operator"
+      chart         = "opentelemetry-operator"
+      namespace     = var.monitoring_namespace
+      repository    = "https://open-telemetry.github.io/opentelemetry-helm-charts"
+      set           = []
+      values = [
+        templatefile("${path.module}/helmOpenTelemetryOperatorValues/values.yaml.tpl", {
+          certManagerIssuerRefKind = "Issuer"
+          certManagerIssuerRefName = var.issuer_name
         })
       ]
     },
