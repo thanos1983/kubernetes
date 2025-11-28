@@ -5,10 +5,20 @@ configReloader:
     runAsGroup: 65534
 
 alloy:
+  extraPorts:
+    - name: otlp-grpc
+      port: 4317
+      targetPort: 4317
+      protocol: TCP
+    - name: otlp-http
+      port: 4318
+      targetPort: 4318
+      protocol: TCP
   securityContext:
     runAsUser: 473
     runAsGroup: 473
   configMap:
+    create: true
     content: |-
       logging {
         level = "${loggingLevel}"
@@ -158,5 +168,85 @@ alloy:
           values = {
             kubernetes_cluster_events = "job",
           }
+        }
+      }
+
+      // Creates a receiver for OTLP gRPC.
+      // You can easily add receivers for other protocols by using the correct component
+      // from the reference list at: https://grafana.com/docs/alloy/latest/reference/components/
+      otelcol.receiver.otlp "otlp_receiver" {
+        grpc {
+          endpoint = "0.0.0.0:4317"
+        }
+
+        http {
+          endpoint = "0.0.0.0:4318"
+        }
+
+        output {
+          traces = [otelcol.exporter.otlp.tempo.input]
+        }
+      }
+
+      // Define an OTLP gRPC exporter to send all received traces to GET.
+      // The unique label 'tempo' is added to uniquely identify this exporter.
+      otelcol.exporter.otlp "tempo" {
+        // Define the client for exporting.
+        client {
+          // Send to the locally running Tempo instance, on port 4317 (OTLP gRPC).
+          endpoint = "${tempoEndpoint}"
+          // Disable TLS for OTLP remote write.
+          tls {
+            // The connection is insecure.
+            insecure = true
+            // Do not verify TLS certificates when connecting.
+            insecure_skip_verify = true
+          }
+        }
+      }
+
+      discovery.kubernetes "pods" {
+        role = "pod"
+
+        namespaces {
+          own_namespace = false
+
+          names = ["default"]
+        }
+
+        selectors {
+          role  = "pod"
+          label = "${environment}"
+        }
+      }
+
+      prometheus.scrape "pods" {
+        targets    = discovery.kubernetes.pods.targets
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+
+      discovery.kubernetes "services" {
+        role = "service"
+
+        namespaces {
+          own_namespace = false
+
+          names = ["default"]
+        }
+
+        selectors {
+          role  = "service"
+          label = "${environment}"
+        }
+      }
+
+      prometheus.scrape "services" {
+        targets    = discovery.kubernetes.services.targets
+        forward_to = [prometheus.remote_write.default.receiver]
+      }
+
+      prometheus.remote_write "default" {
+        endpoint {
+          url = "${prometheusEndpointUrl}/api/prom/push"
         }
       }

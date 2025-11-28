@@ -6,7 +6,27 @@ storage:
       container_name: ${STORAGE_ACCOUNT_CONTAINER_NAME}
       storage_account_key: $${STORAGE_ACCOUNT_ACCESS_KEY}
 
+traces:
+  otlp:
+    http:
+      enabled: true
+      # -- HTTP receiver advanced config
+      receiverConfig: {}
+      # -- Default OTLP http port
+      port: 4318
+    grpc:
+      enabled: true
+      # -- GRPC receiver advanced config
+      receiverConfig: {}
+      # -- Default OTLP gRPC port
+      port: 4317
+
 distributor:
+  config:
+    log_received_spans:
+      enabled: true
+    log_discarded_spans:
+      enabled: true
   extraArgs:
     - "-config.expand-env=true"
   extraEnv:

@@ -1,7 +1,7 @@
 locals {
   # to be removed once the deployment is moved to a pipeline
-  kube_config_path = "${path.module}/${var.kubeConfigFilename}"
   knativeDomain    = "knative.${var.zone}"
+  kube_config_path = "${path.module}/${var.kubeConfigFilename}"
 
   cloudFlareTypeDnsRecord = {
     prime = {
@@ -198,12 +198,12 @@ locals {
       set              = []
       values = [
         templatefile("${path.module}/helmAlloyValues/values.yaml.tpl", {
-          loggingLevel    = "info"
-          loggingFormat   = "logfmt"
-          environment     = var.environment
-          lokiEndpointUrl = "http://loki-gateway.${var.monitoring_namespace}.svc.cluster.local:80"
-          tempoEndpoint   = "http://tempo-distributed-ingester.${var.monitoring_namespace}.svc.cluster.local:3200"
-          prometheusUrl   = "http://prometheus-prometheus-pushgateway.${var.monitoring_namespace}.svc.cluster.local:9091"
+          loggingLevel          = "info"
+          loggingFormat         = "logfmt"
+          environment           = var.environment
+          lokiEndpointUrl       = "http://loki-gateway.${var.monitoring_namespace}.svc.cluster.local:80"
+          tempoEndpoint         = "tempo-distributed-distributor.${var.monitoring_namespace}.svc.cluster.local:3200"
+          prometheusEndpointUrl = "http://prometheus-prometheus-pushgateway.${var.monitoring_namespace}.svc.cluster.local:9091"
         })
       ]
     },
