@@ -178,9 +178,9 @@ locals {
           id = "4755a26eedb94da69e1066d98aa820be" # DNS Write
         }
       ]
-      resources = {
-        "com.cloudflare.api.account.zone.*" = "*"
-      }
+      resources = jsonencode({
+        "com.cloudflare.api.account.zone.${var.CLOUDFLARE_ZONE_ID}" = "*"
+      })
     }
   ]
 

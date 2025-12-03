@@ -156,8 +156,6 @@ alloy:
       // loki.process receives log entries from other loki components, applies one or more processing stages,
       // and forwards the results to the list of receivers in the component's arguments.
       loki.process "cluster_events" {
-        forward_to = [loki.write.k8s_cluster.receiver]
-
         stage.static_labels {
           values = {
             cluster = "${environment}",
@@ -169,6 +167,8 @@ alloy:
             kubernetes_cluster_events = "job",
           }
         }
+
+        forward_to = [loki.write.k8s_cluster.receiver]
       }
 
       // Creates a receiver for OTLP gRPC.
@@ -259,5 +259,82 @@ alloy:
       otelcol.exporter.otlp "default" {
         client {
           endpoint = "tempo:4317"
+        }
+      }
+
+      // istio proxy logs
+      discovery.relabel "istio_proxy_logs" {
+        targets = discovery.kubernetes.pods.targets
+
+        rule {
+            action        = "keep"
+            source_labels = ["__meta_kubernetes_pod_container_name"]
+            regex         = "istio-proxy.*"
+        }
+        rule {
+            target_label = "job"
+            replacement  = "integrations/istio"
+        }
+        rule {
+            target_label  = "instance"
+            source_labels = ["__meta_kubernetes_namespace", "__meta_kubernetes_pod_name"]
+            separator     = "-"
+        }
+        rule {
+            target_label  = "pod"
+            action        = "replace"
+            source_labels = ["__meta_kubernetes_pod_name"]
+        }
+      }
+
+      loki.source.kubernetes "istio_proxy_logs" {
+        targets    = discovery.relabel.istio_proxy_logs.output
+        forward_to = [loki.process.istio_proxy_system_logs.receiver, loki.process.istio_proxy_access_logs.receiver]
+      }
+
+      loki.process "istio_proxy_system_logs" {
+        forward_to = [loki.write.k8s_cluster.receiver]
+
+        stage.drop {
+            expression = "^\\[.*"
+        }
+        stage.multiline {
+            firstline = "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}"
+        }
+        stage.regex {
+            expression = "\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{6}Z\\t(?P<level>\\S+)\\t.+"
+        }
+        stage.labels {
+            values = {
+                level = "",
+            }
+        }
+        stage.static_labels {
+            values = {
+                log_type = "system",
+            }
+        }
+      }
+
+      loki.process "istio_proxy_access_logs" {
+        forward_to = [loki.write.k8s_cluster.receiver]
+
+        stage.drop {
+            expression = "^[^\\[].*"
+        }
+        stage.regex {
+            expression = "\\[\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\.\\d{3}Z\\] \"(?P<request_method>\\w+) \\S+ (?P<protocol>\\S+)\" (?P<response_code>\\d+) .+"
+        }
+        stage.labels {
+            values = {
+                request_method = "",
+                protocol       = "",
+                response_code  = "",
+            }
+        }
+        stage.static_labels {
+            values = {
+                log_type = "access",
+            }
         }
       }

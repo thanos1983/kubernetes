@@ -6,19 +6,19 @@ terraform {
     }
     azuread = {
       source  = "hashicorp/azuread"
-      version = "3.6.0"
+      version = "3.7.0"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.53.0"
+      version = "4.54.0"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "3.1.0"
+      version = "3.1.1"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "5.12.0"
+      version = "5.13.0"
     }
     kubernetes = {
       source  = "hashicorp/kubernetes"
