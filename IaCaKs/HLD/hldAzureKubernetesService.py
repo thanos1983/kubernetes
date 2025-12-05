@@ -6,17 +6,16 @@ from diagrams.onprem.tracing import Tempo
 from diagrams.k8s.controlplane import API
 from diagrams import Diagram, Cluster, Edge
 from diagrams.azure.devops import Pipelines
-from diagrams.azure.compute import OsImages
 from diagrams.azure.general import Twousericon
 from diagrams.onprem.iac import Terraform, Ansible
 from diagrams.azure.storage import StorageAccounts
 from diagrams.azure.identity import ActiveDirectory
 from diagrams.onprem.network import Internet, Istio
 from diagrams.k8s.ecosystem import ExternalDns, Helm
-from diagrams.azure.compute import ContainerRegistries
 from diagrams.onprem.monitoring import Prometheus, Grafana
 from diagrams.onprem.certificates import CertManager, LetsEncrypt
 from diagrams.azure.network import PublicIpAddresses, LoadBalancers
+from diagrams.azure.compute import ContainerRegistries, KubernetesServices, OsImages
 
 with (((Diagram("High Level Design - Azure Kubernetes Service Infrastructure",
                 show=False,
@@ -41,10 +40,12 @@ with (((Diagram("High Level Design - Azure Kubernetes Service Infrastructure",
             azureContainerRegistry = ContainerRegistries("Azure Container Registry")
 
             with Cluster("Azure Virtual Network Subnet for AKS"):
-                workerNodes = [Node("Worker 3rd"),
-                               Node("Worker 2nd"),
-                               Node("Worker 1st"),
-                               Node("Worker nth")]
+                with Cluster("Azure Kubernetes Service (AKS) Resources"):
+                    aks = KubernetesServices("Azure Kubernetes Service (AKS)")
+                    workerNodes = [Node("Worker 3rd"),
+                                   Node("Worker 2nd"),
+                                   Node("Worker 1st"),
+                                   Node("Worker nth")]
 
                 with Cluster("K8s Tools Stack"):
                     necessaryTools = [LetsEncrypt("LetsEncrypt"),
