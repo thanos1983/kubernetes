@@ -1,4 +1,4 @@
-# Project demo
+# Project AKS
 
 ## Caution, if this is first deployment and the user has not being created prerequisites yet, the user must first navigate to prerequisites directory and apply the code there first.
 
@@ -85,7 +85,8 @@ The user also needs to activate the following Azure RBAC roles if desired to syn
 - Directory Writers
 - Groups Administrator
 
-In order to guide through the UI the user needs to navigate to Home -> Privileged Identity Management -> Microsoft Entra roles
+In order to guide through the UI the user needs to navigate to Home -> Privileged Identity Management -> Microsoft Entra
+roles
 
 #### Azure-Cli
 
@@ -98,7 +99,7 @@ Because we want to use different containers in Storage Account per stage (enviro
 version file. Sample of code for dev (replace per stage):
 
 ````bash
-$ tofu -chdir=IaCaKs/tf init -upgrade -reconfigure -backend-config=initVersion/version-prod.hcl
+$ tofu -chdir=IaCaKs/tf init -upgrade -reconfigure -backend-config=initVersion/version-test.hcl
 ````
 
 #### terraform plan
@@ -107,7 +108,7 @@ Next step the user should plan the infrastructure to be added / created on the d
 want to use different variables per stage we need to have different tfvars files. Sample of code:
 
 ````bash
-$ tofu -chdir=IaCaKs/tf plan -out=planOutput -var-file=tfvars/prod.tfvars
+$ tofu -chdir=IaCaKs/tf plan -out=planOutput -var-file=tfvars/test.tfvars
 ````
 
 #### terraform apply
@@ -140,7 +141,7 @@ $ tofu -chdir=IaCaKs/tf apply "destroyPlan"
 In case the user decides to destroy a specific resource it can be accomplished by using the ``-target`` flag. Sample:
 
 ````bash
-$ tofu -chdir=IaCaKs/tf plan -destroy -target module.da_projektet_df -out destroyPlan -var-file=tfvars/prod.tfvars
+$ tofu -chdir=IaCaKs/tf plan -destroy -target module.da_projektet_df -out destroyPlan -var-file=tfvars/test.tfvars
 ````
 
 #### terraform import
@@ -225,11 +226,12 @@ permission custom for users and for Service Principals. The official documentati
 here [azuread_group/API Permissions](https://registry.terraform.io/providers/hashicorp/azuread/latest/docs/resources/group#api-permissions).
 Sample of documentation:
 
-````bash
-If using the `assignable_to_role` property, this resource additionally requires the `RoleManagement.ReadWrite.Directory` application role.
-If specifying owners for a group, which are user principals, this resource additionally requires one of the following application roles: `User.Read.All`, `User.ReadWrite.All`, `Directory.Read.All` or `Directory.ReadWrite.All`.
-When authenticated with a user principal, this resource requires one of the following directory roles: `Groups Administrator`, `User Administrator` or `Global Administrator`.
-````
+_If using the `assignable_to_role` property, this resource additionally requires
+the `RoleManagement.ReadWrite.Directory` application role.
+If specifying owners for a group, which are user principals, this resource additionally requires one of the following
+application roles: `User.Read.All`, `User.ReadWrite.All`, `Directory.Read.All` or `Directory.ReadWrite.All`.
+When authenticated with a user principal, this resource requires one of the following directory
+roles: `Groups Administrator`, `User Administrator` or `Global Administrator`._
 
 Official documentation on how to apply the
 permissions: [Assign Microsoft Entra roles to users](https://learn.microsoft.com/en-us/entra/identity/role-based-access-control/manage-roles-portal).
