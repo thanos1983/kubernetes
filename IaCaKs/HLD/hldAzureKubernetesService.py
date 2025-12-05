@@ -42,10 +42,10 @@ with (((Diagram("High Level Design - Azure Kubernetes Service Infrastructure",
             with Cluster("Azure Virtual Network Subnet for AKS"):
                 with Cluster("Azure Kubernetes Service (AKS) Resources"):
                     aks = KubernetesServices("Azure Kubernetes Service (AKS)")
-                    workerNodes = [Node("Worker 3rd"),
+                    workerNodes = [Node("Worker nth"),
                                    Node("Worker 2nd"),
-                                   Node("Worker 1st"),
-                                   Node("Worker nth")]
+                                   Node("Worker 3rd"),
+                                   Node("Worker 1st")]
 
                 with Cluster("K8s Tools Stack"):
                     necessaryTools = [LetsEncrypt("LetsEncrypt"),
