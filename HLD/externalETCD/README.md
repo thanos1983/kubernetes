@@ -1,6 +1,6 @@
 # HLD Design for custom K8s on Azure project (solution with external ETCD)
 
-## How to install
+## How to install the required packages to produce an HLD picture
 
 This documentation will provide a solution for Ubuntu (LinuxOS). Sample of code:
 

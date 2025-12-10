@@ -1,6 +1,7 @@
 # HLD Design for on premise infrastructure with on premise AI
 
-## How to install
+## How to install the required packages to produce an HLD picture
+
 This documentation will provide a solution for Ubuntu (LinuxOS). Sample of code:
 
 ```bash

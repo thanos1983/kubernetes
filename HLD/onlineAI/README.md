@@ -1,6 +1,6 @@
 # HLD Design for on premise infrastructure with Azure ChatGpt
 
-## How to install
+## How to install the required packages to produce an HLD picture
 
 This documentation will provide a solution for Ubuntu (LinuxOS). Sample of code:
 
@@ -25,4 +25,3 @@ $ python3 onlineAI.py
 ## Sample of examples
 
 [diagrams/getting-started/examples](https://diagrams.mingrammer.com/docs/getting-started/examples)
-
