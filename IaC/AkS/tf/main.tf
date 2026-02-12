@@ -1,13 +1,20 @@
+# Load data from vault file
+module "aks_project_ansible_vault" {
+  source              = "git@github.com:thanos1983/terraform//Ansible/modules/Vault"
+  vault_file          = local.vault_dir_file
+  vault_password_file = var.vault_password_file
+}
+
 # Create Azure Active Directory Group
 module "aks_project_active_directory_group" {
   source             = "git@github.com:thanos1983/terraform//Azure/modules/ActiveDirectoryGroup"
   for_each           = merge(local.aks_active_directory_groups, local.aks_active_directory_admin_group)
+  owners             = each.value.owners
+  members            = each.value.members
   security_enabled   = var.security_enabled
   assignable_to_role = var.assignable_to_role
   description        = each.value.description
   display_name       = each.value.display_name
-  members            = each.value.members
-  owners             = each.value.owners
 }
 
 # Role Assignment for Active Directory Group to gain access to AKS cluster
@@ -33,8 +40,8 @@ module "aks_project_virtual_network" {
   tags                = var.tags
   name                = local.network.virtual_network.name
   resource_group_name = module.aks_project_resource_group.name
-  address_space       = local.network.virtual_network.address_space
   location            = module.aks_project_resource_group.location
+  address_space       = local.network.virtual_network.address_space
 }
 
 # Create Virtual Networks Subnets
@@ -127,11 +134,11 @@ module "aks_project_public_ips" {
 module "aks_project_knative_dns_records" {
   source   = "git@github.com:thanos1983/terraform//Cloudflare/modules/DnsRecord"
   for_each = local.cloudFlareTypeDnsRecord
-  zone_id  = var.CLOUDFLARE_ZONE_ID
-  content  = each.value.content
+  ttl      = each.value.ttl
   name     = each.value.name
   type     = each.value.type
-  ttl      = each.value.ttl
+  content  = each.value.content
+  zone_id  = var.CLOUDFLARE_ZONE_ID
 }
 
 # Create Storage Account
@@ -195,12 +202,12 @@ module "aks_project_create_namespaces_roles_binding" {
   source   = "git@github.com:thanos1983/terraform//Kubernetes/modules/KubernetesRoleBindingV1"
   for_each = local.aks_active_directory_groups
   metadata_block = {
-    name      = "${each.value.namespaceRoles.metadata_block.name}-binding"
     namespace = each.key
+    name      = "${each.value.namespaceRoles.metadata_block.name}-binding"
   }
   role_ref_block = {
-    api_group = "rbac.authorization.k8s.io"
     kind      = "Role"
+    api_group = "rbac.authorization.k8s.io"
     name      = each.value.namespaceRoles.metadata_block.name
   }
   subject_blocks = [
@@ -270,8 +277,8 @@ module "aks_project_aks_cluster_helm_deployment_dependencies" {
 module "aks_project_cloudflare_k8s_dns_secret_token" {
   source = "git@github.com:thanos1983/terraform//Kubernetes/modules/KubernetesSecretV1"
   metadata_block = {
-    name      = var.cloudflare_secretKeyRef_name
     namespace = var.istio_namespace
+    name      = var.cloudflare_secretKeyRef_name
   }
   data = {
     (var.cloudflare_secretKeyRef_key) = module.aks_project_cloudflare_api_token.value

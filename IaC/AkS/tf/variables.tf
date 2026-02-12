@@ -111,26 +111,6 @@ variable "cloudflare_secretKeyRef_key" {
   default     = "apiKey"
 }
 
-variable "CLOUDFLARE_API_KEY" {
-  description = "The API key for operations."
-  type        = string
-}
-
-variable "CLOUDFLARE_ZONE_ID" {
-  description = "Zone ID (can be found on the UI)."
-  type        = string
-}
-
-variable "CLOUDFLARE_EMAIL" {
-  description = "A registered Cloudflare email address."
-  type        = string
-}
-
-variable "MONITORING_BOOTSTRAP_PASSWORD" {
-  description = "The bootstrap password for Grafana monitoring UI."
-  type        = string
-}
-
 variable "issuer_name" {
   description = "The role issuer name for Issuer."
   type        = string
@@ -445,4 +425,10 @@ variable "default_action" {
   description = "Specifies the default action of allow or deny when no other rules match."
   type        = string
   default     = "Deny"
+}
+
+variable "vault_password_file" {
+  description = "Path to vault password file."
+  type        = string
+  default     = "~/.vault_password_file"
 }

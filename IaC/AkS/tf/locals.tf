@@ -1,7 +1,9 @@
 locals {
   # to be removed once the deployment is moved to a pipeline
-  knativeDomain    = "knative.${var.zone}"
-  kube_config_path = "${path.module}/${var.kubeConfigFilename}"
+  knativeDomain      = "knative.${var.zone}"
+  vault_dir_file     = "${path.module}/vault/vault.yml"
+  kube_config_path   = "${path.module}/${var.kubeConfigFilename}"
+  decoded_vault_yaml = yamldecode(module.aks_project_ansible_vault.yaml)
 
   cloudFlareTypeDnsRecord = {
     prime = {
@@ -179,7 +181,7 @@ locals {
         }
       ]
       resources = jsonencode({
-        "com.cloudflare.api.account.zone.${var.CLOUDFLARE_ZONE_ID}" = "*"
+        "com.cloudflare.api.account.zone.${local.decoded_vault_yaml.cloudflare.zone_id}" = "*"
       })
     }
   ]
@@ -291,7 +293,7 @@ locals {
       values = [
         templatefile("${path.module}/helmGrafanaValues/values.yaml.tpl", {
           namespace     = var.monitoring_namespace
-          adminPassword = var.MONITORING_BOOTSTRAP_PASSWORD
+          adminPassword = local.decoded_vault_yaml.monitoring.grafana.adminPassword
           lokiUrl       = "http://loki-gateway.${var.monitoring_namespace}.svc.cluster.local:80"
           prometheusUrl = "http://prometheus-server.${var.monitoring_namespace}.svc.cluster.local:80"
         })
@@ -713,9 +715,9 @@ locals {
         issuer_name                  = var.issuer_name
         secret_key_ref               = var.secret_key_ref
         issuer_namespace             = var.istio_namespace
-        acme_email                   = var.CLOUDFLARE_EMAIL
         cloudflare_secretKeyRef_key  = var.cloudflare_secretKeyRef_key
         cloudflare_secretKeyRef_name = var.cloudflare_secretKeyRef_name
+        acme_email                   = local.decoded_vault_yaml.cloudflare.email
       })
     }
   }
