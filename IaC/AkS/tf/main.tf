@@ -93,7 +93,6 @@ module "aks_project_aks_cluster" {
     network_policy = var.network_policy
   }
   azure_active_directory_role_based_access_control_block = {
-    managed                = var.managed
     azure_rbac_enabled     = var.azure_rbac_enabled
     tenant_id              = data.azurerm_client_config.current.tenant_id
     admin_group_object_ids = [module.aks_project_active_directory_group["admin-group"].object_id]
