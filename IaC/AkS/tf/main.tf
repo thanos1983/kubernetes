@@ -70,7 +70,7 @@ module "aks_project_aks_cluster" {
   sku_tier           = var.sku_tier
   name               = var.aks_cluster_name
   kubernetes_version = var.kubernetes_version
-  default_node_pool_block = {
+  default_node_pool_blocks = {
     name                        = var.default_node_pool_block.name
     vm_size                     = var.default_node_pool_block.vm_size
     max_pods                    = var.default_node_pool_block.max_pods
