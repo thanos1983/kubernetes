@@ -192,7 +192,7 @@ locals {
       recreate_pods    = true
       create_namespace = true
       wait_for_jobs    = false
-      version          = "1.4.0"
+      version          = "1.6.0"
       name             = "alloy"
       chart            = "alloy"
       namespace        = var.monitoring_namespace
@@ -211,9 +211,10 @@ locals {
       ]
     },
     argo-cd = {
+      wait             = true
       create_namespace = true
       wait_for_jobs    = false
-      version          = "9.1.4"
+      version          = "9.4.2"
       name             = "argo-cd"
       chart            = "argo-cd"
       namespace        = var.argoCdNamespace
@@ -230,9 +231,10 @@ locals {
       ]
     },
     cert-manager = {
+      wait             = true
       wait_for_jobs    = false
       create_namespace = false
-      version          = "1.19.1"
+      version          = "1.19.2"
       name             = "cert-manager"
       chart            = "cert-manager"
       namespace        = var.certManagerNamespace
@@ -249,26 +251,11 @@ locals {
       ]
       values = []
     },
-    cloudflare-exporter = {
-      wait_for_jobs    = false
-      create_namespace = false
-      version          = "0.2.2"
-      name             = "cloudflare-exporter"
-      chart            = "cloudflare-exporter"
-      namespace        = var.certManagerNamespace
-      repository       = "https://lablabs.github.io/cloudflare-exporter"
-      set              = []
-      values = [
-        templatefile("${path.module}/helmExternalDnsValues/cloudflare-exporter.yaml.tpl", {
-          cloudflare_secretKeyRef_key  = var.cloudflare_secretKeyRef_key
-          cloudflare_secretKeyRef_name = var.cloudflare_secretKeyRef_name
-        })
-      ]
-    },
     external-dns = {
+      wait             = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "1.19.0"
+      version          = "1.20.0"
       name             = "external-dns"
       chart            = "external-dns"
       namespace        = var.certManagerNamespace
@@ -283,8 +270,9 @@ locals {
     },
     grafana = {
       create_namespace = true
+      wait             = false
       wait_for_jobs    = false
-      version          = "10.2.0"
+      version          = "10.5.15"
       name             = "grafana"
       chart            = "grafana"
       namespace        = var.monitoring_namespace
@@ -300,11 +288,12 @@ locals {
       ]
     },
     loki = {
+      wait             = false
       create_namespace = false
       wait_for_jobs    = false
       name             = "loki"
       chart            = "loki"
-      version          = "6.46.0"
+      version          = "6.53.0"
       namespace        = var.monitoring_namespace
       repository       = var.monitoringHelmChartUrl
       set              = []
@@ -314,18 +303,19 @@ locals {
           STORAGE_ACCOUNT_NAME              = module.aks_project_storage_account.name
           STORAGE_ACCOUNT_KEY               = module.aks_project_storage_account.primary_access_key
           STORAGE_ACCOUNT_CONNECTION_STRING = module.aks_project_storage_account.primary_connection_string
-          STORAGE_ACCOUNT_CONTAINER_ADMIN   = module.aks_project_storage_account_container["loki_container_admin"].name
-          STORAGE_ACCOUNT_CONTAINER_RULER   = module.aks_project_storage_account_container["loki_container_ruler"].name
-          STORAGE_ACCOUNT_CONTAINER_CHUNKS  = module.aks_project_storage_account_container["loki_container_chunk"].name
+          STORAGE_ACCOUNT_CONTAINER_ADMIN   = module.aks_project_storage_account_container["loki-admin"].name
+          STORAGE_ACCOUNT_CONTAINER_RULER   = module.aks_project_storage_account_container["loki-ruler"].name
+          STORAGE_ACCOUNT_CONTAINER_CHUNKS  = module.aks_project_storage_account_container["loki-chunk"].name
           PROMETHEUS_ALERT_URL              = "http://prometheus-alertmanager.${var.monitoring_namespace}.svc.cluster.local:9093"
         })
       ]
     },
     istio-base = {
+      wait             = true
       create_namespace = true
       wait_for_jobs    = false
       chart            = "base"
-      version          = "1.28.0"
+      version          = "1.28.3"
       name             = "istio-base"
       namespace        = var.istio_namespace
       repository       = "https://istio-release.storage.googleapis.com/charts"
@@ -338,10 +328,11 @@ locals {
       values = []
     },
     istio-cni = {
+      wait             = true
       create_namespace = true
       wait_for_jobs    = false
       chart            = "cni"
-      version          = "1.28.0"
+      version          = "1.28.3"
       name             = "istio-cni"
       namespace        = var.istio_namespace
       repository       = "https://istio-release.storage.googleapis.com/charts"
@@ -349,10 +340,11 @@ locals {
       values           = []
     },
     istio-discovery = {
+      wait             = true
       create_namespace = true
       wait_for_jobs    = true
       chart            = "istiod"
-      version          = "1.28.0"
+      version          = "1.28.3"
       name             = "istio-discovery"
       namespace        = var.istio_namespace
       repository       = "https://istio-release.storage.googleapis.com/charts"
@@ -365,9 +357,10 @@ locals {
       values = []
     },
     prometheus = {
+      wait             = true
       create_namespace = true
       wait_for_jobs    = false
-      version          = "27.47.0"
+      version          = "28.9.1"
       name             = "prometheus"
       chart            = "prometheus"
       namespace        = var.monitoring_namespace
@@ -378,9 +371,10 @@ locals {
       ]
     },
     reflector = {
+      wait             = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "9.1.41"
+      version          = "10.0.8"
       chart            = "reflector"
       name             = "emberstack"
       namespace        = "kube-system"
@@ -389,9 +383,10 @@ locals {
       values           = []
     },
     sealed-secrets = {
+      wait             = true
       create_namespace = true
       wait_for_jobs    = false
-      version          = "2.17.9"
+      version          = "2.18.1"
       name             = "sealed-secrets"
       chart            = "sealed-secrets"
       namespace        = var.sealed_secrets_namespace
@@ -404,7 +399,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "1.56.2"
+      version          = "1.61.3"
       name             = "tempo-distributed"
       chart            = "tempo-distributed"
       namespace        = var.monitoring_namespace
@@ -424,7 +419,7 @@ locals {
   helm_deployment = {
     istio-gateway = {
       wait_for_jobs = true
-      version       = "1.28.0"
+      version       = "1.28.3"
       chart         = "gateway"
       namespace     = var.istio_namespace
       name          = "istio-ingressgateway"
@@ -447,7 +442,7 @@ locals {
     },
     opentelemetry-collector = {
       wait_for_jobs = true
-      version       = "0.140.0"
+      version       = "0.145.0"
       name          = "opentelemetry-collector"
       chart         = "opentelemetry-collector"
       namespace     = var.monitoring_namespace
@@ -461,7 +456,7 @@ locals {
     },
     opentelemetry-operator = {
       wait_for_jobs = true
-      version       = "0.99.2"
+      version       = "0.105.1"
       name          = "opentelemetry-operator"
       chart         = "opentelemetry-operator"
       namespace     = var.monitoring_namespace

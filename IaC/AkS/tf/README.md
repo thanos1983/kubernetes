@@ -1345,6 +1345,45 @@ Kustomize Version: v5.0.4-0.20230601165947-6ce0bf390ce3
 Server Version: v1.29.7
 ````
 
+#### List available AKS versions per region
+
+If the user wants to deploy a specific version they first need to see the listed version on their region. Sample of code:
+
+````bash
+$ az aks get-versions --location westeurope --output table
+KubernetesVersion    Upgrades                                                                                                                                                                           SupportPlan
+-------------------  ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------  --------------------------------------
+1.34.2               None available                                                                                                                                                                     KubernetesOfficial, AKSLongTermSupport
+1.34.1               1.34.2                                                                                                                                                                             KubernetesOfficial, AKSLongTermSupport
+1.34.0               1.34.1, 1.34.2                                                                                                                                                                     KubernetesOfficial, AKSLongTermSupport
+1.33.6               1.34.0, 1.34.1, 1.34.2                                                                                                                                                             KubernetesOfficial, AKSLongTermSupport
+1.33.5               1.33.6, 1.34.0, 1.34.1, 1.34.2                                                                                                                                                     KubernetesOfficial, AKSLongTermSupport
+1.33.4               1.33.5, 1.33.6, 1.34.0, 1.34.1, 1.34.2                                                                                                                                             KubernetesOfficial, AKSLongTermSupport
+1.33.3               1.33.4, 1.33.5, 1.33.6, 1.34.0, 1.34.1, 1.34.2                                                                                                                                     KubernetesOfficial, AKSLongTermSupport
+1.33.2               1.33.3, 1.33.4, 1.33.5, 1.33.6, 1.34.0, 1.34.1, 1.34.2                                                                                                                             KubernetesOfficial, AKSLongTermSupport
+1.33.1               1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6, 1.34.0, 1.34.1, 1.34.2                                                                                                                     KubernetesOfficial, AKSLongTermSupport
+1.33.0               1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6, 1.34.0, 1.34.1, 1.34.2                                                                                                             KubernetesOfficial, AKSLongTermSupport
+1.32.10              1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6                                                                                                                             KubernetesOfficial, AKSLongTermSupport
+1.32.9               1.32.10, 1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6                                                                                                                    KubernetesOfficial, AKSLongTermSupport
+1.32.8               1.32.9, 1.32.10, 1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6                                                                                                            KubernetesOfficial, AKSLongTermSupport
+1.32.7               1.32.8, 1.32.9, 1.32.10, 1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6                                                                                                    KubernetesOfficial, AKSLongTermSupport
+1.32.6               1.32.7, 1.32.8, 1.32.9, 1.32.10, 1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6                                                                                            KubernetesOfficial, AKSLongTermSupport
+1.32.5               1.32.6, 1.32.7, 1.32.8, 1.32.9, 1.32.10, 1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6                                                                                    KubernetesOfficial, AKSLongTermSupport
+1.32.4               1.32.5, 1.32.6, 1.32.7, 1.32.8, 1.32.9, 1.32.10, 1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6                                                                            KubernetesOfficial, AKSLongTermSupport
+1.32.3               1.32.4, 1.32.5, 1.32.6, 1.32.7, 1.32.8, 1.32.9, 1.32.10, 1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6                                                                    KubernetesOfficial, AKSLongTermSupport
+1.32.2               1.32.3, 1.32.4, 1.32.5, 1.32.6, 1.32.7, 1.32.8, 1.32.9, 1.32.10, 1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6                                                            KubernetesOfficial, AKSLongTermSupport
+1.32.1               1.32.2, 1.32.3, 1.32.4, 1.32.5, 1.32.6, 1.32.7, 1.32.8, 1.32.9, 1.32.10, 1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6                                                    KubernetesOfficial, AKSLongTermSupport
+1.32.0               1.32.1, 1.32.2, 1.32.3, 1.32.4, 1.32.5, 1.32.6, 1.32.7, 1.32.8, 1.32.9, 1.32.10, 1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6                                            KubernetesOfficial, AKSLongTermSupport
+1.31.100             1.32.0, 1.32.1, 1.32.2, 1.32.3, 1.32.4, 1.32.5, 1.32.6, 1.32.7, 1.32.8, 1.32.9, 1.32.10, 1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6, 1.34.0, 1.34.1, 1.34.2            AKSLongTermSupport
+1.31.13              1.31.100, 1.32.0, 1.32.1, 1.32.2, 1.32.3, 1.32.4, 1.32.5, 1.32.6, 1.32.7, 1.32.8, 1.32.9, 1.32.10, 1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6, 1.34.0, 1.34.1, 1.34.2  AKSLongTermSupport
+1.30.101             1.31.13, 1.31.100, 1.32.0, 1.32.1, 1.32.2, 1.32.3, 1.32.4, 1.32.5, 1.32.6, 1.32.7, 1.32.8, 1.32.9, 1.32.10, 1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6                 AKSLongTermSupport
+1.30.100             1.30.101, 1.31.13, 1.31.100, 1.32.0, 1.32.1, 1.32.2, 1.32.3, 1.32.4, 1.32.5, 1.32.6, 1.32.7, 1.32.8, 1.32.9, 1.32.10, 1.33.0, 1.33.1, 1.33.2, 1.33.3, 1.33.4, 1.33.5, 1.33.6       AKSLongTermSupport
+1.29.101             1.30.100, 1.30.101, 1.31.13, 1.31.100, 1.32.0, 1.32.1, 1.32.2, 1.32.3, 1.32.4, 1.32.5, 1.32.6, 1.32.7, 1.32.8, 1.32.9, 1.32.10                                                     AKSLongTermSupport
+1.29.100             1.29.101, 1.30.100, 1.30.101, 1.31.13, 1.31.100, 1.32.0, 1.32.1, 1.32.2, 1.32.3, 1.32.4, 1.32.5, 1.32.6, 1.32.7, 1.32.8, 1.32.9, 1.32.10                                           AKSLongTermSupport
+1.28.103             1.29.100, 1.29.101, 1.30.100, 1.30.101, 1.31.13, 1.31.100                                                                                                                          AKSLongTermSupport
+1.28.102             1.28.103, 1.29.100, 1.29.101, 1.30.100, 1.30.101, 1.31.13, 1.31.100                                                                                                                AKSLongTermSupport
+````
+
 #### Important Requirements
 
 The requirements are the following:

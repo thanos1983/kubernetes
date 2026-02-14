@@ -256,6 +256,7 @@ module "aks_project_aks_cluster_helm_deployment_dependencies" {
   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
   for_each          = local.helm_deployment_dependencies
   set               = each.value.set
+  wait              = each.value.wait
   name              = each.value.name
   chart             = each.value.chart
   force_update      = var.force_update
