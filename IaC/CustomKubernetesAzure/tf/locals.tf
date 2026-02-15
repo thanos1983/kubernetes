@@ -1247,14 +1247,6 @@ locals {
       namespace        = var.istioNamespace
       repository       = "https://istio-release.storage.googleapis.com/charts"
       set              = []
-      # {
-      #     name  = "profile"
-      #     value = "ambient"
-      #   },
-      #   {
-      #     name  = "meshConfig.accessLogFile"
-      #     value = "/dev/stdout"
-      #   }
       values = []
     },
     cni = {
@@ -1272,10 +1264,6 @@ locals {
           value = "true"
         }
       ]
-      # {
-      #     name  = "profile"
-      #     value = "ambient"
-      #   }
       values = []
     },
     gateway = {
@@ -1316,7 +1304,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "1.32.0"
+      version          = "1.42.0"
       name             = "ollama"
       chart            = "ollama"
       namespace        = var.openWebuiNamespace
@@ -1336,7 +1324,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "8.12.2"
+      version          = "12.1.0"
       name             = "open-webui"
       chart            = "open-webui"
       namespace        = var.openWebuiNamespace
@@ -1355,7 +1343,7 @@ locals {
       wait             = true
       create_namespace = true
       wait_for_jobs    = false
-      version          = "3.30.4"
+      version          = "3.31.3"
       name             = "projectcalico"
       chart            = "tigera-operator"
       namespace        = "tigera-operator"
@@ -1371,7 +1359,7 @@ locals {
       wait             = true
       wait_for_jobs    = true
       create_namespace = false
-      version          = "1.19.1"
+      version          = "1.19.3"
       name             = "cert-manager"
       chart            = "cert-manager"
       namespace        = var.certManagerNamespace
@@ -1410,7 +1398,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "1.4.0"
+      version          = "1.6.0"
       name             = "alloy"
       chart            = "alloy"
       namespace        = var.monitoringNamespace
@@ -1450,7 +1438,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "0.36.0"
+      version          = "0.40.0"
       name             = "headlamp"
       chart            = "headlamp"
       namespace        = var.kubeNamespace
@@ -1473,7 +1461,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "10.1.2"
+      version          = "10.5.15"
       name             = "grafana"
       chart            = "grafana"
       namespace        = var.monitoringNamespace
@@ -1502,7 +1490,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "1.19.0"
+      version          = "1.20.0"
       name             = "external-dns"
       chart            = "external-dns"
       namespace        = var.certManagerNamespace
@@ -1523,7 +1511,7 @@ locals {
       wait_for_jobs    = false
       name             = "loki"
       chart            = "loki"
-      version          = "6.44.0"
+      version          = "6.53.0"
       namespace        = var.monitoringNamespace
       repository       = var.monitoringHelmChartUrl
       set              = []
@@ -1544,7 +1532,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "27.42.0"
+      version          = "28.9.1"
       name             = "prometheus"
       chart            = "prometheus"
       namespace        = var.monitoringNamespace
@@ -1575,7 +1563,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "9.1.37"
+      version          = "10.0.8"
       chart            = "reflector"
       name             = "emberstack"
       namespace        = var.kubeNamespace
@@ -1588,7 +1576,7 @@ locals {
       recreate_pods    = true
       create_namespace = true
       wait_for_jobs    = false
-      version          = "2.17.7"
+      version          = "2.18.1"
       name             = "sealed-secrets"
       chart            = "sealed-secrets"
       namespace        = var.sealed_secrets_namespace
@@ -1601,7 +1589,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "1.52.1"
+      version          = "1.61.3"
       name             = "tempo-distributed"
       chart            = "tempo-distributed"
       namespace        = var.monitoringNamespace
