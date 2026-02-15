@@ -1417,7 +1417,7 @@ locals {
     #   create_namespace = true
     #   wait             = true
     #   wait_for_jobs    = false
-    #   version          = "9.0.5"
+    #   version          = "9.4.2"
     #   name             = "argo-cd"
     #   chart            = "argo-cd"
     #   namespace        = var0.argoCdNamespace

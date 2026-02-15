@@ -307,19 +307,6 @@ Example show helm values:
 $ helm show values headlamp/headlamp
 ````
 
-#### Qdrant Cloud
-
-The user in order to be able to validate against the Cloud he / she needs to export the following terraform ENV
-variables:
-
-````bash
-# Rancher configurations
-# The user need to create manually a cluster in order to retrieve the API KEY.
-export TF_VAR_QDRANT_API_KEY="<API Key>"
-# Can be found once the user has logged in to the Qrdant Cloud UI. The ID can also be found on the url.
-export TF_VAR_QDRANT_ACCOUNT_ID="<Account ID>"
-````
-
 #### Viewing Secrets in K8s
 
 If the user needs to debug, view or what ever reason to view a secret it can be completed with the following way:
