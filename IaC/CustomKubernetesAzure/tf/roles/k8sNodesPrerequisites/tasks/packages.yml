@@ -1,0 +1,48 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8sNodesPrerequisites packages
+- name: Install, configure, and start CRI-O
+  block:
+    - name: Upgrade the OS (apt-get dist-upgrade)
+      ansible.builtin.apt:
+        upgrade: full
+
+    - name: Update all packages to their latest version
+      ansible.builtin.apt:
+        name: "*"
+        clean: yes
+        autoclean: yes
+        autoremove: yes
+        state: "latest"
+        update_cache: yes
+
+    - name: Install necessary package(s)
+      ansible.builtin.apt:
+        state: "latest"
+        name: "{{ item }}"
+      loop: "{{ packages }}"
+
+    - name: Rename CRI-O CNI configuration file
+      ansible.builtin.copy:
+        remote_src: yes
+        src: "{{ cri_o.cni.src }}"
+        dest: "{{ cri_o.cni.dest }}"
+
+    - name: Copy CRI-O configuration files
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "{{ cri_o.path }}"
+      loop: "{{ cri_o.files }}"
+
+    - name: Restart service(s), in all cases, also issue daemon-reload to pick up config changes
+      ansible.builtin.systemd_service:
+        enabled: true
+        state: started
+        name: "{{ item }}"
+        daemon_reload: true
+      loop:
+        - crio
+        - kubelet
+
+    - name: Unconditionally reboot the machine with all defaults
+      ansible.builtin.reboot:
+  become: true

@@ -1,0 +1,21 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s metricsServer
+- name: Download and Install Metrics Server Helm Package
+  block:
+    - name: Add Stable Metrics Server Helm Repo
+      kubernetes.core.helm_repository:
+        repo_url: "{{ metricsServer.helm.repo_url }}"
+        name: "{{ metricsServerHelmChartName | default('metrics-server') }}"
+        kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+
+    - name: Deploy Metrics Server Helm chart Version '{{ metricsServer.helm.chart_version }}'
+      kubernetes.core.helm:
+        name: "{{ metricsServer.helm.name }}"
+        chart_version: "{{ metricsServer.helm.chart_version }}"
+        create_namespace: "{{ metricsServer.helm.create_namespace }}"
+        values_files: "{{ metricsServer.helm.values_files | default([]) }}"
+        kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+        release_namespace: "{{ metricsServerReleaseNamespace | default('kube-system') }}"
+        chart_ref: "{{ metricsServerHelmChartRef | default('metrics-server/metrics-server') }}"
+  delegate_to: localhost
+  connection: local

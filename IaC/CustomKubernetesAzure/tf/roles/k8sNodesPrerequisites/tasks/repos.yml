@@ -1,0 +1,17 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8sNodesPrerequisites repos
+- name: Add signing keys, deb repositories
+  block:
+    - name: Add Apt signing key(s)
+      ansible.builtin.apt_key:
+        url: "{{ item.url }}"
+        keyring: "{{ item.keyring }}"
+      loop: "{{ apt_key.values() | flatten }}"
+
+    - name: Add deb repositories
+      ansible.builtin.apt_repository:
+        repo: "{{ item.repo }}"
+        filename: "{{ item.filename }}"
+        update_cache: "{{ item.update_cache }}"
+      loop: "{{ apt_repository.values() | flatten }}"
+  become: true

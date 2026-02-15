@@ -1,0 +1,5 @@
+---
+- hosts: localhost
+  remote_user: root
+  roles:
+    - IaC/k8s/tf/roles/k8sStorage/

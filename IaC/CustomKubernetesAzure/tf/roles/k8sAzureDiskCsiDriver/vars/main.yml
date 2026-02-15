@@ -1,0 +1,9 @@
+---
+# vars file for IaC/k8s/tf/roles/k8sAzureDiskCsiDriver
+secrets:
+  azureDiskCsiDriverSecret:
+    name: "{{ secretName }}"
+    namespace: "{{ secretNamespace }}"
+    data:
+      secretKey: "{{ secretKey }}"
+      secretValue: "{{ secretValue }}"

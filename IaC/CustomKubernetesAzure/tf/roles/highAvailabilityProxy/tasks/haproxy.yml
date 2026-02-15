@@ -1,0 +1,8 @@
+---
+# tasks file for IaC/k8s/tf/roles/highAvailabilityProxy haproxy
+- name: Configure HAProxy configuration file
+  become: true
+  ansible.builtin.copy:
+    dest: "/etc/haproxy/haproxy.cfg"
+    src: "{{ role_path }}/files/haproxy.cfg"
+  notify: restart haproxy

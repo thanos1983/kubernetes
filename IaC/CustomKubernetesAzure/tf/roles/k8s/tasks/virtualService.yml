@@ -1,0 +1,8 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s VirtualService
+- name: Create k8s Istio VirtualService(s)
+  kubernetes.core.k8s:
+    template: "{{ role_path }}/templates/virtualService.yaml.j2"
+    kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+  connection: local
+  delegate_to: localhost

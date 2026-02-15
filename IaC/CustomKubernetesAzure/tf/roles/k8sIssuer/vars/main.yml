@@ -1,0 +1,11 @@
+---
+# vars file for IaC/k8s/tf/roles/k8sAnsible
+certManager:
+  prod:
+    name: "{{ issuer_name_prod }}"
+    path: "{{ role_path }}/templates/clusterIssuer.yaml.j2"
+    server: "https://acme-v02.api.letsencrypt.org/directory"
+  stage:
+    name: "{{ issuer_name_stage }}"
+    path: "{{ role_path }}/templates/clusterIssuer.yaml.j2"
+    server: "https://acme-staging-v02.api.letsencrypt.org/directory"

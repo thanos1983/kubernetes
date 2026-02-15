@@ -1,0 +1,22 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8sNodesPrerequisites kernelModules
+- name: Kernel and network configurations
+  become: true
+  block:
+    - name: Create Necessary k8s configuration files
+      ansible.builtin.file:
+        state: touch
+        mode: u=rw,g=r,o=r
+        path: "{{ item.path }}"
+      loop: "{{ k8s.values() | flatten }}"
+
+    - name: Add content to files
+      ansible.builtin.lineinfile:
+        insertafter: EOF
+        line: "{{ item.line }}"
+        path: "{{ item.path }}"
+      loop: "{{ k8s.values() | flatten }}"
+
+    - name: Add modules from the Linux Kernel
+      ansible.builtin.shell: "{{ item }}"
+      loop: "{{ kernelModules }}"

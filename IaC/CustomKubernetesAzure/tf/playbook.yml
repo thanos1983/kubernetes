@@ -1,0 +1,29 @@
+---
+- name: Prerequisite Deployment
+  hosts: all
+  environment:
+    ENABLE_TURBO_MODE: 1
+  any_errors_fatal: true
+  gather_facts: false
+
+  roles:
+    - role: ping
+      tags: [ ping ]
+    - role: k8sIssuer
+      tags: [ k8sIssuer ]
+    - role: k8sStorage
+      tags: [ k8sStorage ]
+    - role: IstioGWRoutes
+      tags: [ IstioGWRoutes ]
+    - role: k8sWorkerNodes
+      tags: [ k8sWorkerNodes ]
+    - role: k8sPrerequisites
+      tags: [ k8sPrerequisites ]
+    - role: k8sPrimeMasterNode
+      tags: [ k8sPrimeMasterNode ]
+    - role: highAvailabilityProxy
+      tags: [ highAvailabilityProxy ]
+    - role: k8sAzureDiskCsiDriver
+      tags: [ k8sAzureDiskCsiDriver ]
+    - role: k8sSecondaryMasterNodes
+      tags: [ k8sSecondaryMasterNodes ]

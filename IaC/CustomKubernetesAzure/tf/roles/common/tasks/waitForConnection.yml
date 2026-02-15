@@ -1,0 +1,5 @@
+---
+# tasks file for IaC/k8s/tf/roles/common waitForConnection
+- name: Wait 600 seconds, but only start checking after 10 seconds
+  ansible.builtin.wait_for_connection:
+    delay: 10

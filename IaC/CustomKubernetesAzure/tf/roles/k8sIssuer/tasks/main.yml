@@ -1,0 +1,11 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8sAnsible
+- name: Gathers facts about remote host setup
+  ansible.builtin.include_role:
+    name: common
+    tasks_from: setup
+
+- name: Create desired CertManager Issuer(s)
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: issuer

@@ -1,0 +1,4 @@
+---
+# vars file for IaC/k8s/tf/roles/k8sStorage
+k8sStorageVars:
+  "{{ persistentStorage | ansible.builtin.from_json }}"

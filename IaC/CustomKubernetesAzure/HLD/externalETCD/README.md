@@ -1,0 +1,25 @@
+# HLD Design for custom K8s on Azure project
+
+## How to install
+This documentation will provide a solution for Ubuntu (LinuxOS). Sample of code:
+
+```bash
+$ sudo apt install graphviz python3-full pipenv -y
+$ pipenv install diagrams
+$ pipenv shell # activate virtual environment
+$  . /home/<user>/.local/share/virtualenvs/kitn-tGaP_Wzq/bin/activate
+(kitn) <user>@<hostname>:~/kitn$ # active virtual environment
+(kitn) <user>@<hostname>:~/kitn$ exit # exiting virtual environment
+exit
+```
+
+## Sample of creating HLD diagrams
+The way that the user can create an HLD diagram. Sample of code:
+
+```bash
+$ python3 hldExternalEtcdInfra.py
+```
+
+## Sample of examples
+
+[diagrams/getting-started/examples](https://diagrams.mingrammer.com/docs/getting-started/examples)

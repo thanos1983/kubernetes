@@ -1,0 +1,13 @@
+---
+# vars file for IaC/k8s/tf/roles/highAvailabilityProxy
+apt_repository:
+  haproxy:
+    - { filename: "haproxy.list", repo: "ppa:vbernat/haproxy-3.0", update_cache: true }
+
+packages:
+  - "keepalived"
+  - "haproxy"
+  - "psmisc"
+
+haproxy:
+  host: "0.0.0.0"

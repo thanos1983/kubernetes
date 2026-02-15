@@ -1,0 +1,16 @@
+---
+# tasks file for IaC/k8s/tf/roles/IstioGWRoutes
+- name: Create desired Gateway(s)
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: gateway
+
+- name: Create desired VirtualService(s)
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: virtualService
+
+- name: Create desired Certificate(s)
+  ansible.builtin.include_role:
+    name: k8s
+    tasks_from: certificate

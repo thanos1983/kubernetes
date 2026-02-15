@@ -1,0 +1,13 @@
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: ClusterConfiguration
+controlPlaneEndpoint: {{ lb_ip_address }}:{{ kube_api_bind_port }}
+---
+apiVersion: kubelet.config.k8s.io/v1beta1
+kind: KubeletConfiguration
+serverTLSBootstrap: true
+---
+apiVersion: kubeadm.k8s.io/v1beta3
+kind: InitConfiguration
+certificateKey: {{ kubeClusterCertKey }}
+nodeRegistration:
+  criSocket: {{ kubeadm.crioUnixSocket }}

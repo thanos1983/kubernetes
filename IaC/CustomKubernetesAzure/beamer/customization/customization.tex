@@ -1,0 +1,46 @@
+\section{Customization}\label{sec:customization}
+\subsection{Node customization}\label{subsec:node-customization}
+\begin{frame}[plain]{Node customization}
+	\setbeamercovered{dynamic}%Makes the text appear before it presents nice!!!!
+	\begin{columns}[T] % contents are top vertically aligned
+		\begin{column}{5cm} % alternative top-align that's better for graphics
+			\begin{figure}
+				\centering
+				\includegraphics<1>[width=\textwidth]{./png/aks}%
+				\includegraphics<2>[width=\textwidth]{./png/azureLogo}%
+				\includegraphics<3>[width=\textwidth]{./png/redhatLinuxOperatingSystem}%
+				\includegraphics<4>[width=\textwidth]{./png/coreOperatingSystem}%
+				\includegraphics<5>[width=\textwidth]{./png/debianOperatingSystem}%
+				\includegraphics<6>[width=\textwidth]{./png/oracleLinuxOperatingSystem}%
+				\includegraphics<7>[width=\textwidth]{./png/suseLinuxEnterpriseOperatingSystem}%
+				\includegraphics<8>[width=\textwidth]{./png/suseLinuxOperatingSystem}%
+				\includegraphics<9>[width=\textwidth]{./png/ubuntuOperatingSystem}%
+
+				\only<1>{{\usebeamercolor[fg]{caption name}Figure:} AKS}%
+				\only<2>{{\usebeamercolor[fg]{caption name}Figure:} Azure}%
+				\only<3>{{\usebeamercolor[fg]{caption name}Figure:} RedHat OS}%
+				\only<4>{{\usebeamercolor[fg]{caption name}Figure:} Core OS}%
+				\only<5>{{\usebeamercolor[fg]{caption name}Figure:} Debian OS}%
+				\only<6>{{\usebeamercolor[fg]{caption name}Figure:} Oracle Linux OS}%
+				\only<7>{{\usebeamercolor[fg]{caption name}Figure:} Suse EE OS}%
+				\only<8>{{\usebeamercolor[fg]{caption name}Figure:} Suse OS}%
+				\only<9>{{\usebeamercolor[fg]{caption name}Figure:} Ubuntu OS}%
+			\end{figure}
+		\end{column}
+		\begin{column}{5cm} % alternative top-align that's better for graphics
+			\begin{itemize}
+				\item<+-| alert@+> No customization with AKS
+				\item<+-| alert@+> Custom Linux VM 100\% Customization
+				\begin{itemize}
+						\item<+-| alert@+> RedHat OS
+						\item<+-| alert@+> Core OS
+						\item<+-| alert@+> Debian OS
+						\item<+-| alert@+> Oracle Linux OS
+						\item<+-| alert@+> Suse Linux EE OS
+						\item<+-| alert@+> Suse Linux OS
+						\item<+-| alert@+> Ubuntu OS
+				\end{itemize}
+			\end{itemize}	
+		\end{column}
+	\end{columns}
+\end{frame}

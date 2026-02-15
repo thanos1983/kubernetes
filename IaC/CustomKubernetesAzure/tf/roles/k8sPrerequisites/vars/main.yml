@@ -1,0 +1,43 @@
+---
+# vars file for IaC/k8s/tf/roles/k8sPrerequisites
+namespaces:
+  faas:
+    labels:
+      istio-injection: enabled
+    name: "{{ faasNamespace }}"
+  monitoring:
+    labels:
+      istio-injection: enabled
+    name: "{{ monitoringNamespace }}"
+  certManager:
+    name: "{{ certManagerNamespace }}"
+  istio:
+    name: "{{ istioNamespace }}"
+  openwebui:
+    name: "{{ openWebuiNamespace }}"
+  dashboard:
+    labels:
+      istio-injection: enabled
+    name: "{{ dashboardNamespace }}"
+
+secrets:
+  certManager:
+    name: "{{ secretName }}"
+    namespace: "{{ certManagerNamespace }}"
+    data:
+      "api-token": "{{ secretValue | b64encode }}"
+  istio:
+    name: "{{ secretName }}"
+    namespace: "{{ istioNamespace }}"
+    data:
+      "api-token": "{{ secretValue | b64encode }}"
+  tempo:
+    name: "{{ secretNameTempo }}"
+    namespace: "{{ monitoringNamespace }}"
+    data:
+      "tempo-traces-key": "{{ tempoSecretValue | b64encode }}"
+  azureDiskCsiDriver:
+    name: "{{ secretNameAzureDiskCsiDriver }}"
+    namespace: "{{ azureDiskCsiDriverNamespace }}"
+    data:
+      "cloud-config": "{{ azureJsonSecretValue | from_json | b64encode }}"

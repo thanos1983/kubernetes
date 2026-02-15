@@ -1,0 +1,9 @@
+---
+# tasks file for IaC/k8s/tf/roles/k8s crioMetricsExporterCluster
+- name: Apply CRI-O Metrics Exporter Manifest to the Cluster.
+  kubernetes.core.k8s:
+    state: present
+    src: "{{ crio.metrics.url }}"
+    kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
+  connection: local
+  delegate_to: localhost
