@@ -901,7 +901,7 @@ locals {
       }
       linux_virtual_machine = {
         name = "linuxVmworker01"
-        size = "Standard_B8als_v2" # "Standard_B4als_v2"
+        size = "Standard_B8als_v2"
         custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
           admin_username     = var.username
           CRIO_VERSION       = var.crio_version
@@ -935,7 +935,7 @@ locals {
       }
       linux_virtual_machine = {
         name = "linuxVmworker02"
-        size = "Standard_B8als_v2" # "Standard_B4als_v2"
+        size = "Standard_B8als_v2"
         custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
           admin_username     = var.username
           CRIO_VERSION       = var.crio_version
@@ -969,7 +969,7 @@ locals {
       }
       linux_virtual_machine = {
         name = "linuxVmworker03"
-        size = "Standard_B8als_v2" # "Standard_B4als_v2"
+        size = "Standard_B8als_v2"
         custom_data = base64encode(templatefile("${path.module}/templates/k8s-cloud-init.tftpl", {
           admin_username     = var.username
           CRIO_VERSION       = var.crio_version
