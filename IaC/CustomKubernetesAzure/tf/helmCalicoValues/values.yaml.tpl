@@ -11,7 +11,7 @@ installation:
         encapsulation: "VXLAN"
 
 apiServer:
-  enabled: false
+  enabled: true # maybe false
 
 tigeraOperator:
   image: "tigera/operator"

@@ -1324,7 +1324,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "12.1.0"
+      version          = "12.0.1"
       name             = "open-webui"
       chart            = "open-webui"
       namespace        = var.openWebuiNamespace
@@ -1339,22 +1339,22 @@ locals {
   }
 
   helm_prime_packages = {
-    calico = {
-      wait             = true
-      create_namespace = true
-      wait_for_jobs    = false
-      version          = "3.31.3"
-      name             = "projectcalico"
-      chart            = "tigera-operator"
-      namespace        = "tigera-operator"
-      repository       = "https://docs.tigera.io/calico/charts"
-      set              = []
-      values = [
-        templatefile("${path.module}/helmCalicoValues/values.yaml.tpl", {
-          podNetworkCidr = var.podNetworkCidr
-        })
-      ]
-    },
+    # calico = {
+    #  wait             = true
+    #  create_namespace = true
+    #  wait_for_jobs    = false
+    #  version          = "3.31.2"
+    #  name             = "projectcalico"
+    #  chart            = "tigera-operator"
+    #  namespace        = "tigera-operator"
+    #  repository       = "https://docs.tigera.io/calico/charts"
+    #  set              = []
+    #  values = [
+    #    templatefile("${path.module}/helmCalicoValues/values.yaml.tpl", {
+    #      podNetworkCidr = var.podNetworkCidr
+    #    })
+    #  ]
+    # },
     cert-manager = {
       wait             = true
       wait_for_jobs    = true
@@ -1372,6 +1372,23 @@ locals {
         {
           name  = "prometheus.enabled"
           value = true
+        }
+      ]
+      values = []
+    },
+    cilium = {
+      wait             = true
+      wait_for_jobs    = true
+      create_namespace = false
+      version          = "1.19.0"
+      name             = "cilium"
+      chart            = "cilium"
+      namespace        = var.kubeNamespace
+      repository       = "https://helm.cilium.io/"
+      set = [
+        {
+          name  = "cni.exclusive"
+          value = false
         }
       ]
       values = []

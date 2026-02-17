@@ -155,12 +155,6 @@ variable "openWebuiNamespace" {
   default     = "openwebui"
 }
 
-variable "MONITORING_BOOTSTRAP_PASSWORD" {
-  description = "The bootstrap password for Grafana monitoring UI."
-  type        = string
-  sensitive   = true
-}
-
 variable "cloudflare_secretKeyRef_key" {
   description = "Name of key for the DNS secret."
   type        = string
@@ -271,13 +265,13 @@ variable "type" {
 variable "kubernetes_version" {
   description = "Kubernetes version to install relevant packages."
   type        = string
-  default     = "v1.33"
+  default     = "v1.35"
 }
 
 variable "crio_version" {
   description = "CRI-O uses the same basic project layout in OBS as Kubernetes."
   type        = string
-  default     = "v1.33"
+  default     = "v1.35"
 }
 
 variable "CLOUDFLARE_ZONE_ID" {
