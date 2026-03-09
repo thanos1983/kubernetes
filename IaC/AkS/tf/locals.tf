@@ -786,23 +786,6 @@ locals {
       content  = data.http.net_istio.response_body
     }
   }
-
-  secret_reflector = {
-    qdrant = {
-      api_version = "v1"
-      kind        = "Secret"
-      annotations = {
-        "reflector.v1.k8s.emberstack.com/reflection-allowed"            = "true"
-        "reflector.v1.k8s.emberstack.com/reflection-auto-enabled"       = "true"
-        "reflector.v1.k8s.emberstack.com/reflection-auto-namespaces"    = var.reflection-allowed-namespaces
-        "reflector.v1.k8s.emberstack.com/reflection-allowed-namespaces" = var.reflection-allowed-namespaces
-      }
-      metadata = {
-        name      = "qdrant-apikey"
-        namespace = var.qdrant_namespace
-      }
-    }
-  }
 }
 
 data "azurerm_subscription" "subscription" {}

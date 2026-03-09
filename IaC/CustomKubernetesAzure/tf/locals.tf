@@ -703,6 +703,69 @@ locals {
           }
         }
       }
+    },
+    victoriaMetrics = {
+      storageClass = {
+        metadata = {
+          name = var.managedDisks["victoria-metrics"].storage_class_name
+        }
+        provisioner = var.storageClassProvisioner
+        parameters = {
+          skuName = var.managedDisks["victoria-metrics"].storage_account_type
+        }
+        reclaimPolicy        = "Retain"
+        volumeBindingMode    = "Immediate"
+        allowVolumeExpansion = false
+      }
+      persistentVolume = {
+        metadata = {
+          name = var.managedDisks["victoria-metrics"].persistent_volume_name
+        }
+        spec = {
+          capacity = {
+            storage = "${var.managedDisks["victoria-metrics"].disk_size_gb}Gi"
+          }
+          accessModes = [
+            "ReadWriteOnce"
+          ]
+          persistentVolumeReclaimPolicy = "Retain"
+          storageClassName              = var.managedDisks["victoria-metrics"].storage_class_name
+          csi = {
+            driver       = var.storageClassProvisioner
+            readOnly     = false
+            volumeHandle = module.project_azure_disks["victoria-metrics"].id
+            volumeAttributes = {
+              cachingMode = "ReadOnly"
+              fsType      = "ext4"
+            }
+          }
+        }
+      }
+      persistentVolumeClaim = {
+        metadata = {
+          name      = var.managedDisks["victoria-metrics"].persistent_volume_claim
+          namespace = var.monitoringNamespace
+          labels = {
+            "app.kubernetes.io/managed-by" = "Helm"
+          }
+          annotations = {
+            "meta.helm.sh/release-name"      = "victoria-metrics"
+            "meta.helm.sh/release-namespace" = var.monitoringNamespace
+          }
+        }
+        spec = {
+          storageClassName = var.managedDisks["victoria-metrics"].storage_class_name
+          volumeName       = var.managedDisks["victoria-metrics"].persistent_volume_name
+          accessModes = [
+            "ReadWriteOnce"
+          ]
+          resources = {
+            requests = {
+              storage = "${var.managedDisks["victoria-metrics"].disk_size_gb}Gi"
+            }
+          }
+        }
+      }
     }
   }
 
@@ -1619,6 +1682,24 @@ locals {
           storageAccountName         = module.project_storage_account.name
           tempoContainerName         = local.storage_account_container.tempo.name
           STORAGE_ACCOUNT_ACCESS_KEY = module.project_storage_account.primary_access_key
+        })
+      ]
+    }
+    victoriaMetrics = {
+      name             = "vm"
+      wait             = true
+      recreate_pods    = true
+      create_namespace = false
+      wait_for_jobs    = false
+      version          = "0.36.0"
+      namespace        = "default"
+      chart            = "victoria-metrics-cluster"
+      repository       = "https://victoriametrics.github.io/helm-charts/"
+      set              = []
+      values = [
+        templatefile("${path.module}/helmVictoriaMetrics/clusterValues.yaml.tpl", {
+          monitoringNamespace   = var.monitoringNamespace
+          vmInsertExistingClaim = var.managedDisks["victoria-metrics"].persistent_volume_claim
         })
       ]
     }

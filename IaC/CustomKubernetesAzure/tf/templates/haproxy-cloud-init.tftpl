@@ -17,7 +17,7 @@ runcmd:
   - echo "        stats uri ${HAPROXY_STATS_URI_PATH}" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
   - echo "        stats show-modules" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
   - echo "        stats refresh ${HAPROXY_STATS_WEB_PAGE_REFRESH_RATE}" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
-  - echo "        stats auth {{ HAPROXY_USERNAME }}:{{ HAPROXY_PASSWORD }}" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
+  - echo "        stats auth ${ HAPROXY_USERNAME }:${ HAPROXY_PASSWORD }" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
   - echo "" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
   - echo "frontend k8s-api-server" | tee -a /etc/haproxy/haproxy.cfg > /dev/null
   - echo "        mode tcp" | tee -a /etc/haproxy/haproxy.cfg > /dev/null

@@ -37,7 +37,7 @@ Pipfile.lock
 **/kube/config
 **/net-istio.yaml
 **/operator.yaml
-**/initVersion/dev.hcl
-**/initVersion/sit.hcl
-**/initVersion/preprod.hcl
-**/initVersion/prod.hcl
+**/initVersion/version-dev.hcl
+**/initVersion/version-sit.hcl
+**/initVersion/version-preprod.hcl
+**/initVersion/version-prod.hcl

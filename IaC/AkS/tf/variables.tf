@@ -137,12 +137,6 @@ variable "load_config_file" {
   default     = false
 }
 
-variable "qdrant_namespace" {
-  description = "The namespace where all monitoring resources will be deployed."
-  type        = string
-  default     = "qdrant"
-}
-
 variable "sealed_secrets_namespace" {
   description = "The namespace where all sealed-secrets resources will be deployed."
   type        = string

@@ -337,19 +337,19 @@ $ cd IaC/k8s/tf/
 If the user desires to use encrypted files on the repository we need to encrypt the file. Sample of code:
 
 ````bash
-user@group:~/kitn/IaC/k8s/tf$ ansible-vault encrypt vault/vault.yml
+user@hostname:~/IaC/CustomKubernetesAzure/tf$ ansible-vault encrypt vault/vault.yml
 ````
 
 If the user desires to view encrypted files on the repository. Sample of code:
 
 ````bash
-user@group:~/kitn/IaC/k8s/tf$ ansible-vault view vault/vault.yml
+user@hostname:~/IaC/CustomKubernetesAzure/tf$ ansible-vault view vault/vault.yml
 ````
 
 If the user desires to edit encrypted files on the repository. Sample of code:
 
 ````bash
-user@group:~/kitn/IaC/k8s/tf$ ansible-vault edit vault/vault.yml
+user@hostname:~/IaC/CustomKubernetesAzure/tf$ ansible-vault edit vault/vault.yml
 ````
 
 #### Troubleshooting Cloud-Init
