@@ -45,6 +45,11 @@ variable "ARM_SUBSCRIPTION_ID" {
   type        = string
 }
 
+variable "ARM_SUBSCRIPTION_ID_STATE_FILE" {
+  description = "The Subscription ID which should be used for storing the state file."
+  type        = string
+}
+
 variable "network_security_group_name" {
   description = "Specifies the name of the network security group."
   type        = string

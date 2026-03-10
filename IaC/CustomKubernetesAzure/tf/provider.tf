@@ -1,8 +1,6 @@
 provider "cloudflare" {
   email   = local.decoded_vault_yaml.cloudflare.email
   api_key = local.decoded_vault_yaml.cloudflare.api_key
-  # email   = var.CLOUDFLARE_EMAIL   # set as env variable
-  # api_key = var.CLOUDFLARE_API_KEY # set as env variable
 }
 
 provider "azurerm" {

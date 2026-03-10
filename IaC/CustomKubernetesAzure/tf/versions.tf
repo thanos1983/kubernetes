@@ -6,11 +6,11 @@ terraform {
     }
     azuread = {
       source  = "hashicorp/azuread"
-      version = "3.7.0"
+      version = "3.8.0"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.60.0"
+      version = "4.63.0"
     }
     helm = {
       source  = "hashicorp/helm"
@@ -18,7 +18,7 @@ terraform {
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "5.17.0"
+      version = "5.18.0"
     }
     external = {
       source  = "hashicorp/external"
@@ -30,7 +30,7 @@ terraform {
     }
     local = {
       source  = "hashicorp/local"
-      version = "2.6.2"
+      version = "2.7.0"
     }
   }
   backend "azurerm" {}
