@@ -703,6 +703,69 @@ locals {
           }
         }
       }
+    },
+    kubescapeStorage = {
+      storageClass = {
+        metadata = {
+          name = var.managedDisks["kubescape-storage"].storage_class_name
+        }
+        provisioner = var.storageClassProvisioner
+        parameters = {
+          skuName = var.managedDisks["kubescape-storage"].storage_account_type
+        }
+        reclaimPolicy        = "Retain"
+        volumeBindingMode    = "Immediate"
+        allowVolumeExpansion = false
+      }
+      persistentVolume = {
+        metadata = {
+          name = var.managedDisks["kubescape-storage"].persistent_volume_name
+        }
+        spec = {
+          capacity = {
+            storage = "${var.managedDisks["kubescape-storage"].disk_size_gb}Gi"
+          }
+          accessModes = [
+            "ReadWriteOnce"
+          ]
+          persistentVolumeReclaimPolicy = "Retain"
+          storageClassName              = var.managedDisks["kubescape-storage"].storage_class_name
+          csi = {
+            driver       = var.storageClassProvisioner
+            readOnly     = false
+            volumeHandle = module.project_azure_disks["kubescape-storage"].id
+            volumeAttributes = {
+              cachingMode = "ReadOnly"
+              fsType      = "ext4"
+            }
+          }
+        }
+      }
+      persistentVolumeClaim = {
+        metadata = {
+          name      = var.managedDisks["kubescape-storage"].persistent_volume_claim
+          namespace = var.kubescapeNamespace
+          labels = {
+            "app.kubernetes.io/managed-by" = "Helm"
+          }
+          annotations = {
+            "meta.helm.sh/release-name"      = "kubescape-storage"
+            "meta.helm.sh/release-namespace" = var.kubescapeNamespace
+          }
+        }
+        spec = {
+          storageClassName = var.managedDisks["kubescape-storage"].storage_class_name
+          volumeName       = var.managedDisks["kubescape-storage"].persistent_volume_name
+          accessModes = [
+            "ReadWriteOnce"
+          ]
+          resources = {
+            requests = {
+              storage = "${var.managedDisks["kubescape-storage"].disk_size_gb}Gi"
+            }
+          }
+        }
+      }
     }
   }
 
@@ -1450,28 +1513,6 @@ locals {
     #     file("${path.module}/argoCD/values.yaml")
     #   ]
     # },
-    headlamp = {
-      wait             = true
-      recreate_pods    = true
-      create_namespace = false
-      wait_for_jobs    = false
-      version          = "0.40.0"
-      name             = "headlamp"
-      chart            = "headlamp"
-      namespace        = var.kubeNamespace
-      repository       = "https://kubernetes-sigs.github.io/headlamp/"
-      set = [
-        {
-          name  = "replicaCount"
-          value = var.headlampReplicaCount
-        }
-      ]
-      values = [
-        templatefile("${path.module}/helmHeadlampValues/values.yaml.tpl", {
-          replicaCount = var.headlampReplicaCount
-        })
-      ]
-    },
     grafana = {
       wait             = true
       recreate_pods    = true
@@ -1520,6 +1561,70 @@ locals {
         })
       ]
     },
+    headlamp = {
+      wait             = true
+      recreate_pods    = true
+      create_namespace = false
+      wait_for_jobs    = false
+      version          = "0.40.0"
+      name             = "headlamp"
+      chart            = "headlamp"
+      namespace        = var.kubeNamespace
+      repository       = "https://kubernetes-sigs.github.io/headlamp/"
+      set = [
+        {
+          name  = "replicaCount"
+          value = var.headlampReplicaCount
+        }
+      ]
+      values = [
+        templatefile("${path.module}/helmHeadlampValues/values.yaml.tpl", {
+          replicaCount = var.headlampReplicaCount
+        })
+      ]
+    },
+    kubescape = {
+      wait             = true
+      recreate_pods    = true
+      create_namespace = false
+      wait_for_jobs    = false
+      version          = "1.30.4"
+      name             = "kubescape-operator"
+      chart            = "kubescape-operator"
+      namespace        = var.kubescapeNamespace
+      repository       = "https://kubescape.github.io/helm-charts/"
+      set = [
+        {
+          name  = "clusterName"
+          value = "kubectl config current-context --kubeconfig ${local.kubeConfigDestination}"
+        },
+        {
+          name  = "capabilities.runtimeDetection"
+          value = "enable"
+        },
+        {
+          name  = "alertCRD.installDefault"
+          value = true
+        },
+        {
+          name  = "nodeAgent.config.maxLearningPeriod"
+          value = "10m"
+        },
+        {
+          name  = "capabilities.continuousScan"
+          value = "enable"
+        },
+        {
+          name  = "capabilities.networkPolicyService"
+          value = "enable"
+        },
+        {
+          name  = "persistence.storageClass"
+          value = var.managedDisks["kubescape-storage"].storage_class_name
+        }
+      ]
+      values = []
+    }
     loki = {
       wait             = true
       recreate_pods    = true

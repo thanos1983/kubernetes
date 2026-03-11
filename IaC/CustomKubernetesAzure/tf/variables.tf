@@ -226,6 +226,12 @@ variable "faasNamespace" {
   default     = "faas"
 }
 
+variable "kubescapeNamespace" {
+  description = "The name space that we will use to deploy kubescape resources."
+  type        = string
+  default     = "kubescape"
+}
+
 variable "knativeOperatorVersion" {
   description = "The version of the Knative operator to deploy."
   type        = string

@@ -363,6 +363,7 @@ module "project_k8s_ansible_playbook_prerequisites_azure_disk_csi_driver" {
     istioNamespace               = var.istioNamespace
     secretNameTempo              = var.tempoSecretName
     openWebuiNamespace           = var.openWebuiNamespace
+    kubescapeNamespace           = var.kubescapeNamespace
     monitoringNamespace          = var.monitoringNamespace
     certManagerNamespace         = var.certManagerNamespace
     secretNameAzureDiskCsiDriver = var.cloudConfigSecretName
@@ -436,7 +437,7 @@ module "project_ansible_playbook_k8s_persistent_storage" {
   source     = "git@github.com:thanos1983/terraform//Ansible/modules/Playbook"
   tags       = ["k8sStorage"]
   playbook   = var.playbook
-  replayable = true # var.replayable
+  replayable = var.replayable
   name       = module.project_main_nodes["master01"].public_ip_address
   extra_vars = {
     kubeConfigDestination = local.kubeConfigDestination

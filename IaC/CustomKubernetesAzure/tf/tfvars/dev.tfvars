@@ -117,4 +117,13 @@ managedDisks = {
     persistent_volume_claim = "open-webui-pipelines"
     storage_class_name      = "azuredisk-openwebui-pipelines"
   }
+  kubescape-storage = {
+    disk_size_gb            = "10"
+    name                    = "kubescape-storage"
+    create_option           = "Empty"
+    storage_account_type    = "Standard_LRS"
+    persistent_volume_name  = "kubescape-storage"
+    persistent_volume_claim = "kubescape-storage"
+    storage_class_name      = "kubescape-storage-sc"
+  }
 }

@@ -19,6 +19,10 @@ namespaces:
     labels:
       istio-injection: enabled
     name: "{{ dashboardNamespace }}"
+  kubescape:
+    labels:
+      istio-injection: enabled
+    name: "{{ kubescapeNamespace }}"
 
 secrets:
   certManager:

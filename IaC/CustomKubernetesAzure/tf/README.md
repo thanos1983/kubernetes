@@ -140,7 +140,7 @@ $ tofu -chdir=IaC/CustomKubernetesAzure/tf apply "destroyPlan"
 In case the user decides to destroy a specific resource it can be accomplished by using the ``-target`` flag. Sample:
 
 ````bash
-$ tofu -chdir=IaC/CustomKubernetesAzure/tf plan -destroy -target module.da_projektet_df -out destroyPlan -var-file=tfvars/dev.tfvars
+$ tofu -chdir=IaC/CustomKubernetesAzure/tf plan -destroy -target module.project_k8s_ansible_playbook_prerequisites_azure_disk_csi_driver -out destroyPlan -var-file=tfvars/dev.tfvars
 ````
 
 #### terraform import
