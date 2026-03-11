@@ -307,12 +307,31 @@ Example show helm values:
 $ helm show values headlamp/headlamp
 ````
 
+#### Headlamp Token
+
+[Create a Service Account token](https://headlamp.dev/docs/latest/installation/#create-a-service-account-token)
+
+Create a Service Account:
+````bash
+kubectl -n kube-system create serviceaccount headlamp-admin --kubeconfig IaC/CustomKubernetesAzure/tf/kube/config
+````
+
+Give admin rights to the account:
+````bash
+kubectl create clusterrolebinding headlamp-admin --serviceaccount=kube-system:headlamp-admin --clusterrole=cluster-admin --kubeconfig IaC/CustomKubernetesAzure/tf/kube/config
+````
+
+Create the token using the following command:
+````bash
+kubectl create token headlamp-admin -n kube-system --kubeconfig IaC/CustomKubernetesAzure/tf/kube/config
+````
+
 #### Viewing Secrets in K8s
 
-If the user needs to debug, view or what ever reason to view a secret it can be completed with the following way:
+If the user needs to debug, view or whatever reason to view a secret it can be completed with the following way:
 
 ````bash
-$ kubectl get secrets azure-cloud-provider -n kube-system -o jsonpath='{.data.cloud-config}' --kubeconfig IaC/k8s/tf/kube/config | base64 -d
+$ kubectl get secrets azure-cloud-provider -n kube-system -o jsonpath='{.data.cloud-config}' --kubeconfig IaC/CustomKubernetesAzure/tf/kube/config | base64 -d
 ````
 
 #### Ansible Debugging modules

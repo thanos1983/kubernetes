@@ -117,13 +117,4 @@ managedDisks = {
     persistent_volume_claim = "open-webui-pipelines"
     storage_class_name      = "azuredisk-openwebui-pipelines"
   }
-  victoria-metrics = {
-    disk_size_gb            = "2"
-    name                    = "victoria-metrics"
-    create_option           = "Empty"
-    storage_account_type    = "Standard_LRS"
-    persistent_volume_name  = "victoria-metrics"
-    persistent_volume_claim = "victoria-metrics"
-    storage_class_name      = "azuredisk-victoria-metrics"
-  }
 }

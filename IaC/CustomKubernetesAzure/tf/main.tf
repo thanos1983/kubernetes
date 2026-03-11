@@ -192,12 +192,12 @@ module "project_main_nodes" {
   }
   admin_ssh_key_blocks = [
     {
-      username   = var.username
-      public_key = file("${path.module}/publicSshKeys/id_ed25519_tiny.pub")
+      username   = local.decoded_vault_yaml.sshKeys.tinyos_home.username
+      public_key = local.decoded_vault_yaml.sshKeys.tinyos_home.public_key
     },
     {
-      username   = var.username
-      public_key = file("${path.module}/publicSshKeys/id_ed25519_tinyos.pub")
+      username   = local.decoded_vault_yaml.sshKeys.tinyos_office.username
+      public_key = local.decoded_vault_yaml.sshKeys.tinyos_office.public_key
     }
   ]
   tags                         = var.tags
@@ -436,7 +436,7 @@ module "project_ansible_playbook_k8s_persistent_storage" {
   source     = "git@github.com:thanos1983/terraform//Ansible/modules/Playbook"
   tags       = ["k8sStorage"]
   playbook   = var.playbook
-  replayable = var.replayable
+  replayable = true # var.replayable
   name       = module.project_main_nodes["master01"].public_ip_address
   extra_vars = {
     kubeConfigDestination = local.kubeConfigDestination
