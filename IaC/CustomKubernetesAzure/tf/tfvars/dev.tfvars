@@ -118,7 +118,7 @@ managedDisks = {
     storage_class_name      = "azuredisk-openwebui-pipelines"
   }
   kubescape-storage = {
-    disk_size_gb            = "10"
+    disk_size_gb            = "5"
     name                    = "kubescape-storage"
     create_option           = "Empty"
     storage_account_type    = "Standard_LRS"
