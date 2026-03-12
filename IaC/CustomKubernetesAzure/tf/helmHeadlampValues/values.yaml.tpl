@@ -12,6 +12,9 @@ pluginsManager:
       - name: headlamp-kubescape
         source: https://artifacthub.io/packages/headlamp/kubescape-headlamp-plugin/headlamp_kubescape
         version: 0.10.5
+      - name: headlamp-cert-manager
+        source: https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_cert-manager
+        version: 0.1.0
     installOptions:
       parallel: true
       maxConcurrent: 2
