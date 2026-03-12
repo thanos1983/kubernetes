@@ -1583,48 +1583,48 @@ locals {
         })
       ]
     },
-    # kubescape = {
-    #   wait             = true
-    #   recreate_pods    = true
-    #   create_namespace = false
-    #   wait_for_jobs    = false
-    #   version          = "1.30.5"
-    #   name             = "kubescape-operator"
-    #   chart            = "kubescape-operator"
-    #   namespace        = var.kubescapeNamespace
-    #   repository       = "https://kubescape.github.io/helm-charts/"
-    #   set = [
-    #     {
-    #       name  = "clusterName"
-    #       value = "kubectl config current-context --kubeconfig ${local.kubeConfigDestination}"
-    #     },
-    #     {
-    #       name  = "capabilities.runtimeDetection"
-    #       value = "enable"
-    #     },
-    #     {
-    #       name  = "alertCRD.installDefault"
-    #       value = true
-    #     },
-    #     {
-    #       name  = "nodeAgent.config.maxLearningPeriod"
-    #       value = "10m"
-    #     },
-    #     {
-    #       name  = "capabilities.continuousScan"
-    #       value = "enable"
-    #     },
-    #     {
-    #       name  = "capabilities.networkPolicyService"
-    #       value = "enable"
-    #     },
-    #     {
-    #       name  = "persistence.storageClass"
-    #       value = var.managedDisks["kubescape-storage"].storage_class_name
-    #     }
-    #   ]
-    #   values = []
-    # }
+    kubescape = {
+      wait             = true
+      recreate_pods    = true
+      create_namespace = false
+      wait_for_jobs    = false
+      version          = "1.30.5"
+      name             = "kubescape-operator"
+      chart            = "kubescape-operator"
+      namespace        = var.kubescapeNamespace
+      repository       = "https://kubescape.github.io/helm-charts/"
+      set = [
+        {
+          name  = "clusterName"
+          value = "kubectl config current-context --kubeconfig ${local.kubeConfigDestination}"
+        },
+        {
+          name  = "capabilities.runtimeDetection"
+          value = "enable"
+        },
+        {
+          name  = "alertCRD.installDefault"
+          value = true
+        },
+        {
+          name  = "nodeAgent.config.maxLearningPeriod"
+          value = "10m"
+        },
+        {
+          name  = "capabilities.continuousScan"
+          value = "enable"
+        },
+        {
+          name  = "capabilities.networkPolicyService"
+          value = "enable"
+        },
+        {
+          name  = "persistence.storageClass"
+          value = var.managedDisks["kubescape-storage"].storage_class_name
+        }
+      ]
+      values = []
+    }
     loki = {
       wait             = true
       recreate_pods    = true
