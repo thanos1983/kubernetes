@@ -15,6 +15,9 @@ pluginsManager:
       - name: headlamp-cert-manager
         source: https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_cert-manager
         version: 0.1.0
+      - name: headlamp-knative
+        source: https://artifacthub.io/packages/headlamp/headlamp-plugins/headlamp_knative
+        version: 0.1.0-alpha
     installOptions:
       parallel: true
       maxConcurrent: 2
