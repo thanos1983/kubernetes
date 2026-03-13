@@ -1,4 +1,5 @@
 resource_group_name  = "toBeUpdated"
 storage_account_name = "toBeUpdated"
 container_name       = "toBeUpdated"
+subscription_id      = "toBeUpdated"
 key                  = "terraform.tfstate"

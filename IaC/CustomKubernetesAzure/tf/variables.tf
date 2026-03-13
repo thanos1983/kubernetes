@@ -43,11 +43,13 @@ variable "tags" {
 variable "ARM_SUBSCRIPTION_ID" {
   description = "The Subscription ID which should be used."
   type        = string
+  sensitive = true
 }
 
 variable "ARM_SUBSCRIPTION_ID_STATE_FILE" {
   description = "The Subscription ID which should be used for storing the state file."
   type        = string
+  sensitive = true
 }
 
 variable "network_security_group_name" {

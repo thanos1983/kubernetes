@@ -98,7 +98,7 @@ Because we want to use different containers in Storage Account per stage (enviro
 version file. Sample of code for dev (replace per stage):
 
 ````bash
-$ tofu -chdir=IaC/CustomKubernetesAzure/tf init -upgrade -reconfigure -backend-config=initVersion/version-dev.hcl
+$ tofu -chdir=IaC/CustomKubernetesAzure/tf init -upgrade -reconfigure -backend-config=initVersion/version-version-dev.hcl
 ````
 
 #### terraform plan
