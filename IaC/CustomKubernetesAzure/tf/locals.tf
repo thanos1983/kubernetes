@@ -1,9 +1,9 @@
 locals {
-  knativeDomain         = "knative.${var.zone}"
   kubeConfigDestination = "${path.module}/kube/config"
   vault_dir_file        = "${path.module}/vault/vault.yml"
   haproxy_k8s_nodes     = "${path.module}/${var.haproxy_k8s_nodes}"
   decoded_vault_yaml    = yamldecode(module.project_ansible_vault.yaml)
+  knativeDomain         = "knative.${local.decoded_vault_yaml.cloudflare.zone}"
   vault_file            = "${path.module}/roles/k8s/files/certificate-custom-key.yml"
 
   storage_account_container = {
@@ -1305,7 +1305,7 @@ locals {
       ]
       values = [
         templatefile("${path.module}/helmIngressIstioGatewayValues/values.yaml.tpl", {
-          zones       = "www.${var.zone},${var.zone}"
+          zones       = "www.${local.decoded_vault_yaml.cloudflare.zone},${local.decoded_vault_yaml.cloudflare.zone}"
           externalIPs = [module.project_nodes_public_ips["haProxyLB"].ip_address]
         })
       ]
@@ -1685,13 +1685,13 @@ locals {
       namespace                                    = var.kubeNamespace
       certificateNamespace                         = var.istioNamespace
       certificateIssuerRefName                     = var.issuer_name_prod
-      hosts                                        = "headlamp.${var.zone}"
-      commonName                                   = "headlamp.${var.zone}"
       gatewayName                                  = "istio-ingressgateway-headlamp"
       virtualServiceName                           = "istio-virtualservice-headlamp"
       secretName                                   = "headlamp-${var.issuer_name_prod}"
-      virtualServiceGateways                       = "${var.kubeNamespace}/istio-ingressgateway-headlamp"
       virtualServiceHttpRouteDestinationHost       = "headlamp.${var.kubeNamespace}.svc.cluster.local"
+      virtualServiceGateways                       = "${var.kubeNamespace}/istio-ingressgateway-headlamp"
+      commonName                                   = "headlamp.${local.decoded_vault_yaml.cloudflare.zone}"
+      hosts                                        = "headlamp.${local.decoded_vault_yaml.cloudflare.zone}"
     },
     grafana = {
       virtualServiceHttpRouteDestinationPortNumber = 80
@@ -1701,12 +1701,12 @@ locals {
       gatewaySelector                              = "ingressgateway"
       certificateNamespace                         = var.istioNamespace
       certificateIssuerRefName                     = var.issuer_name_prod
-      hosts                                        = "grafana.${var.zone}"
-      commonName                                   = "grafana.${var.zone}"
       namespace                                    = var.monitoringNamespace
       gatewayName                                  = "istio-ingressgateway-grafana"
       virtualServiceName                           = "istio-virtualservice-grafana"
       secretName                                   = "grafana-${var.issuer_name_prod}"
+      hosts                                        = "grafana.${local.decoded_vault_yaml.cloudflare.zone}"
+      commonName                                   = "grafana.${local.decoded_vault_yaml.cloudflare.zone}"
       virtualServiceHttpRouteDestinationHost       = "grafana.${var.monitoringNamespace}.svc.cluster.local"
       virtualServiceGateways                       = "${var.monitoringNamespace}/istio-ingressgateway-grafana"
     },
@@ -1719,11 +1719,11 @@ locals {
       certificateNamespace                         = var.istioNamespace
       certificateIssuerRefName                     = var.issuer_name_prod
       namespace                                    = var.openWebuiNamespace
-      hosts                                        = "openwebui.${var.zone}"
-      commonName                                   = "openwebui.${var.zone}"
       gatewayName                                  = "istio-ingressgateway-openwebui"
       virtualServiceName                           = "istio-virtualservice-openwebui"
       secretName                                   = "openwebui-${var.issuer_name_prod}"
+      hosts                                        = "openwebui.${local.decoded_vault_yaml.cloudflare.zone}"
+      commonName                                   = "openwebui.${local.decoded_vault_yaml.cloudflare.zone}"
       virtualServiceHttpRouteDestinationHost       = "open-webui.${var.openWebuiNamespace}.svc.cluster.local"
       virtualServiceGateways                       = "${var.openWebuiNamespace}/istio-ingressgateway-openwebui"
     },
@@ -1736,11 +1736,11 @@ locals {
       certificateNamespace                         = var.istioNamespace
       certificateIssuerRefName                     = var.issuer_name_prod
       namespace                                    = var.monitoringNamespace
-      hosts                                        = "prometheus.${var.zone}"
-      commonName                                   = "prometheus.${var.zone}"
       gatewayName                                  = "istio-ingressgateway-prometheus"
       virtualServiceName                           = "istio-virtualservice-prometheus"
       secretName                                   = "prometheus-${var.issuer_name_prod}"
+      hosts                                        = "prometheus.${local.decoded_vault_yaml.cloudflare.zone}"
+      commonName                                   = "prometheus.${local.decoded_vault_yaml.cloudflare.zone}"
       virtualServiceGateways                       = "${var.monitoringNamespace}/istio-ingressgateway-prometheus"
       virtualServiceHttpRouteDestinationHost       = "prometheus-server.${var.monitoringNamespace}.svc.cluster.local"
     }
