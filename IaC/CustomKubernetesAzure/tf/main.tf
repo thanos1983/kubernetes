@@ -152,11 +152,11 @@ module "project_nodes_public_ips" {
 module "project_knative_dns_records" {
   source   = "git@github.com:thanos1983/terraform//Cloudflare/modules/DnsRecord"
   for_each = local.cloudFlareTypeDnsRecord
-  zone_id  = var.CLOUDFLARE_ZONE_ID
   content  = each.value.content
   name     = each.value.name
   type     = each.value.type
   ttl      = each.value.ttl
+  zone_id  = local.decoded_vault_yaml.cloudflare.zone_id
 }
 
 # Create Network Interfaces for Master node(s)
@@ -655,7 +655,6 @@ module "project_k8s_ansible_playbook_cert_manager_issuer" {
   replayable = var.replayable
   name       = module.project_main_nodes["master01"].public_ip_address
   extra_vars = {
-    domain                = var.zone
     ansible_user          = var.username
     issuerNamespace       = var.istioNamespace
     acme_email            = var.CLOUDFLARE_EMAIL
@@ -664,6 +663,7 @@ module "project_k8s_ansible_playbook_cert_manager_issuer" {
     kubeConfigDestination = local.kubeConfigDestination
     secretKeyRef          = var.cloudflare_secretKeyRef_key
     secretName            = var.cloudflare_secretKeyRef_name
+    domain                = local.decoded_vault_yaml.cloudflare.zone
   }
   depends_on = [
     module.project_k8s_cluster_helm_deployment

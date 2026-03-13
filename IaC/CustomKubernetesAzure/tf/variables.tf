@@ -197,20 +197,8 @@ variable "dependency_update" {
   default     = true
 }
 
-variable "zone" {
-  description = "The DNS zone name which will be added."
-  type        = string
-  default     = "k8sdemocluster.com"
-}
-
 variable "CLOUDFLARE_EMAIL" {
   description = "A registered Cloudflare email address."
-  type        = string
-  sensitive   = true
-}
-
-variable "CLOUDFLARE_API_KEY" {
-  description = "The API key for operations."
   type        = string
   sensitive   = true
 }
