@@ -679,14 +679,3 @@ module "project_k8s_istio_gw_routes" {
     module.project_k8s_cluster_helm_open_webui_deployment
   ]
 }
-
-# Master
-# kubeadm join <load balancer IP>:<API port> --token <token> \
-#         (--discovery-token-ca-cert-hash sha256:<hash value>) or (--discovery-token <hex value>) \
-#         --control-plane --token-ttl 10m
-
-# Worker
-# kubeadm join <load balancer IP>:<API port> --token <token> \
-#         (--discovery-token-ca-cert-hash sha256:<hash value>) or (--discovery-token <hex value>)
-
-# sudo kubeadm reset -f
