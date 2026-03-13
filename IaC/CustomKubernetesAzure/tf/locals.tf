@@ -717,55 +717,6 @@ locals {
         volumeBindingMode    = "Immediate"
         allowVolumeExpansion = false
       }
-      persistentVolume = {
-        metadata = {
-          name = var.managedDisks["kubescape-storage"].persistent_volume_name
-        }
-        spec = {
-          capacity = {
-            storage = "${var.managedDisks["kubescape-storage"].disk_size_gb}Gi"
-          }
-          accessModes = [
-            "ReadWriteOnce"
-          ]
-          persistentVolumeReclaimPolicy = "Retain"
-          storageClassName              = var.managedDisks["kubescape-storage"].storage_class_name
-          csi = {
-            driver       = var.storageClassProvisioner
-            readOnly     = false
-            volumeHandle = module.project_azure_disks["kubescape-storage"].id
-            volumeAttributes = {
-              cachingMode = "ReadOnly"
-              fsType      = "ext4"
-            }
-          }
-        }
-      }
-      persistentVolumeClaim = {
-        metadata = {
-          name      = var.managedDisks["kubescape-storage"].persistent_volume_claim
-          namespace = var.kubescapeNamespace
-          labels = {
-            "app.kubernetes.io/managed-by" = "Helm"
-          }
-          annotations = {
-            "meta.helm.sh/release-name"      = "kubescape-storage"
-            "meta.helm.sh/release-namespace" = var.kubescapeNamespace
-          }
-        }
-        spec = {
-          storageClassName = var.managedDisks["kubescape-storage"].storage_class_name
-          volumeName       = var.managedDisks["kubescape-storage"].persistent_volume_name
-          accessModes = [
-            "ReadWriteOnce"
-          ]
-          resources = {
-            requests = {
-              storage = "${var.managedDisks["kubescape-storage"].disk_size_gb}Gi"
-            }
-          }
-        }
-      }
     }
   }
 
@@ -1597,34 +1548,19 @@ locals {
         {
           name  = "clusterName"
           value = "kubectl config current-context --kubeconfig ${local.kubeConfigDestination}"
-        },
-        {
-          name  = "capabilities.runtimeDetection"
-          value = "enable"
-        },
-        {
-          name  = "alertCRD.installDefault"
-          value = true
-        },
-        {
-          name  = "nodeAgent.config.maxLearningPeriod"
-          value = "10m"
-        },
-        {
-          name  = "capabilities.continuousScan"
-          value = "enable"
-        },
-        {
-          name  = "capabilities.networkPolicyService"
-          value = "enable"
-        },
-        {
-          name  = "persistence.storageClass"
-          value = var.managedDisks["kubescape-storage"].storage_class_name
         }
       ]
-      values = []
-    }
+      values = [
+        templatefile("${path.module}/helmKubescapeValues/values.yaml.tpl", {
+          installDefault       = true
+          maxLearningPeriod    = "10m"
+          continuousScan       = "enable"
+          runtimeDetection     = "enable"
+          networkPolicyService = "enable"
+          storageClass         = var.managedDisks["kubescape-storage"].storage_class_name
+        })
+      ]
+    },
     loki = {
       wait             = true
       recreate_pods    = true

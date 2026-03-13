@@ -28,3 +28,4 @@
             cachingMode: "{{ item.value.persistentVolume.spec.csi.volumeAttributes.cachingMode }}"
     kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
   loop: "{{ lookup('ansible.builtin.dict', k8sStorageVars) }}"
+  when: item.value.persistentVolume is defined

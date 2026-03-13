@@ -25,3 +25,4 @@
             storage: "{{ item.value.persistentVolumeClaim.spec.resources.requests.storage }}"
     kubeconfig: "{{ kubeConfigDestination | default('~/.kube/config') }}"
   loop: "{{ lookup('ansible.builtin.dict', k8sStorageVars) }}"
+  when: item.value.persistentVolumeClaim is defined

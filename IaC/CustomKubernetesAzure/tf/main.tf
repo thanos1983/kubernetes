@@ -570,6 +570,28 @@ module "project_k8s_cluster_helm_deployment" {
   ]
 }
 
+# # Applying post helm module(s) deployment(s)
+# module "project_k8s_cluster_post_helm_deployment" {
+#   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
+#   for_each          = local.helm_post_deployments
+#   set               = each.value.set
+#   wait              = each.value.wait
+#   name              = each.value.name
+#   chart             = each.value.chart
+#   force_update      = var.force_update
+#   values            = each.value.values
+#   helm_version      = each.value.version
+#   namespace         = each.value.namespace
+#   dependency_update = var.dependency_update
+#   repository        = each.value.repository
+#   recreate_pods     = each.value.recreate_pods
+#   wait_for_jobs     = each.value.wait_for_jobs
+#   create_namespace  = each.value.create_namespace
+#   depends_on = [
+#     module.project_k8s_cluster_helm_deployment
+#   ]
+# }
+
 # Create the headlamp admin user
 resource "terraform_data" "bootstrap_headlamp_admin" {
   triggers_replace = [
