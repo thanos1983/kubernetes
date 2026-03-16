@@ -759,7 +759,6 @@ locals {
         name = "linuxHaProxy"
         size = "Standard_B2als_v2"
         custom_data = base64encode(templatefile("${path.module}/templates/haproxy-cloud-init.tftpl", {
-          admin_username                      = var.username
           HAPROXY_STATS_URI_PATH              = var.haProxyStatsUriPath
           HAPROXY_STATS_BIND_PORT             = var.haProxyStatsBindPort
           NODE_PORT_HTTP                      = var.kubeServerNodePortHttp
