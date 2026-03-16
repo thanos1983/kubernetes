@@ -72,7 +72,7 @@ module "project_network_security_group" {
 
 # Create virtual network
 module "project_virtual_network" {
-  source              = "git@github.com:thanos1983/terraform.git//Azure/modules/VirtualNetwork"
+  source              = "git@github.com:thanos1983/terraform//Azure/modules/VirtualNetwork"
   tags                = var.tags
   name                = local.network.virtual_network.name
   resource_group_name = module.project_resource_group.name
@@ -82,7 +82,7 @@ module "project_virtual_network" {
 
 # Create Virtual Networks Subnets
 module "project_virtual_network_subnet" {
-  source               = "git@github.com:thanos1983/terraform.git//Azure/modules/VirtualNetworkSubNet"
+  source               = "git@github.com:thanos1983/terraform//Azure/modules/VirtualNetworkSubNet"
   service_endpoints    = var.service_endpoints
   resource_group_name  = module.project_resource_group.name
   virtual_network_name = module.project_virtual_network.name
@@ -92,7 +92,7 @@ module "project_virtual_network_subnet" {
 
 # Create Storage Account for Blob Storage for (Loki)
 module "project_storage_account" {
-  source              = "git@github.com:thanos1983/terraform.git//Azure/modules/StorageAccount"
+  source              = "git@github.com:thanos1983/terraform//Azure/modules/StorageAccount"
   tags                = var.tags
   name                = var.storage_account_name
   account_kind        = var.storage_account_kind
@@ -102,7 +102,7 @@ module "project_storage_account" {
 
 # Create Storage Account Network Rules
 module "project_storage_account_network_rules" {
-  source                     = "git@github.com:thanos1983/terraform.git//Azure/modules/StorageAccountNetworkRules"
+  source                     = "git@github.com:thanos1983/terraform//Azure/modules/StorageAccountNetworkRules"
   bypass                     = var.bypass
   default_action             = var.default_action
   storage_account_id         = module.project_storage_account.id
@@ -111,7 +111,7 @@ module "project_storage_account_network_rules" {
 
 # Create Storage Account Container for Blob Storage for (Loki)
 module "project_storage_account_container" {
-  source             = "git@github.com:thanos1983/terraform.git//Azure/modules/StorageContainer"
+  source             = "git@github.com:thanos1983/terraform//Azure/modules/StorageContainer"
   for_each           = local.storage_account_container
   name               = each.value.name
   storage_account_id = module.project_storage_account.id
@@ -119,14 +119,14 @@ module "project_storage_account_container" {
 
 # Assign Network Security Group to the Subnet
 # module "project_network_security_group_association" {
-#   source                    = "git@github.com:thanos1983/terraform.git//Azure/modules/SubnetNetworkSecurityGroupAssociation"
+#   source                    = "git@github.com:thanos1983/terraform//Azure/modules/SubnetNetworkSecurityGroupAssociation"
 #   network_security_group_id = module.project_network_security_group.id
 #   subnet_id                 = module.project_virtual_network_subnet.id
 # }
 
 # Create Availability VM Set for Master node(s)
 module "project_nodes_availability_set" {
-  source                       = "git@github.com:thanos1983/terraform.git//Azure/modules/AvailabilitySet"
+  source                       = "git@github.com:thanos1983/terraform//Azure/modules/AvailabilitySet"
   tags                         = var.tags
   platform_fault_domain_count  = var.platform_fault_domain_count
   platform_update_domain_count = var.platform_update_domain_count
