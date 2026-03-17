@@ -43,7 +43,7 @@ variable "tags" {
 variable "ARM_SUBSCRIPTION_ID" {
   description = "The Subscription ID which should be used."
   type        = string
-  sensitive = true
+  sensitive   = true
 }
 
 variable "ARM_SUBSCRIPTION_ID_STATE_FILE" {
