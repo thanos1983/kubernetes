@@ -22,6 +22,9 @@ override.tf.json
 .terraformrc
 terraform.rc
 
+# Ignore all .hcl files
+*.hcl
+
 # PyCharm
 #  JetBrains specific template is maintained in a separate JetBrains.gitignore that can
 #  be found at https://github.com/github/gitignore/blob/main/Global/JetBrains.gitignore
@@ -37,8 +40,3 @@ Pipfile.lock
 **/kube/config
 **/net-istio.yaml
 **/operator.yaml
-**/initVersion/version-dev.hcl
-**/initVersion/version-sit.hcl
-**/initVersion/version-preprod.hcl
-**/initVersion/version-prod.hcl
-**/initVersion/sample.hcl
