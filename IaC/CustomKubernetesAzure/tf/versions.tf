@@ -2,27 +2,27 @@ terraform {
   required_providers {
     ansible = {
       source  = "ansible/ansible"
-      version = "1.4.0"
+      version = "1.5.1"
     }
     azuread = {
       source  = "hashicorp/azuread"
-      version = "3.8.0"
+      version = "3.10.0"
     }
     azurerm = {
       source  = "hashicorp/azurerm"
-      version = "4.63.0"
+      version = "5.14.0"
     }
     helm = {
       source  = "hashicorp/helm"
-      version = "3.1.1"
+      version = "3.3.0"
     }
     cloudflare = {
       source  = "cloudflare/cloudflare"
-      version = "5.18.0"
+      version = "5.29.0"
     }
     external = {
       source  = "hashicorp/external"
-      version = "2.3.5"
+      version = "2.4.2"
     }
     remote = {
       source  = "tenstad/remote"
@@ -30,7 +30,7 @@ terraform {
     }
     local = {
       source  = "hashicorp/local"
-      version = "2.7.0"
+      version = "2.9.1"
     }
   }
   backend "azurerm" {}

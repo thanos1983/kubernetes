@@ -46,10 +46,10 @@ variable "ARM_SUBSCRIPTION_ID" {
   sensitive   = true
 }
 
-variable "ARM_SUBSCRIPTION_ID_STATE_FILE" {
-  description = "The Subscription ID which should be used for storing the state file."
-  type        = string
-}
+# variable "ARM_SUBSCRIPTION_ID_STATE_FILE" {
+#   description = "The Subscription ID which should be used for storing the state file."
+#   type        = string
+# }
 
 variable "network_security_group_name" {
   description = "Specifies the name of the network security group."
@@ -71,11 +71,11 @@ variable "platform_update_domain_count" {
   type        = number
 }
 
-variable "protocol" {
-  description = "Specifies the protocol of the end point."
-  type        = string
-  default     = "Http"
-}
+# variable "protocol" {
+#   description = "Specifies the protocol of the end point."
+#   type        = string
+#   default     = "Http"
+# }
 
 variable "kubeServerNodePortHttp" {
   description = "HTTP port for the API Server to bind to."
@@ -224,13 +224,13 @@ variable "kubescapeNamespace" {
 variable "knativeOperatorVersion" {
   description = "The version of the Knative operator to deploy."
   type        = string
-  default     = "1.21.0"
+  default     = "1.24.0"
 }
 
 variable "knativeNetIstioVersion" {
   description = "The version of the Knative operator to deploy."
   type        = string
-  default     = "1.21.0"
+  default     = "1.24.0"
 }
 
 variable "podNetworkCidr" {
@@ -256,22 +256,22 @@ variable "accelerated_networking_enabled" {
   default     = true
 }
 
-variable "type" {
-  description = "The connection type."
-  type        = string
-  default     = "ssh"
-}
+# variable "type" {
+#   description = "The connection type."
+#   type        = string
+#   default     = "ssh"
+# }
 
 variable "kubernetes_version" {
   description = "Kubernetes version to install relevant packages."
   type        = string
-  default     = "v1.35"
+  default     = "v1.37.1"
 }
 
 variable "crio_version" {
   description = "CRI-O uses the same basic project layout in OBS as Kubernetes."
   type        = string
-  default     = "v1.35"
+  default     = "v1.37.4"
 }
 
 variable "CLOUDFLARE_ZONE_ID" {
@@ -291,11 +291,11 @@ variable "ttl" {
   default     = 1
 }
 
-variable "kubernetes-gateway-api-version" {
-  description = "Kubernetes Gateway API version deployment."
-  type        = string
-  default     = "v1.3.0"
-}
+# variable "kubernetes-gateway-api-version" {
+#   description = "Kubernetes Gateway API version deployment."
+#   type        = string
+#   default     = "v1.3.0"
+# }
 
 variable "service_endpoints" {
   description = "The list of Service endpoints to associate with the subnet."
@@ -373,7 +373,7 @@ variable "storage_account_kind" {
 variable "monitoringHelmChartUrl" {
   description = "Grafana Helm charts url."
   type        = string
-  default     = "https://grafana.github.io/helm-charts"
+  default     = "https://grafana-community.github.io/helm-charts"
 }
 
 variable "lokiNumberOfReplicas" {

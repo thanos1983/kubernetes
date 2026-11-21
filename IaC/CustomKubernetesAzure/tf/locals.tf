@@ -1,7 +1,7 @@
 locals {
   kubeConfigDestination = "${path.module}/kube/config"
   vault_dir_file        = "${path.module}/vault/vault.yml"
-  haproxy_k8s_nodes     = "${path.module}/${var.haproxy_k8s_nodes}"
+  # haproxy_k8s_nodes     = "${path.module}/${var.haproxy_k8s_nodes}"
   decoded_vault_yaml    = yamldecode(module.project_ansible_vault.yaml)
   knativeDomain         = "knative.${local.decoded_vault_yaml.cloudflare.zone}"
   vault_file            = "${path.module}/roles/k8s/files/certificate-custom-key.yml"
@@ -1206,7 +1206,7 @@ locals {
     wait             = true
     wait_for_jobs    = false
     create_namespace = false
-    version          = "1.34.1"
+    version          = "1.35.11"
     namespace        = var.kubeNamespace
     name             = "azuredisk-csi-driver"
     chart            = "azuredisk-csi-driver"
@@ -1238,7 +1238,7 @@ locals {
       wait_for_jobs    = false
       create_namespace = false
       chart            = "base"
-      version          = "1.28.3"
+      version          = "1.32.0"
       name             = "istio-base"
       namespace        = var.istioNamespace
       repository       = "https://istio-release.storage.googleapis.com/charts"
@@ -1255,7 +1255,7 @@ locals {
       wait_for_jobs    = true
       create_namespace = false
       chart            = "istiod"
-      version          = "1.28.3"
+      version          = "1.32.0"
       name             = "istio-discovery"
       namespace        = var.istioNamespace
       repository       = "https://istio-release.storage.googleapis.com/charts"
@@ -1267,7 +1267,7 @@ locals {
       create_namespace = false
       wait_for_jobs    = false
       chart            = "cni"
-      version          = "1.28.3"
+      version          = "1.32.0"
       name             = "istio-cni"
       namespace        = var.istioNamespace
       repository       = "https://istio-release.storage.googleapis.com/charts"
@@ -1283,7 +1283,7 @@ locals {
       wait_for_jobs    = true
       wait             = false
       create_namespace = false
-      version          = "1.28.3"
+      version          = "1.32.0"
       chart            = "gateway"
       namespace        = var.istioNamespace
       name             = "istio-ingressgateway"
@@ -1317,9 +1317,9 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "1.42.0"
       name             = "ollama"
       chart            = "ollama"
+      version          = "ollama-1.95.0"
       namespace        = var.openWebuiNamespace
       repository       = "https://helm.otwld.com/"
       set              = []
@@ -1337,7 +1337,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "12.0.1"
+      version          = "18.4.0"
       name             = "open-webui"
       chart            = "open-webui"
       namespace        = var.openWebuiNamespace
@@ -1356,7 +1356,7 @@ locals {
     #  wait             = true
     #  create_namespace = true
     #  wait_for_jobs    = false
-    #  version          = "3.31.2"
+    #  version          = "3.33.1"
     #  name             = "projectcalico"
     #  chart            = "tigera-operator"
     #  namespace        = "tigera-operator"
@@ -1372,7 +1372,7 @@ locals {
       wait             = true
       wait_for_jobs    = true
       create_namespace = false
-      version          = "1.19.3"
+      version          = "1.20.5"
       name             = "cert-manager"
       chart            = "cert-manager"
       namespace        = var.certManagerNamespace
@@ -1393,7 +1393,7 @@ locals {
       wait             = true
       wait_for_jobs    = true
       create_namespace = false
-      version          = "1.19.0"
+      version          = "1.20.5"
       name             = "cilium"
       chart            = "cilium"
       namespace        = var.kubeNamespace
@@ -1410,7 +1410,7 @@ locals {
       wait             = false
       wait_for_jobs    = false
       create_namespace = false
-      version          = "3.13.0"
+      version          = "3.14.0"
       name             = "metrics-server"
       chart            = "metrics-server"
       namespace        = var.kubeNamespace
@@ -1428,7 +1428,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "1.6.0"
+      version          = "1.16.0"
       name             = "alloy"
       chart            = "alloy"
       namespace        = var.monitoringNamespace
@@ -1447,7 +1447,7 @@ locals {
     #   create_namespace = true
     #   wait             = true
     #   wait_for_jobs    = false
-    #   version          = "9.4.2"
+    #   version          = "10.18.2"
     #   name             = "argo-cd"
     #   chart            = "argo-cd"
     #   namespace        = var0.argoCdNamespace
@@ -1468,7 +1468,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "10.5.15"
+      version          = "14.5.0"
       name             = "grafana"
       chart            = "grafana"
       namespace        = var.monitoringNamespace
@@ -1497,7 +1497,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "1.20.0"
+      version          = "1.24.0"
       name             = "external-dns"
       chart            = "external-dns"
       namespace        = var.certManagerNamespace
@@ -1516,7 +1516,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "0.40.0"
+      version          = "0.46.0"
       name             = "headlamp"
       chart            = "headlamp"
       namespace        = var.kubeNamespace
@@ -1538,7 +1538,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "1.30.5"
+      version          = "1.42.0"
       name             = "kubescape-operator"
       chart            = "kubescape-operator"
       namespace        = var.kubescapeNamespace
@@ -1567,7 +1567,7 @@ locals {
       wait_for_jobs    = false
       name             = "loki"
       chart            = "loki"
-      version          = "6.53.0"
+      version          = "21.4.3"
       namespace        = var.monitoringNamespace
       repository       = var.monitoringHelmChartUrl
       set              = []
@@ -1588,7 +1588,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "28.9.1"
+      version          = "29.48.0"
       name             = "prometheus"
       chart            = "prometheus"
       namespace        = var.monitoringNamespace
@@ -1619,7 +1619,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "10.0.8"
+      version          = "10.0.81"
       chart            = "reflector"
       name             = "emberstack"
       namespace        = var.kubeNamespace
@@ -1632,7 +1632,7 @@ locals {
       recreate_pods    = true
       create_namespace = true
       wait_for_jobs    = false
-      version          = "2.18.1"
+      version          = "2.18.6"
       name             = "sealed-secrets"
       chart            = "sealed-secrets"
       namespace        = var.sealed_secrets_namespace
@@ -1645,7 +1645,7 @@ locals {
       recreate_pods    = true
       create_namespace = false
       wait_for_jobs    = false
-      version          = "1.61.3"
+      version          = "3.29.1"
       name             = "tempo-distributed"
       chart            = "tempo-distributed"
       namespace        = var.monitoringNamespace
