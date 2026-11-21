@@ -82,8 +82,11 @@ module "project_virtual_network" {
 
 # Create Virtual Networks Subnets
 module "project_virtual_network_subnet" {
-  source               = "git@github.com:thanos1983/terraform//Azure/modules/VirtualNetworkSubNet"
-  service_endpoints    = var.service_endpoints
+  source = "git@github.com:thanos1983/terraform//Azure/modules/VirtualNetworkSubNet"
+  service_endpoint_block = {
+    service            = "Microsoft.Storage"
+    network_identifier = module.project_virtual_network.id
+  }
   resource_group_name  = module.project_resource_group.name
   virtual_network_name = module.project_virtual_network.name
   name                 = local.network.virtual_network.subnet.k8s.name

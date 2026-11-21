@@ -2,9 +2,9 @@ locals {
   kubeConfigDestination = "${path.module}/kube/config"
   vault_dir_file        = "${path.module}/vault/vault.yml"
   # haproxy_k8s_nodes     = "${path.module}/${var.haproxy_k8s_nodes}"
-  decoded_vault_yaml    = yamldecode(module.project_ansible_vault.yaml)
-  knativeDomain         = "knative.${local.decoded_vault_yaml.cloudflare.zone}"
-  vault_file            = "${path.module}/roles/k8s/files/certificate-custom-key.yml"
+  decoded_vault_yaml = yamldecode(module.project_ansible_vault.yaml)
+  knativeDomain      = "knative.${local.decoded_vault_yaml.cloudflare.zone}"
+  vault_file         = "${path.module}/roles/k8s/files/certificate-custom-key.yml"
 
   storage_account_container = {
     chunks = {

@@ -46,11 +46,6 @@ variable "ARM_SUBSCRIPTION_ID" {
   sensitive   = true
 }
 
-# variable "ARM_SUBSCRIPTION_ID_STATE_FILE" {
-#   description = "The Subscription ID which should be used for storing the state file."
-#   type        = string
-# }
-
 variable "network_security_group_name" {
   description = "Specifies the name of the network security group."
   type        = string
@@ -70,12 +65,6 @@ variable "platform_update_domain_count" {
   description = "Specifies the number of update domains that are used."
   type        = number
 }
-
-# variable "protocol" {
-#   description = "Specifies the protocol of the end point."
-#   type        = string
-#   default     = "Http"
-# }
 
 variable "kubeServerNodePortHttp" {
   description = "HTTP port for the API Server to bind to."
@@ -256,12 +245,6 @@ variable "accelerated_networking_enabled" {
   default     = true
 }
 
-# variable "type" {
-#   description = "The connection type."
-#   type        = string
-#   default     = "ssh"
-# }
-
 variable "kubernetes_version" {
   description = "Kubernetes version to install relevant packages."
   type        = string
@@ -289,18 +272,6 @@ variable "ttl" {
   description = "Time To Live (TTL) of the DNS record in seconds."
   type        = number
   default     = 1
-}
-
-# variable "kubernetes-gateway-api-version" {
-#   description = "Kubernetes Gateway API version deployment."
-#   type        = string
-#   default     = "v1.3.0"
-# }
-
-variable "service_endpoints" {
-  description = "The list of Service endpoints to associate with the subnet."
-  type        = list(string)
-  default     = ["Microsoft.Storage"]
 }
 
 variable "managedDisks" {
