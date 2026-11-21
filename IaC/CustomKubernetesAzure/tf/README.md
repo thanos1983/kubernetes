@@ -55,7 +55,7 @@ steps need to be applied. Sample:
 
 ````bash
 # install python required packages
-sudo apt-get install -y python3-kubernetes python3-passlib python3-hvac python3-k8sclient python3-openshift jq
+sudo apt-get install -y python3-kubernetes python3-passlib python3-hvac python3-openshift jq
 # install wslu on e.g. Ubuntu WSL
 sudo apt install wslu -y
 # add these two lines to your shell's RC file, e.g. .bashrc or .zshrc.
@@ -83,11 +83,11 @@ sudo apt-get update
 sudo apt-get install -y apt-transport-https ca-certificates curl gpg
 # If the directory `/etc/apt/keyrings` does not exist, it should be created before the curl command, read the note below.
 # sudo mkdir -p -m 755 /etc/apt/keyrings
-curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.33/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.37/deb/Release.key | sudo gpg --dearmor -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
 # This overwrites any existing configuration in /etc/apt/sources.list.d/kubernetes.list
-echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.33/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.37/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
 sudo apt-get update
-sudo apt-get install -y kubeadm kubectl
+sudo apt-get install -y kubectl
 ````
 
 ### The following steps will assume that prerequisites have being already met.
@@ -98,7 +98,7 @@ Because we want to use different containers in Storage Account per stage (enviro
 version file. Sample of code for dev (replace per stage):
 
 ````bash
-$ tofu -chdir=IaC/CustomKubernetesAzure/tf init -upgrade -reconfigure -backend-config=initVersion/version-version-dev.hcl
+$ tofu -chdir=IaC/CustomKubernetesAzure/tf init -upgrade -reconfigure -backend-config=initVersion/sample.hcl
 ````
 
 #### terraform plan

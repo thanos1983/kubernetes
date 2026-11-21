@@ -41,3 +41,4 @@ Pipfile.lock
 **/initVersion/version-sit.hcl
 **/initVersion/version-preprod.hcl
 **/initVersion/version-prod.hcl
+**/initVersion/sample.hcl
