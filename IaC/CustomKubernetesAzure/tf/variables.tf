@@ -246,9 +246,9 @@ variable "accelerated_networking_enabled" {
 }
 
 variable "kubernetes_version" {
-  description = "Kubernetes version to install relevant packages."
+  description = "Kubernetes version to install relevant packages. Do not include minor version."
   type        = string
-  default     = "v1.37.1"
+  default     = "v1.37"
 }
 
 variable "crio_version" {
@@ -333,12 +333,6 @@ variable "issuer_name_stage" {
   description = "The role issuer name for Issuer Stage."
   type        = string
   default     = "letsencrypt-stage"
-}
-
-variable "storage_account_kind" {
-  description = "Defines the Kind of account."
-  type        = string
-  default     = "BlobStorage"
 }
 
 variable "monitoringHelmChartUrl" {

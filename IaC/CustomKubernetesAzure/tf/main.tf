@@ -83,10 +83,11 @@ module "project_virtual_network" {
 # Create Virtual Networks Subnets
 module "project_virtual_network_subnet" {
   source = "git@github.com:thanos1983/terraform//Azure/modules/VirtualNetworkSubNet"
-  service_endpoint_block = {
-    service            = "Microsoft.Storage"
-    network_identifier = module.project_virtual_network.id
-  }
+  service_endpoint_blocks = [
+    {
+      service = "Microsoft.Storage"
+    }
+  ]
   resource_group_name  = module.project_resource_group.name
   virtual_network_name = module.project_virtual_network.name
   name                 = local.network.virtual_network.subnet.k8s.name
@@ -98,7 +99,6 @@ module "project_storage_account" {
   source              = "git@github.com:thanos1983/terraform//Azure/modules/StorageAccount"
   tags                = var.tags
   name                = var.storage_account_name
-  account_kind        = var.storage_account_kind
   resource_group_name = module.project_resource_group.name
   location            = module.project_resource_group.location
 }
@@ -121,11 +121,11 @@ module "project_storage_account_container" {
 }
 
 # Assign Network Security Group to the Subnet
-# module "project_network_security_group_association" {
-#   source                    = "git@github.com:thanos1983/terraform//Azure/modules/SubnetNetworkSecurityGroupAssociation"
-#   network_security_group_id = module.project_network_security_group.id
-#   subnet_id                 = module.project_virtual_network_subnet.id
-# }
+module "project_network_security_group_association" {
+  source                    = "git@github.com:thanos1983/terraform//Azure/modules/SubnetNetworkSecurityGroupAssociation"
+  network_security_group_id = module.project_network_security_group.id
+  subnet_id                 = module.project_virtual_network_subnet.id
+}
 
 # Create Availability VM Set for Master node(s)
 module "project_nodes_availability_set" {
@@ -221,362 +221,340 @@ module "project_main_nodes" {
 # Assign RBAC role for all worker nodes towards the Storage Account
 module "project_rbac_worker_nodes" {
   source               = "git@github.com:thanos1983/terraform//Azure/modules/RoleAssignment"
-  for_each             = local.worker_nodes
+  for_each             = merge(local.master_nodes, local.worker_nodes)
   role_definition_name = var.role_definition_name
   scope                = data.azurerm_subscription.subscription.id
   principal_id         = module.project_main_nodes[each.key].identity[0].principal_id
 }
 
 # Ansible role to deploy HAProxy node(s)
-module "project_k8s_ansible_playbook_load_balancer" {
-  source     = "git@github.com:thanos1983/terraform//Ansible/modules/Playbook"
-  playbook   = var.playbook
-  replayable = var.replayable
-  tags       = local.haPoxyLoadBalancer.haProxyLB.tags
-  name       = module.project_main_nodes["haProxyLB"].public_ip_address
-  extra_vars = {
-    ansible_user = var.username
-  }
-}
+# module "project_k8s_ansible_playbook_load_balancer" {
+#   source     = "git@github.com:thanos1983/terraform//Ansible/modules/Playbook"
+#   playbook   = var.playbook
+#   replayable = var.replayable
+#   tags       = local.haPoxyLoadBalancer.haProxyLB.tags
+#   name       = module.project_main_nodes["haProxyLB"].public_ip_address
+#   extra_vars = {
+#     ansible_user = var.username
+#   }
+# }
 
-# Extract kubernetes certificate key which is encrypted
-data "external" "certs" {
-  program = ["bash", "${path.module}/scripts/decodeAnsibleVaultFile.sh"]
-
-  query = {
-    # arbitrary map from strings to strings, passed
-    # to the external program as the data query.
-    vaultencryptedfile = local.vault_file
-  }
-}
-
-# Instantiate Prime Master Node
-resource "terraform_data" "prime_master_node" {
-  connection {
-    agent = true
-    type  = "ssh"
-    user  = var.username
-    host  = module.project_main_nodes["master01"].public_ip_address
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo kubeadm init --upload-certs --control-plane-endpoint=${module.project_main_nodes["haProxyLB"].public_ip_address} --apiserver-bind-port=${var.kubeServerApiServerBindPort} --certificate-key=${data.external.certs.result.certs} --cri-socket=${var.criSocket} --pod-network-cidr=${var.podNetworkCidr} --service-cidr=${var.serviceCidr}"
-    ]
-  }
-  depends_on = [
-    module.project_k8s_ansible_playbook_load_balancer
-  ]
-}
-
-# Extract kube config file from Prime Master Node
-data "remote_file" "kube_config" {
-  conn {
-    sudo  = true
-    agent = true
-    user  = var.username
-    host  = module.project_main_nodes["master01"].public_ip_address
-  }
-
-  path = var.kubeConfig
-
-  depends_on = [
-    terraform_data.prime_master_node
-  ]
-}
-
-# Store locally kube config file
-module "project_k8s_local_sensitive_file_kube_config" {
-  source   = "git@github.com:thanos1983/terraform//TerraformSharedModules/modules/LocalSensitiveFile"
-  content  = data.remote_file.kube_config.content
-  filename = local.kubeConfigDestination
-}
-
-# Create Bootstrap Token
-data "external" "token" {
-  program = ["bash", "${path.module}/scripts/bootstrapToken.sh"]
-
-  query = {
-    # arbitrary map from strings to strings, passed
-    # to the external program as the data query.
-    kubeconfig = local.kubeConfigDestination
-  }
-
-  depends_on = [
-    module.project_k8s_local_sensitive_file_kube_config
-  ]
-}
-
-# Instantiate Secondary Master Nodes
-resource "terraform_data" "secondary_master_nodes" {
-  for_each = setsubtract(keys(local.master_nodes), ["master01"])
-  connection {
-    agent = true
-    type  = "ssh"
-    user  = var.username
-    host  = module.project_main_nodes[each.key].public_ip_address
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo ${trimspace(data.external.token.result.token)} --certificate-key=${data.external.certs.result.certs} --cri-socket=${var.criSocket} --control-plane",
-    ]
-  }
-
-  depends_on = [
-    terraform_data.prime_master_node
-  ]
-}
-
-# Instantiate Worker Nodes
-resource "terraform_data" "worker_nodes" {
-  for_each = local.worker_nodes
-  connection {
-    agent = true
-    type  = "ssh"
-    user  = var.username
-    host  = module.project_main_nodes[each.key].public_ip_address
-  }
-
-  provisioner "remote-exec" {
-    inline = [
-      "sudo ${trimspace(data.external.token.result.token)} --certificate-key=${data.external.certs.result.certs} --cri-socket=${var.criSocket}"
-    ]
-  }
-
-  provisioner "local-exec" {
-    command = "kubectl label node ${lower(each.value.linux_virtual_machine.name)} kubernetes.io/role=worker --kubeconfig ${local.kubeConfigDestination}"
-  }
-
-  depends_on = [
-    terraform_data.prime_master_node
-  ]
-}
-
-# Creating Prerequisites for Azure Disk CSI driver
-module "project_k8s_ansible_playbook_prerequisites_azure_disk_csi_driver" {
-  source     = "git@github.com:thanos1983/terraform//Ansible/modules/Playbook"
-  tags       = ["k8sPrerequisites"]
-  playbook   = var.playbook
-  replayable = var.replayable
-  name       = module.project_main_nodes["master01"].public_ip_address
-  extra_vars = {
-    faasNamespace                = var.faasNamespace
-    azureDiskCsiDriverNamespace  = var.kubeNamespace
-    istioNamespace               = var.istioNamespace
-    secretNameTempo              = var.tempoSecretName
-    openWebuiNamespace           = var.openWebuiNamespace
-    kubescapeNamespace           = var.kubescapeNamespace
-    monitoringNamespace          = var.monitoringNamespace
-    certManagerNamespace         = var.certManagerNamespace
-    secretNameAzureDiskCsiDriver = var.cloudConfigSecretName
-    kubeConfigDestination        = local.kubeConfigDestination
-    secretName                   = var.cloudflare_secretKeyRef_name
-    dashboardNamespace           = var.kubernetesDashboardNamespace
-    secretValue                  = module.project_cloudflare_api_token.value
-    tempoSecretValue             = module.project_storage_account.primary_access_key
-    azureJsonSecretValue = templatefile("${path.module}/azureDiskCsiDriver/azure.json.tftpl", {
-      RESOURCE-GROUP              = module.project_resource_group.name
-      SECURITYGROUPRESOURCE-GROUP = module.project_resource_group.name
-      VNET-NAME                   = module.project_virtual_network.name
-      LOCATION                    = module.project_resource_group.location
-      SUBNET-NAME                 = module.project_virtual_network_subnet.name
-      SECURITYGROUP-NAME          = module.project_network_security_group.name
-      TENANT-ID                   = data.azurerm_client_config.current.tenant_id
-      AADCLIENT-ID                = module.project_application_azure_disks.client_id
-      SUBSCRIPTION-ID             = data.azurerm_client_config.current.subscription_id
-      VNETRESOURCE-GROUP          = module.project_virtual_network.resource_group_name
-      AADCLIENT-SECRET            = tolist(module.project_application_azure_disks.password).0.value
-    })
-  }
-  depends_on = [
-    module.project_k8s_local_sensitive_file_kube_config
-  ]
-}
-
-module "project_k8s_cluster_helm_fundamental_charts_deployment" {
-  source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  for_each          = local.helm_prime_packages
-  set               = each.value.set
-  wait              = each.value.wait
-  name              = each.value.name
-  chart             = each.value.chart
-  force_update      = var.force_update
-  values            = each.value.values
-  helm_version      = each.value.version
-  namespace         = each.value.namespace
-  repository        = each.value.repository
-  dependency_update = var.dependency_update
-  wait_for_jobs     = each.value.wait_for_jobs
-  create_namespace  = each.value.create_namespace
-  depends_on = [
-    module.project_k8s_ansible_playbook_prerequisites_azure_disk_csi_driver
-  ]
-}
-
-# Deploying Azure Disk CSI driver
-module "project_k8s_cluster_helm_azure_disk_csi_deployment" {
-  source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  force_update      = var.force_update
-  dependency_update = var.dependency_update
-  set               = local.azure_csi_driver.set
-  wait              = local.azure_csi_driver.wait
-  name              = local.azure_csi_driver.name
-  chart             = local.azure_csi_driver.chart
-  values            = local.azure_csi_driver.values
-  helm_version      = local.azure_csi_driver.version
-  namespace         = local.azure_csi_driver.namespace
-  repository        = local.azure_csi_driver.repository
-  wait_for_jobs     = local.azure_csi_driver.wait_for_jobs
-  create_namespace  = local.azure_csi_driver.create_namespace
-  depends_on = [
-    module.project_k8s_ansible_playbook_prerequisites_azure_disk_csi_driver,
-    module.project_k8s_cluster_helm_fundamental_charts_deployment
-  ]
-}
-
-# Creating Kubernetes Persistent Storage Resources
-module "project_ansible_playbook_k8s_persistent_storage" {
-  source     = "git@github.com:thanos1983/terraform//Ansible/modules/Playbook"
-  tags       = ["k8sStorage"]
-  playbook   = var.playbook
-  replayable = var.replayable
-  name       = module.project_main_nodes["master01"].public_ip_address
-  extra_vars = {
-    kubeConfigDestination = local.kubeConfigDestination
-    persistentStorage     = jsonencode(local.persistentStorage)
-  }
-  depends_on = [
-    module.project_main_nodes,
-    module.project_k8s_cluster_helm_azure_disk_csi_deployment
-  ]
-}
-
-# Applying helm istio base deployment
-module "project_k8s_cluster_helm_istio_base_deployment" {
-  source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  force_update      = var.force_update
-  set               = local.istio.base.set
-  dependency_update = var.dependency_update
-  wait              = local.istio.base.wait
-  name              = local.istio.base.name
-  chart             = local.istio.base.chart
-  values            = local.istio.base.values
-  helm_version      = local.istio.base.version
-  namespace         = local.istio.base.namespace
-  repository        = local.istio.base.repository
-  wait_for_jobs     = local.istio.base.wait_for_jobs
-  create_namespace  = local.istio.base.create_namespace
-  depends_on = [
-    module.project_ansible_playbook_k8s_persistent_storage
-  ]
-}
-
-# Applying helm istio discovery deployment
-module "project_k8s_cluster_helm_istio_discovery_deployment" {
-  source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  force_update      = var.force_update
-  dependency_update = var.dependency_update
-  set               = local.istio.discovery.set
-  wait              = local.istio.discovery.wait
-  name              = local.istio.discovery.name
-  chart             = local.istio.discovery.chart
-  values            = local.istio.discovery.values
-  helm_version      = local.istio.discovery.version
-  namespace         = local.istio.discovery.namespace
-  repository        = local.istio.discovery.repository
-  wait_for_jobs     = local.istio.discovery.wait_for_jobs
-  create_namespace  = local.istio.discovery.create_namespace
-  depends_on = [
-    module.project_k8s_cluster_helm_istio_base_deployment
-  ]
-}
-
-# Applying helm istio cni deployment
-module "project_k8s_cluster_helm_istio_cni_deployment" {
-  source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  force_update      = var.force_update
-  set               = local.istio.cni.set
-  dependency_update = var.dependency_update
-  wait              = local.istio.cni.wait
-  name              = local.istio.cni.name
-  chart             = local.istio.cni.chart
-  values            = local.istio.cni.values
-  helm_version      = local.istio.cni.version
-  namespace         = local.istio.cni.namespace
-  repository        = local.istio.cni.repository
-  wait_for_jobs     = local.istio.cni.wait_for_jobs
-  create_namespace  = local.istio.cni.create_namespace
-  depends_on = [
-    module.project_k8s_cluster_helm_istio_discovery_deployment
-  ]
-}
-
-# Instantiate Worker Nodes
-resource "terraform_data" "telemetry" {
-  connection {
-    agent = true
-    type  = "ssh"
-    user  = var.username
-    host  = module.project_main_nodes["master01"].public_ip_address
-  }
-
-  provisioner "local-exec" {
-    command = "kubectl apply -f ${path.module}/tracing/tracing.yaml --kubeconfig ${local.kubeConfigDestination}"
-  }
-
-  depends_on = [
-    module.project_k8s_cluster_helm_istio_cni_deployment
-  ]
-}
-
-
-# Applying helm istio gateway deployment
-module "project_k8s_cluster_helm_istio_gateway_deployment" {
-  source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  force_update      = var.force_update
-  dependency_update = var.dependency_update
-  set               = local.istio.gateway.set
-  wait              = local.istio.gateway.wait
-  name              = local.istio.gateway.name
-  chart             = local.istio.gateway.chart
-  values            = local.istio.gateway.values
-  helm_version      = local.istio.gateway.version
-  namespace         = local.istio.gateway.namespace
-  repository        = local.istio.gateway.repository
-  wait_for_jobs     = local.istio.gateway.wait_for_jobs
-  create_namespace  = local.istio.gateway.create_namespace
-  depends_on = [
-    module.project_k8s_cluster_helm_istio_cni_deployment
-  ]
-}
-
-# Applying all helm module(s) deployment(s)
-module "project_k8s_cluster_helm_deployment" {
-  source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  for_each          = local.helm_deployment
-  set               = each.value.set
-  wait              = each.value.wait
-  name              = each.value.name
-  chart             = each.value.chart
-  force_update      = var.force_update
-  values            = each.value.values
-  helm_version      = each.value.version
-  namespace         = each.value.namespace
-  dependency_update = var.dependency_update
-  repository        = each.value.repository
-  recreate_pods     = each.value.recreate_pods
-  wait_for_jobs     = each.value.wait_for_jobs
-  create_namespace  = each.value.create_namespace
-  depends_on = [
-    module.project_k8s_cluster_helm_istio_gateway_deployment
-  ]
-}
-
-# # Applying post helm module(s) deployment(s)
-# module "project_k8s_cluster_post_helm_deployment" {
+# # Extract kubernetes certificate key which is encrypted
+# data "external" "certs" {
+#   program = ["bash", "${path.module}/scripts/decodeAnsibleVaultFile.sh"]
+#
+#   query = {
+#     # arbitrary map from strings to strings, passed
+#     # to the external program as the data query.
+#     vaultencryptedfile = local.vault_file
+#   }
+# }
+#
+# # Instantiate Prime Master Node
+# resource "terraform_data" "prime_master_node" {
+#   connection {
+#     agent = true
+#     type  = "ssh"
+#     user  = var.username
+#     host  = module.project_main_nodes["master01"].public_ip_address
+#   }
+#
+#   provisioner "remote-exec" {
+#     inline = [
+#       "sudo kubeadm init --upload-certs --control-plane-endpoint=${module.project_main_nodes["haProxyLB"].public_ip_address} --apiserver-bind-port=${var.kubeServerApiServerBindPort} --certificate-key=${data.external.certs.result.certs} --cri-socket=${var.criSocket} --pod-network-cidr=${var.podNetworkCidr} --service-cidr=${var.serviceCidr}"
+#     ]
+#   }
+#   depends_on = [
+#     module.project_k8s_ansible_playbook_load_balancer
+#   ]
+# }
+#
+# # Extract kube config file from Prime Master Node
+# data "remote_file" "kube_config" {
+#   conn {
+#     sudo  = true
+#     agent = true
+#     user  = var.username
+#     host  = module.project_main_nodes["master01"].public_ip_address
+#   }
+#
+#   path = var.kubeConfig
+#
+#   depends_on = [
+#     terraform_data.prime_master_node
+#   ]
+# }
+#
+# # Store locally kube config file
+# module "project_k8s_local_sensitive_file_kube_config" {
+#   source   = "git@github.com:thanos1983/terraform//TerraformSharedModules/modules/LocalSensitiveFile"
+#   content  = data.remote_file.kube_config.content
+#   filename = local.kubeConfigDestination
+# }
+#
+# # Create Bootstrap Token
+# data "external" "token" {
+#   program = ["bash", "${path.module}/scripts/bootstrapToken.sh"]
+#
+#   query = {
+#     # arbitrary map from strings to strings, passed
+#     # to the external program as the data query.
+#     kubeconfig = local.kubeConfigDestination
+#   }
+#
+#   depends_on = [
+#     module.project_k8s_local_sensitive_file_kube_config
+#   ]
+# }
+#
+# # Instantiate Secondary Master Nodes
+# resource "terraform_data" "secondary_master_nodes" {
+#   for_each = setsubtract(keys(local.master_nodes), ["master01"])
+#   connection {
+#     agent = true
+#     type  = "ssh"
+#     user  = var.username
+#     host  = module.project_main_nodes[each.key].public_ip_address
+#   }
+#
+#   provisioner "remote-exec" {
+#     inline = [
+#       "sudo ${trimspace(data.external.token.result.token)} --certificate-key=${data.external.certs.result.certs} --cri-socket=${var.criSocket} --control-plane",
+#     ]
+#   }
+#
+#   depends_on = [
+#     terraform_data.prime_master_node
+#   ]
+# }
+#
+# # Instantiate Worker Nodes
+# resource "terraform_data" "worker_nodes" {
+#   for_each = local.worker_nodes
+#   connection {
+#     agent = true
+#     type  = "ssh"
+#     user  = var.username
+#     host  = module.project_main_nodes[each.key].public_ip_address
+#   }
+#
+#   provisioner "remote-exec" {
+#     inline = [
+#       "sudo ${trimspace(data.external.token.result.token)} --certificate-key=${data.external.certs.result.certs} --cri-socket=${var.criSocket}"
+#     ]
+#   }
+#
+#   provisioner "local-exec" {
+#     command = "kubectl label node ${lower(each.value.linux_virtual_machine.name)} kubernetes.io/role=worker --kubeconfig ${local.kubeConfigDestination}"
+#   }
+#
+#   depends_on = [
+#     terraform_data.prime_master_node
+#   ]
+# }
+#
+# # Creating Prerequisites for Azure Disk CSI driver
+# module "project_k8s_ansible_playbook_prerequisites_azure_disk_csi_driver" {
+#   source     = "git@github.com:thanos1983/terraform//Ansible/modules/Playbook"
+#   tags       = ["k8sPrerequisites"]
+#   playbook   = var.playbook
+#   replayable = var.replayable
+#   name       = module.project_main_nodes["master01"].public_ip_address
+#   extra_vars = {
+#     faasNamespace                = var.faasNamespace
+#     azureDiskCsiDriverNamespace  = var.kubeNamespace
+#     istioNamespace               = var.istioNamespace
+#     secretNameTempo              = var.tempoSecretName
+#     openWebuiNamespace           = var.openWebuiNamespace
+#     kubescapeNamespace           = var.kubescapeNamespace
+#     monitoringNamespace          = var.monitoringNamespace
+#     certManagerNamespace         = var.certManagerNamespace
+#     secretNameAzureDiskCsiDriver = var.cloudConfigSecretName
+#     kubeConfigDestination        = local.kubeConfigDestination
+#     secretName                   = var.cloudflare_secretKeyRef_name
+#     dashboardNamespace           = var.kubernetesDashboardNamespace
+#     secretValue                  = module.project_cloudflare_api_token.value
+#     tempoSecretValue             = module.project_storage_account.primary_access_key
+#     azureJsonSecretValue = templatefile("${path.module}/azureDiskCsiDriver/azure.json.tftpl", {
+#       RESOURCE-GROUP              = module.project_resource_group.name
+#       SECURITYGROUPRESOURCE-GROUP = module.project_resource_group.name
+#       VNET-NAME                   = module.project_virtual_network.name
+#       LOCATION                    = module.project_resource_group.location
+#       SUBNET-NAME                 = module.project_virtual_network_subnet.name
+#       SECURITYGROUP-NAME          = module.project_network_security_group.name
+#       TENANT-ID                   = data.azurerm_client_config.current.tenant_id
+#       AADCLIENT-ID                = module.project_application_azure_disks.client_id
+#       SUBSCRIPTION-ID             = data.azurerm_client_config.current.subscription_id
+#       VNETRESOURCE-GROUP          = module.project_virtual_network.resource_group_name
+#       AADCLIENT-SECRET            = tolist(module.project_application_azure_disks.password).0.value
+#     })
+#   }
+#   depends_on = [
+#     module.project_k8s_local_sensitive_file_kube_config
+#   ]
+# }
+#
+# module "project_k8s_cluster_helm_fundamental_charts_deployment" {
 #   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-#   for_each          = local.helm_post_deployments
+#   for_each          = local.helm_prime_packages
+#   set               = each.value.set
+#   wait              = each.value.wait
+#   name              = each.value.name
+#   chart             = each.value.chart
+#   force_update      = var.force_update
+#   values            = each.value.values
+#   helm_version      = each.value.version
+#   namespace         = each.value.namespace
+#   repository        = each.value.repository
+#   dependency_update = var.dependency_update
+#   wait_for_jobs     = each.value.wait_for_jobs
+#   create_namespace  = each.value.create_namespace
+#   depends_on = [
+#     module.project_k8s_ansible_playbook_prerequisites_azure_disk_csi_driver
+#   ]
+# }
+#
+# # Deploying Azure Disk CSI driver
+# module "project_k8s_cluster_helm_azure_disk_csi_deployment" {
+#   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
+#   force_update      = var.force_update
+#   dependency_update = var.dependency_update
+#   set               = local.azure_csi_driver.set
+#   wait              = local.azure_csi_driver.wait
+#   name              = local.azure_csi_driver.name
+#   chart             = local.azure_csi_driver.chart
+#   values            = local.azure_csi_driver.values
+#   helm_version      = local.azure_csi_driver.version
+#   namespace         = local.azure_csi_driver.namespace
+#   repository        = local.azure_csi_driver.repository
+#   wait_for_jobs     = local.azure_csi_driver.wait_for_jobs
+#   create_namespace  = local.azure_csi_driver.create_namespace
+#   depends_on = [
+#     module.project_k8s_ansible_playbook_prerequisites_azure_disk_csi_driver,
+#     module.project_k8s_cluster_helm_fundamental_charts_deployment
+#   ]
+# }
+#
+# # Creating Kubernetes Persistent Storage Resources
+# module "project_ansible_playbook_k8s_persistent_storage" {
+#   source     = "git@github.com:thanos1983/terraform//Ansible/modules/Playbook"
+#   tags       = ["k8sStorage"]
+#   playbook   = var.playbook
+#   replayable = var.replayable
+#   name       = module.project_main_nodes["master01"].public_ip_address
+#   extra_vars = {
+#     kubeConfigDestination = local.kubeConfigDestination
+#     persistentStorage     = jsonencode(local.persistentStorage)
+#   }
+#   depends_on = [
+#     module.project_main_nodes,
+#     module.project_k8s_cluster_helm_azure_disk_csi_deployment
+#   ]
+# }
+#
+# # Applying helm istio base deployment
+# module "project_k8s_cluster_helm_istio_base_deployment" {
+#   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
+#   force_update      = var.force_update
+#   set               = local.istio.base.set
+#   dependency_update = var.dependency_update
+#   wait              = local.istio.base.wait
+#   name              = local.istio.base.name
+#   chart             = local.istio.base.chart
+#   values            = local.istio.base.values
+#   helm_version      = local.istio.base.version
+#   namespace         = local.istio.base.namespace
+#   repository        = local.istio.base.repository
+#   wait_for_jobs     = local.istio.base.wait_for_jobs
+#   create_namespace  = local.istio.base.create_namespace
+#   depends_on = [
+#     module.project_ansible_playbook_k8s_persistent_storage
+#   ]
+# }
+#
+# # Applying helm istio discovery deployment
+# module "project_k8s_cluster_helm_istio_discovery_deployment" {
+#   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
+#   force_update      = var.force_update
+#   dependency_update = var.dependency_update
+#   set               = local.istio.discovery.set
+#   wait              = local.istio.discovery.wait
+#   name              = local.istio.discovery.name
+#   chart             = local.istio.discovery.chart
+#   values            = local.istio.discovery.values
+#   helm_version      = local.istio.discovery.version
+#   namespace         = local.istio.discovery.namespace
+#   repository        = local.istio.discovery.repository
+#   wait_for_jobs     = local.istio.discovery.wait_for_jobs
+#   create_namespace  = local.istio.discovery.create_namespace
+#   depends_on = [
+#     module.project_k8s_cluster_helm_istio_base_deployment
+#   ]
+# }
+#
+# # Applying helm istio cni deployment
+# module "project_k8s_cluster_helm_istio_cni_deployment" {
+#   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
+#   force_update      = var.force_update
+#   set               = local.istio.cni.set
+#   dependency_update = var.dependency_update
+#   wait              = local.istio.cni.wait
+#   name              = local.istio.cni.name
+#   chart             = local.istio.cni.chart
+#   values            = local.istio.cni.values
+#   helm_version      = local.istio.cni.version
+#   namespace         = local.istio.cni.namespace
+#   repository        = local.istio.cni.repository
+#   wait_for_jobs     = local.istio.cni.wait_for_jobs
+#   create_namespace  = local.istio.cni.create_namespace
+#   depends_on = [
+#     module.project_k8s_cluster_helm_istio_discovery_deployment
+#   ]
+# }
+#
+# # Instantiate Worker Nodes
+# resource "terraform_data" "telemetry" {
+#   connection {
+#     agent = true
+#     type  = "ssh"
+#     user  = var.username
+#     host  = module.project_main_nodes["master01"].public_ip_address
+#   }
+#
+#   provisioner "local-exec" {
+#     command = "kubectl apply -f ${path.module}/tracing/tracing.yaml --kubeconfig ${local.kubeConfigDestination}"
+#   }
+#
+#   depends_on = [
+#     module.project_k8s_cluster_helm_istio_cni_deployment
+#   ]
+# }
+#
+#
+# # Applying helm istio gateway deployment
+# module "project_k8s_cluster_helm_istio_gateway_deployment" {
+#   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
+#   force_update      = var.force_update
+#   dependency_update = var.dependency_update
+#   set               = local.istio.gateway.set
+#   wait              = local.istio.gateway.wait
+#   name              = local.istio.gateway.name
+#   chart             = local.istio.gateway.chart
+#   values            = local.istio.gateway.values
+#   helm_version      = local.istio.gateway.version
+#   namespace         = local.istio.gateway.namespace
+#   repository        = local.istio.gateway.repository
+#   wait_for_jobs     = local.istio.gateway.wait_for_jobs
+#   create_namespace  = local.istio.gateway.create_namespace
+#   depends_on = [
+#     module.project_k8s_cluster_helm_istio_cni_deployment
+#   ]
+# }
+#
+# # Applying all helm module(s) deployment(s)
+# module "project_k8s_cluster_helm_deployment" {
+#   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
+#   for_each          = local.helm_deployment
 #   set               = each.value.set
 #   wait              = each.value.wait
 #   name              = each.value.name
@@ -591,116 +569,138 @@ module "project_k8s_cluster_helm_deployment" {
 #   wait_for_jobs     = each.value.wait_for_jobs
 #   create_namespace  = each.value.create_namespace
 #   depends_on = [
+#     module.project_k8s_cluster_helm_istio_gateway_deployment
+#   ]
+# }
+#
+# # # Applying post helm module(s) deployment(s)
+# # module "project_k8s_cluster_post_helm_deployment" {
+# #   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
+# #   for_each          = local.helm_post_deployments
+# #   set               = each.value.set
+# #   wait              = each.value.wait
+# #   name              = each.value.name
+# #   chart             = each.value.chart
+# #   force_update      = var.force_update
+# #   values            = each.value.values
+# #   helm_version      = each.value.version
+# #   namespace         = each.value.namespace
+# #   dependency_update = var.dependency_update
+# #   repository        = each.value.repository
+# #   recreate_pods     = each.value.recreate_pods
+# #   wait_for_jobs     = each.value.wait_for_jobs
+# #   create_namespace  = each.value.create_namespace
+# #   depends_on = [
+# #     module.project_k8s_cluster_helm_deployment
+# #   ]
+# # }
+#
+# # Create the headlamp admin user
+# resource "terraform_data" "bootstrap_headlamp_admin" {
+#   triggers_replace = [
+#     module.project_k8s_cluster_helm_deployment.headlamp.id
+#   ]
+#
+#   provisioner "local-exec" {
+#     command = "kubectl apply -f ${path.module}/helmHeadlampValues/headlamp-service-account.yaml --kubeconfig ${local.kubeConfigDestination}"
+#   }
+#
+#   depends_on = [
 #     module.project_k8s_cluster_helm_deployment
 #   ]
 # }
-
-# Create the headlamp admin user
-resource "terraform_data" "bootstrap_headlamp_admin" {
-  triggers_replace = [
-    module.project_k8s_cluster_helm_deployment.headlamp.id
-  ]
-
-  provisioner "local-exec" {
-    command = "kubectl apply -f ${path.module}/helmHeadlampValues/headlamp-service-account.yaml --kubeconfig ${local.kubeConfigDestination}"
-  }
-
-  depends_on = [
-    module.project_k8s_cluster_helm_deployment
-  ]
-}
-
-# Applying helm ollama deployment
-module "project_k8s_cluster_helm_ollama_deployment" {
-  source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  force_update      = var.force_update
-  dependency_update = var.dependency_update
-  set               = local.self-hosted-ai.ollama.set
-  wait              = local.self-hosted-ai.ollama.wait
-  name              = local.self-hosted-ai.ollama.name
-  chart             = local.self-hosted-ai.ollama.chart
-  values            = local.self-hosted-ai.ollama.values
-  helm_version      = local.self-hosted-ai.ollama.version
-  namespace         = local.self-hosted-ai.ollama.namespace
-  repository        = local.self-hosted-ai.ollama.repository
-  wait_for_jobs     = local.self-hosted-ai.ollama.wait_for_jobs
-  create_namespace  = local.self-hosted-ai.ollama.create_namespace
-  depends_on = [
-    module.project_k8s_cluster_helm_deployment
-  ]
-}
-
-# Applying helm open-webui deployment
-module "project_k8s_cluster_helm_open_webui_deployment" {
-  source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
-  force_update      = var.force_update
-  dependency_update = var.dependency_update
-  set               = local.self-hosted-ai.open-webui.set
-  wait              = local.self-hosted-ai.open-webui.wait
-  name              = local.self-hosted-ai.open-webui.name
-  chart             = local.self-hosted-ai.open-webui.chart
-  values            = local.self-hosted-ai.open-webui.values
-  helm_version      = local.self-hosted-ai.open-webui.version
-  namespace         = local.self-hosted-ai.open-webui.namespace
-  repository        = local.self-hosted-ai.open-webui.repository
-  wait_for_jobs     = local.self-hosted-ai.open-webui.wait_for_jobs
-  create_namespace  = local.self-hosted-ai.open-webui.create_namespace
-  depends_on = [
-    module.project_k8s_cluster_helm_ollama_deployment
-  ]
-}
-
-# Create desired CertManager Issuer(s)
-module "project_k8s_ansible_playbook_cert_manager_issuer" {
-  source     = "git@github.com:thanos1983/terraform//Ansible/modules/Playbook"
-  tags       = ["k8sIssuer"]
-  playbook   = var.playbook
-  replayable = var.replayable
-  name       = module.project_main_nodes["master01"].public_ip_address
-  extra_vars = {
-    ansible_user          = var.username
-    issuerNamespace       = var.istioNamespace
-    acme_email            = var.CLOUDFLARE_EMAIL
-    issuer_name_prod      = var.issuer_name_prod
-    issuer_name_stage     = var.issuer_name_stage
-    kubeConfigDestination = local.kubeConfigDestination
-    secretKeyRef          = var.cloudflare_secretKeyRef_key
-    secretName            = var.cloudflare_secretKeyRef_name
-    domain                = local.decoded_vault_yaml.cloudflare.zone
-  }
-  depends_on = [
-    module.project_k8s_cluster_helm_deployment
-  ]
-}
-
-# Create GW Routes
-module "project_k8s_istio_gw_routes" {
-  source     = "git@github.com:thanos1983/terraform//Ansible/modules/Playbook"
-  for_each   = local.istioGateway
-  tags       = ["IstioGWRoutes"]
-  playbook   = var.playbook
-  replayable = var.replayable
-  name       = module.project_main_nodes["master01"].public_ip_address
-  extra_vars = {
-    hosts                                        = each.value.hosts
-    component                                    = each.value.component
-    namespace                                    = each.value.namespace
-    secretName                                   = each.value.secretName
-    commonName                                   = each.value.commonName
-    kubernetesVersion                            = var.kubernetes_version
-    gatewayName                                  = each.value.gatewayName
-    gatewayTlsMode                               = each.value.gatewayTlsMode
-    gatewaySelector                              = each.value.gatewaySelector
-    kubeConfigDestination                        = local.kubeConfigDestination
-    virtualServiceName                           = each.value.virtualServiceName
-    certificateNamespace                         = each.value.certificateNamespace
-    virtualServiceGateways                       = each.value.virtualServiceGateways
-    certificateIssuerRefName                     = each.value.certificateIssuerRefName
-    virtualServiceHttpMatchUriPrefix             = each.value.virtualServiceHttpMatchUriPrefix
-    virtualServiceHttpRouteDestinationHost       = each.value.virtualServiceHttpRouteDestinationHost
-    virtualServiceHttpRouteDestinationPortNumber = each.value.virtualServiceHttpRouteDestinationPortNumber
-  }
-  depends_on = [
-    module.project_k8s_cluster_helm_open_webui_deployment
-  ]
-}
+#
+# # Applying helm ollama deployment
+# module "project_k8s_cluster_helm_ollama_deployment" {
+#   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
+#   force_update      = var.force_update
+#   dependency_update = var.dependency_update
+#   set               = local.self-hosted-ai.ollama.set
+#   wait              = local.self-hosted-ai.ollama.wait
+#   name              = local.self-hosted-ai.ollama.name
+#   chart             = local.self-hosted-ai.ollama.chart
+#   values            = local.self-hosted-ai.ollama.values
+#   helm_version      = local.self-hosted-ai.ollama.version
+#   namespace         = local.self-hosted-ai.ollama.namespace
+#   repository        = local.self-hosted-ai.ollama.repository
+#   wait_for_jobs     = local.self-hosted-ai.ollama.wait_for_jobs
+#   create_namespace  = local.self-hosted-ai.ollama.create_namespace
+#   depends_on = [
+#     module.project_k8s_cluster_helm_deployment
+#   ]
+# }
+#
+# # Applying helm open-webui deployment
+# module "project_k8s_cluster_helm_open_webui_deployment" {
+#   source            = "git@github.com:thanos1983/terraform//Helm/modules/Release"
+#   force_update      = var.force_update
+#   dependency_update = var.dependency_update
+#   set               = local.self-hosted-ai.open-webui.set
+#   wait              = local.self-hosted-ai.open-webui.wait
+#   name              = local.self-hosted-ai.open-webui.name
+#   chart             = local.self-hosted-ai.open-webui.chart
+#   values            = local.self-hosted-ai.open-webui.values
+#   helm_version      = local.self-hosted-ai.open-webui.version
+#   namespace         = local.self-hosted-ai.open-webui.namespace
+#   repository        = local.self-hosted-ai.open-webui.repository
+#   wait_for_jobs     = local.self-hosted-ai.open-webui.wait_for_jobs
+#   create_namespace  = local.self-hosted-ai.open-webui.create_namespace
+#   depends_on = [
+#     module.project_k8s_cluster_helm_ollama_deployment
+#   ]
+# }
+#
+# # Create desired CertManager Issuer(s)
+# module "project_k8s_ansible_playbook_cert_manager_issuer" {
+#   source     = "git@github.com:thanos1983/terraform//Ansible/modules/Playbook"
+#   tags       = ["k8sIssuer"]
+#   playbook   = var.playbook
+#   replayable = var.replayable
+#   name       = module.project_main_nodes["master01"].public_ip_address
+#   extra_vars = {
+#     ansible_user          = var.username
+#     issuerNamespace       = var.istioNamespace
+#     acme_email            = var.CLOUDFLARE_EMAIL
+#     issuer_name_prod      = var.issuer_name_prod
+#     issuer_name_stage     = var.issuer_name_stage
+#     kubeConfigDestination = local.kubeConfigDestination
+#     secretKeyRef          = var.cloudflare_secretKeyRef_key
+#     secretName            = var.cloudflare_secretKeyRef_name
+#     domain                = local.decoded_vault_yaml.cloudflare.zone
+#   }
+#   depends_on = [
+#     module.project_k8s_cluster_helm_deployment
+#   ]
+# }
+#
+# # Create GW Routes
+# module "project_k8s_istio_gw_routes" {
+#   source     = "git@github.com:thanos1983/terraform//Ansible/modules/Playbook"
+#   for_each   = local.istioGateway
+#   tags       = ["IstioGWRoutes"]
+#   playbook   = var.playbook
+#   replayable = var.replayable
+#   name       = module.project_main_nodes["master01"].public_ip_address
+#   extra_vars = {
+#     hosts                                        = each.value.hosts
+#     component                                    = each.value.component
+#     namespace                                    = each.value.namespace
+#     secretName                                   = each.value.secretName
+#     commonName                                   = each.value.commonName
+#     kubernetesVersion                            = var.kubernetes_version
+#     gatewayName                                  = each.value.gatewayName
+#     gatewayTlsMode                               = each.value.gatewayTlsMode
+#     gatewaySelector                              = each.value.gatewaySelector
+#     kubeConfigDestination                        = local.kubeConfigDestination
+#     virtualServiceName                           = each.value.virtualServiceName
+#     certificateNamespace                         = each.value.certificateNamespace
+#     virtualServiceGateways                       = each.value.virtualServiceGateways
+#     certificateIssuerRefName                     = each.value.certificateIssuerRefName
+#     virtualServiceHttpMatchUriPrefix             = each.value.virtualServiceHttpMatchUriPrefix
+#     virtualServiceHttpRouteDestinationHost       = each.value.virtualServiceHttpRouteDestinationHost
+#     virtualServiceHttpRouteDestinationPortNumber = each.value.virtualServiceHttpRouteDestinationPortNumber
+#   }
+#   depends_on = [
+#     module.project_k8s_cluster_helm_open_webui_deployment
+#   ]
+# }
